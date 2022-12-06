@@ -1,20 +1,20 @@
 projects:
   hiv:
     data:
-      - ymp_metadata.csv
+    - ymp_metadata.csv
     id_col:
-      - Sample
+    - Sample
     reads_cols:
-      - ForwardReads
-      - ReverseReads
+    - ForwardReads
+    - ReverseReads
 
 pipelines:
   myqc:
     stages:
-      - qc_fastqc
+    - qc_fastqc
   process_data:
     stages:
-      - trim_trimmomatic
+    - trim_trimmomatic
 
 
 resource_limits:
@@ -23,5 +23,7 @@ resource_limits:
   walltime:
     default: 23:59:59
   partition:
-    default: "short"
+    default: short
 
+cluster:
+  profile: slurm
