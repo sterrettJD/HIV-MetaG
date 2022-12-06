@@ -58,6 +58,12 @@ if __name__ == "__main__":
         lambda x: sample_id_to_files(args.directory, x, "R2")
     )
 
+    # YMP can't handle samples that don't have corresponding files
+    # So if any files have been dropped from what's in the demux,
+    # those are cut out here
+    df = df.dropna(axis=0,
+                   how="any")
+
     order = ["Sample", "ForwardReads", "ReverseReads"]
     order = order + [col for col in df.columns if col not in order]
 
