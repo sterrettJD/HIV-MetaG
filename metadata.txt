@@ -1,0 +1,31 @@
+#SampleID	SEQ	PID	HIV_ID	Study	Sample_Type	Cohort	Study_Cohort	Gender	HIV_Status	Risk_Status	%Prevotella	Extraction_Date	Extraction_Location	DNA_Conc	Core_Conc	Core_DIN
+St.chronic.DM001.1.T	S08	DM001	HIV159	DM	Stool	A	"HIV+, ART-treated"	Male	Positive	Positive	0.314622483	10/15/16	Palmer Old	1.4	1.85	2.5
+St.chronic.DM002.1.T	S08	DM002	HIV083	DM	Stool	A	"HIV+, ART-treated"	Male	Positive	Positive	0.417477224	10/15/16	Palmer Old	24.4	1.09	3.0
+St.neg.DM004.1	S08	DM004	HIV012	DM	Stool	C	"HIV-, low-risk"	Male	Negative	Low	0.424550665	10/19/16	Palmer Old	31.7	4.00	6.3
+St.chronic.DM007.1.T	S08	DM007	HIV181	DM	Stool	A	"HIV+, ART-treated"	Male	Positive	Positive	0.452332909	10/19/16	Palmer Old	3.3	1.64	5.4
+St.neg.DM008.1	S08	DM008	HIV057	DM	Stool	C	"HIV-, low-risk"	Male	Negative	Low	0.181198691	10/19/16	Palmer Old	3.2	1.38	3.7
+St.chronic.DM019.1.T	S08	DM019	HIV060	DM	Stool	A	"HIV+, ART-treated"	Male	Positive	Positive	0.51171348	10/20/16	Palmer Old	40.9	7.26	4.1
+St.chronic.DM025.1.T	S08	DM025	HIV230	DM	Stool	A	"HIV+, ART-treated"	Male	Positive	Positive	0.319969109	10/29/16	Palmer New	4.0	2.88	5.9
+St.Neg.DM046.1	S15	DM046	HIV137	DM	Stool	B	"HIV-, high-risk"	Male	Negative	High	0.345022026	1/4/18	BSC	18.2	1.59	2.8
+St.Chronic.DM051.1.T	S15	DM051	HIV279	DM	Stool	A	"HIV+, ART-treated"	Male	Positive	Positive	0.296466107	1/10/18	BSC	30.2	1.27	4.3
+St.Neg.DM055.1	S15	DM055	HIV285	DM	Stool	B	"HIV-, high-risk"	Male	Negative	High	0.424162725	1/10/18	BSC	38.9	8.04	5.7
+St.Neg.DM057.1	S15	DM057	HIV284	DM	Stool	B	"HIV-, high-risk"	Male	Negative	High	0.480410878	1/10/18	BSC	4.2	1.69	3.4
+St.Neg.DM063.1	S15	DM063	HIV289	DM	Stool	B	"HIV-, high-risk"	Male	Negative	High	0.246758406	1/12/18	BSC	11.1	1.53	3.5
+St.Chronic.DM065.1.T	S25	DM065	HIV162	DM	Stool	A	"HIV+, ART-treated"	Male	Positive	Positive	0.387985547	7/18/19	BSC	9.5	1.70	2.4
+St.Chronic.DM074.1.T	S25	DM074	HIV302	DM	Stool	A	"HIV+, ART-treated"	Male	Positive	Positive	0.25079929	7/19/19	BSC	18.8	1.86	4.2
+St.Neg.DM087.1.HR	S25	DM087	HIV325	DM	Stool	B	"HIV-, high-risk"	Male	Negative	High	0.272385937	7/22/19	BSC	3.3	2.30	2.6
+St.Neg.DM093.1.HR	S29	DM093	HIV331	DM	Stool	B	"HIV-, high-risk"	Male	Negative	High	0.2719954	5/18/20	BSC	44.4	1.33	3.3
+St.Chronic.LG001.FS.T	S26	LG001	HIV295	LG	Stool	A	"HIV+, ART-treated"	Male	Positive	Positive	0.433248189	3/8/19	BSC	58.0	1.84	6.1
+St.Chronic.LG006.FS.T	S26	LG006	HIV299	LG	Stool	A	"HIV+, ART-treated"	Male	Positive	Positive	0.268631103	3/8/19	BSC	33.9	3.84	5.6
+St.Neg.HR.LG023.FS	S26	LG023	HIV315	LG	Stool	B	"HIV-, MSM"	Male	Negative	High	0.286695884	8/22/19	BSC	14.7	2.84	3.3
+St.Neg.LR.LG025.FS	S26	LG025	HIV318	LG	Stool	C	"HIV-, MSW+Women"	Male	Negative	Low	0.180334125	8/30/19	BSC	13.3	2.10	3.2
+St.Neg.LR.LG026.FS	S26	LG026	HIV321	LG	Stool	C	"HIV-, MSW+Women"	Male	Negative	Low	0.033066371	8/30/19	BSC	13.1	1.87	3.3
+St.Neg.HR.LG030.FS	S26	LG030	HIV326	LG	Stool	C	"HIV-, MSW+Women"	Female	Negative	Low	0.277655907	8/30/19	BSC	57.0	7.84	4.2
+St.Neg.HR.LG034.FS	S26	LG034	HIV328	LG	Stool	C	"HIV-, MSW+Women"	Female	Negative	Low	0.267115944	8/30/19	BSC	32.8	5.64	6.1
+St.Neg.LG038.FS.LR	S29	LG038	HIV331	LG	Stool	C	"HIV-, MSW+Women"	Male	Negative	Low	0.10863833	5/18/20	BSC	34.7	1.46	4.6
+St.Neg.LG043.FS.LR	S29	LG043	HIV340	LG	Stool	C	"HIV-, MSW+Women"	Male	Negative	Low	0.028555002	5/18/20	BSC	18.6	1.94	3.5
+St.Neg.LG045.FS.LR	S29	LG045	HIV342	LG	Stool	C	"HIV-, MSW+Women"	Male	Negative	Low	0.021887746	5/18/20	BSC	21.1	1.29	1.9
+St.Neg.LG046.FS.LR	S29	LG046	HIV346	LG	Stool	C	"HIV-, MSW+Women"	Male	Negative	Low	0.070100441	5/18/20	BSC	4.0	2.18	2.2
+St.Neg.LG049.FS.HR	S29	LG049	HIV350	LG	Stool	B	"HIV-, MSM"	Male	Negative	High	0.249594757	5/18/20	BSC	3.7	1.44	3.3
+St.Neg.LG050.FS.HR	S29	LG050	HIV347	LG	Stool	B	"HIV-, MSM"	Male	Negative	High	0.36526172	6/8/20	BSC	16.5	1.91	3.1
+St.Neg.LG052.FS.HR	S29	LG052	HIV353	LG	Stool	B	"HIV-, MSM"	Male	Negative	High	0.323605601	6/8/20	BSC	10.6	2.10	3.6
