@@ -35,7 +35,10 @@ def sample_id_to_files(dir, sampleid, read_sig):
     """
     for file in os.listdir(dir):
         if file.startswith(sampleid) and read_sig in file:
-            return file
+            # this assumes you're running the file from where you want
+            # the ymp metadata to be
+            # path will be relative to where this script is run from
+            return os.path.join(dir, file)
 
     # if no file returned
     return np.nan
