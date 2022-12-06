@@ -8,7 +8,7 @@ def get_args():
     """
     handles arg parsing for this script
 
-    returns the args
+    returns the parsed args
     """
     parser = argparse.ArgumentParser(
         prog="Demux to metadata",
@@ -63,7 +63,7 @@ if __name__ == "__main__":
 
     new_df = df[order]
 
-    print([col for col in new_df.columns])
+    print("Head of output file:")
     print(new_df.head())
 
     new_df.to_csv(args.outfile, index=False)
