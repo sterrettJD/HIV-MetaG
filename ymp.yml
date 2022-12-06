@@ -1,0 +1,27 @@
+projects:
+  hiv:
+    data:
+      - ymp_metadata.csv
+    id_col:
+      - Sample
+    reads_cols:
+      - ForwardReads
+      - ReverseReads
+
+pipelines:
+  myqc:
+    stages:
+      - qc_fastqc
+  process_data:
+    stages:
+      - trim_trimmomatic
+
+
+resource_limits:
+  mem:
+    max: 100G
+  walltime:
+    default: 23:59:59
+  partition:
+    default: "short"
+
