@@ -59,7 +59,7 @@ def dispatch_zcat(id_r1_r2_list, indir, outdir, slurm_script):
         in_r2 = os.path.join(indir, r2)
         outfile = os.path.join(outdir, f"{id}.concat.fq.gz")
 
-        command = f"sbatch {slurm_script} -f {r1} -r {r2} -o {outfile}"
+        command = f"sbatch {slurm_script} -f {in_r1} -r {in_r2} -o {outfile}"
         print(f"Executing {command}")
         comp = subprocess.run(command,
                             shell=True)
