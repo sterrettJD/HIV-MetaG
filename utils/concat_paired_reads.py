@@ -18,6 +18,8 @@ def get_args():
                         required=True)
     parser.add_argument("-o", "--outdir",
                         required=True)
+    parser.add_argument("-s", "--sbatch",
+                        required=True)
 
     parsed_args = parser.parse_args()
     return parsed_args
@@ -51,13 +53,13 @@ def get_files(dir):
     return return_list
 
 
-def dispatch_zcat(id_r1_r2_list, indir, outdir):
+def dispatch_zcat(id_r1_r2_list, indir, outdir, slurm_script):
     for id, r1, r2 in id_r1_r2_list:
         in_r1 = os.path.join(indir, r1)
         in_r2 = os.path.join(indir, r2)
         outfile = os.path.join(outdir, f"{id}.concat.fq.gz")
 
-        command = f"zcat {in_r1} {in_r2} | gzip > {outfile}"
+        command = f"sbatch {slurm_script} -f {r1} -r {r2} -o {outfile}"
         print(f"Executing {command}")
         comp = subprocess.run(command,
                             shell=True)
@@ -66,4 +68,4 @@ def dispatch_zcat(id_r1_r2_list, indir, outdir):
 if __name__ == "__main__":
     args = get_args()
     id_r1_r2_list = get_files(args.indir)
-    dispatch_zcat(id_r1_r2_list, args.indir, args.outdir)
+    dispatch_zcat(id_r1_r2_list, args.indir, args.outdir, args.sbatch)
