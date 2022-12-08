@@ -43,8 +43,8 @@ def get_files(dir):
 
     return_list = []
     for id in sample_ids:
-        r1 = pairs[np.where(("R1" in pairs) and (id in pairs))]
-        r2 = pairs[np.where(("R1" in pairs) and (id in pairs))]
+        r1 = [file for file in pairs if ("R1" in file and id in file)][0]
+        r2 = [file for file in pairs if ("R1" in file and id in file)][0]
 
         return_list.append((id, r1, r2))
 
