@@ -17,3 +17,11 @@ Sequencing performed end of November 2022
   - Raw reads were trimmed using Trimmomatic through YMP, using `ymp submit hiv.trim_trimmomatic` 
   - Trimmed reads were then quality checked again to ensure the removal of adapters using `ymp submit hiv.trim_trimmomaticT32.qc_fastqc`
   - Trimmed read quality files were concatenated using MultiQC via `sbatch slurm/run_multiqc.sbatch -i hiv.trim_trimmomaticT32.qc_fastqc -o trimmed_multiqc_out/`
+  - With trimming using the T32 parameter, all samples passed all checks
+    - Many of the reverse fastqs have some moderate quality reads, so maybe that could be something to address at some point
+
+### Concatenating paired reads for HUMAnN
+ - For HUMAnN, both forward and paired reads need to be in a single fastq file.
+ - There is no need to merge them, since output abundances are normalized by kilobase.
+ - I concatenated using a script `utils/concat_paired_reads.py`, which calls a simple `.sbatch` in the `slurm/` directory to schedule this job with slurm
+ - Specifically, I ran `python utils/concat_paired_reads.py -i hiv.trim_trimmomaticT32 -o hiv.t32.concat/ -s slurm/concat_files.sbatch`
