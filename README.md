@@ -15,5 +15,5 @@ Sequencing performed end of November 2022
    - ALL samples failed the adapter content check. Trimmomatic should be able to fix this, as it will remove the adapters.
 ### Read trimming and subsequent QC
   - Raw reads were trimmed using Trimmomatic through YMP, using `ymp submit hiv.trim_trimmomatic` 
-  - Trimmed reads were then quality checked again to ensure the removal of adapters using `ymp submit hiv.trim_trimmomatic.qc_fastqc`
-  - Trimmed read quality files were concatenated using MultiQC via `sbatch slurm/run_multiqc.sbatch -i hiv.trim_trimmomatic.qc_fastqc -o trimmed_multiqc_report/`
+  - Trimmed reads were then quality checked again to ensure the removal of adapters using `ymp submit hiv.trim_trimmomaticT32.qc_fastqc`
+  - Trimmed read quality files were concatenated using MultiQC via `sbatch slurm/run_multiqc.sbatch -i hiv.trim_trimmomaticT32.qc_fastqc -o trimmed_multiqc_out/`
