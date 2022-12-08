@@ -18,8 +18,6 @@ def get_args():
                         required=True)
     parser.add_argument("-o", "--outdir",
                         required=True)
-    parser.add_argument("-s", "--sbatch",
-                        required=True)
 
     parsed_args = parser.parse_args()
     return parsed_args
@@ -66,7 +64,6 @@ def dispatch_zcat(id_r1_r2_list, indir, outdir):
         print(comp)
 
 if __name__ == "__main__":
-    print("Running")
     args = get_args()
     id_r1_r2_list = get_files(args.indir)
     dispatch_zcat(id_r1_r2_list, args.indir, args.outdir)
