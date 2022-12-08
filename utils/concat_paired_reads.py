@@ -59,7 +59,9 @@ def dispatch_zcat(id_r1_r2_list, indir, outdir):
         in_r2 = os.path.join(indir, r2)
         outfile = os.path.join(outdir, f"{id}.concat.fq.gz")
 
-        comp = subprocess.run(f"zcat {in_r1} {in_r2} | gzip > {outfile}",
+        command = f"zcat {in_r1} {in_r2} | gzip > {outfile}"
+        print(f"Executing {command}")
+        comp = subprocess.run(command,
                             shell=True)
         print(comp)
 
