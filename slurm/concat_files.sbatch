@@ -27,4 +27,4 @@ do
     esac
 done
 
-zcat $forward $reverse | gzip > $outfile
+zcat $forward $reverse | gzip > $outpath
