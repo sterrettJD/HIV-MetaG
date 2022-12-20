@@ -25,3 +25,8 @@ Sequencing performed end of November 2022
  - There is no need to merge them, since output abundances are normalized by kilobase.
  - I concatenated using a script `utils/concat_paired_reads.py`, which calls a simple `.sbatch` in the `slurm/` directory to schedule this job with slurm
  - Specifically, I ran `python utils/concat_paired_reads.py -i hiv.trim_trimmomaticT32 -o hiv.t32.concat/ -s slurm/concat_files.sbatch`
+
+### Running HUMAnN
+ - HUMAnN is run via calling `utils/run_humann.py`
+ - `utils/run_humann.py` dispatches the sbatch script `slurm/run_humann.sbatch`
+ - I did it using the following command `python utils/run_humann.py -i hiv.t32.concat/ -o hiv.t32.concat.humann -s slurm/run_humann.sbatch`
