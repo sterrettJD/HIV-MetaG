@@ -24,6 +24,11 @@ def get_args():
     parsed_args = parser.parse_args()
     return parsed_args
 
+def make_outdir(outdir):
+    if os.path.isdir(outdir) is False:
+        os.mkdir(outdir)
+
+    return None
 
 def get_files(dir):
     """
@@ -61,4 +66,5 @@ def dispatch_humann(id_read_list, indir, outdir, slurm_script):
 if __name__ == "__main__":
     args = get_args()
     id_r1_r2_list = get_files(args.indir)
+    make_outdir(args.outdir)
     dispatch_humann(id_r1_r2_list, args.indir, args.outdir, args.sbatch)
