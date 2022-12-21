@@ -1,7 +1,7 @@
 #!/bin/bash
 #SBATCH -p short # Partition or queue.
 #SBATCH --job-name=humann # Job name
-#SBATCH --mail-type=NONE # Mail events (NONE, BEGIN, END, FAIL, ALL)
+#SBATCH --mail-type=FAIL # Mail events (NONE, BEGIN, END, FAIL, ALL)
 #SBATCH --mail-user=jost9358@colorado.edu
 #SBATCH --nodes=1 # Only use a single node
 #SBATCH --ntasks=8 # Run on 8 CPUs
