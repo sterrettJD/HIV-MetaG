@@ -5,10 +5,10 @@
 #SBATCH --mail-user=jost9358@colorado.edu
 #SBATCH --nodes=1 # Only use a single node
 #SBATCH --ntasks=8 # Run on 8 CPUs
-#SBATCH --mem=80gb # Memory limit
+#SBATCH --mem=150gb # Memory limit
 #SBATCH --time=23:59:00 # Time limit hrs:min:sec
-#SBATCH --output=/Users/jost9358/MetaG_HIV/slurm_outs/humann_%j.out # Standard output and error log
-#SBATCH --error=/Users/jost9358/MetaG_HIV/slurm_outs/humann_%j.err # %j inserts job number
+#SBATCH --output=/scratch/Users/jost9358/MetaG_HIV/slurm_outs/humann_%j.out # Standard output and error log
+#SBATCH --error=/scratch/Users/jost9358/MetaG_HIV/slurm_outs/humann_%j.err # %j inserts job number
 
 
 # README
@@ -25,7 +25,7 @@ do
     esac
 done
 
-source activate humannenv
+source activate humannenv4
 
 echo $inpath
 echo $outpath
