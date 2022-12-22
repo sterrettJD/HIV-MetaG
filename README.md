@@ -30,3 +30,14 @@ Sequencing performed end of November 2022
  - HUMAnN is run via calling `utils/run_humann.py`
  - `utils/run_humann.py` dispatches the sbatch script `slurm/run_humann.sbatch`
  - I did it using the following command `python utils/run_humann.py -i hiv.t32.concat/ -o hiv.t32.concat.humann -s slurm/run_humann.sbatch`
+
+#### Setting up HUMAnN (notes)
+ - Had some issues getting HUMAnN to work, see [here](https://forum.biobakery.org/t/humann-conda-installation-dependency-issues/4557?u=sterrettjd)
+ - In short, some advice:
+   - Create a new HUMAnN environment, and set conda channel priorities to prioritize biobakery and conda-forge
+   - Use mamba, not conda to install HUMAnN. Conda would take over an hour to try to solve the environment
+   - Make sure you're using DIAMOND >= 2.0.15. Previous releases of DIAMOND had bugs, and HUMAnN will quit after about 30 min if you don't. I'm not sure why conda would install an old release of DIAMOND, but it also had issues with the DIAMOND dependencies, but mamba was able to fix those.
+   - Update MetaPhlan to the latest release of version 4. HUMAnN install was using version 3.something.
+   - Run `metaphlan --install` to install databases and build the index for mapping. This takes multiple hours, so plan accordingly.
+     - You can also find prebuilt indexes online if you don't want to build them on your own computer.
+   
