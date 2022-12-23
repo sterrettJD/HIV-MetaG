@@ -30,6 +30,10 @@ Sequencing performed end of November 2022
  - HUMAnN is run via calling `utils/run_humann.py`
  - `utils/run_humann.py` dispatches the sbatch script `slurm/run_humann.sbatch`
  - I did it using the following command `python utils/run_humann.py -i hiv.t32.concat/ -o hiv.t32.concat.humann -s slurm/run_humann.sbatch`
+ - This executed one slurm job for every sample. Each job was allocated 8 cores, and here are the stats for reference: 
+   - They took a minimum of ~4 hours and a maximum of 6 hours to run.
+   - The input files were 5-8 GB.
+   - The output files totaled to 2 TB.
 
 #### Setting up HUMAnN (notes)
  - Had some issues getting HUMAnN to work, see [here](https://forum.biobakery.org/t/humann-conda-installation-dependency-issues/4557?u=sterrettjd)
@@ -41,3 +45,17 @@ Sequencing performed end of November 2022
    - Run `metaphlan --install` to install databases and build the index for mapping. This takes multiple hours, so plan accordingly.
      - You can also find prebuilt indexes online if you don't want to build them on your own computer.
    
+### Concatenating HUMAnN results
+- HUMAnN output a directory for each sample, with the gene families, pathway abundances, and pathway coverage for that sample
+- There are also temporary files in a temp subdirectory for each sample, which contain the MetaPhlan mapping outputs
+- I navigated to `hiv.t32.concat.humann` to run the following commands.
+#### Gene family tables
+- **Join:** Used the following command to join the gene family tables `humann_join_tables -i . -o all_genefamilies.tsv --file_name genefamilies.tsv --search-subdirectories`
+- **MetaCyc RXN naming:**
+  - Used the following command to group the genes into reaction `humann_regroup_table -i all_genefamilies.tsv -g uniref90_rxn -o all_genefamilies_grouped.tsv`
+    - This outputs: "Original Feature Count: 19948; Grouped 1+ times: 1016 (5.1%); Grouped 2+ times: 290 (1.5%)"
+  - Used the following command to rename the grouped genes `humann_rename_table -i all_genefamilies_grouped.tsv -n metacyc-rxn -o all_genefamilies_grouped_named.tsv`
+- **UniRef90 naming:**
+  - The UniRef90 mapping file is too small to download with conda/pip, so you need to download it with the following command: `humann_databases --download utility_mapping full $DIR` where `$DIR` is where you want to place the files. I used `../humann_utility/` mapping as my path
+    - Read to do that [here](https://forum.biobakery.org/t/rename-table-doesnt-work-with-uniref90/813).
+  - 
