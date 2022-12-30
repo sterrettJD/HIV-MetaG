@@ -42,12 +42,12 @@ def concat_files(filepaths_list, sampids_list):
         df = pd.read_csv(f, sep="\t", header=4)
         # set index to be the clade name so we can merge the dataframes
         df.index = df["#clade_name"]
-        df.rename({"relative_abundance": sample_id})
+        df.rename(columns={"relative_abundance": sample_id}, inplace=True)
         # create our full df if it doesn't exist yet
         if i == 0:
-            full = df.copy()
+            full = df[["NCBI_tax_id", "additional_species"]]
         # add the new sample to the full df
-        full = pd.concat(full, df[sample_id], axis=1)
+        full = pd.concat([full, df[sample_id]], axis=1)
 
     return full
 
