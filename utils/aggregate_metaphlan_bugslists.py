@@ -1,0 +1,51 @@
+import os
+import argparse
+import pandas as pd
+
+
+def get_args():
+    """
+    handles arg parsing for this script
+
+    returns the parsed args
+    """
+    parser = argparse.ArgumentParser(
+        prog="Aggregate Metaphlan bugs lists",
+        description="Aggregates metaphlan bugs lists from humann outputs for multiple samples into a single tsv"
+    )
+
+    parser.add_argument("-i", "--indir",
+                        required=True)
+    parser.add_argument("-o", "--outfile",
+                        required=True)
+
+    parsed_args = parser.parse_args()
+    return parsed_args
+
+
+def get_filepaths(directory):
+    # get list of only subdirectories
+    subdirs = [d for d in os.listdir(directory) if os.path.isdir(d)]
+    # assumes each of the subdirectories is named for a sample id,
+    # and each of the bugs list is named sampleid.concat_metaphlan_bugs_list.tsv
+    filepaths = [f"{sampid}/{sampid}.concat_metaphlan_bugs_list.tsv" for sampid in subdirs]
+    return filepaths, subdirs
+
+
+def concat_files(filepaths_list, sampids_list):
+    for i, f in enumerate(filepaths_list):
+        sample_id = sampids_list[i]
+
+        df = pd.read_csv(f, sep="\t", header=4)
+        # set index to be the clade name so we can merge the dataframes
+        df.index = df["#clade_name"]
+        df.rename({"relative_abundance": sample_id})
+        # create our full df if it doesn't exist yet
+        if i == 0:
+            full = df.copy()
+
+
+if __name__ == "__main__":
+    args = get_args()
+    filepaths_list, sampids_list = get_filepaths(args.indir)
+    print(filepaths_list, sampids_list)
