@@ -46,9 +46,15 @@ def concat_files(filepaths_list, sampids_list):
         # create our full df if it doesn't exist yet
         if i == 0:
             full = df.copy()
+        # add the new sample to the full df
+        full = pd.concat(full, df[sample_id], axis=1)
 
+    return full
 
 if __name__ == "__main__":
     args = get_args()
+
     filepaths_list, sampids_list = get_filepaths(args.indir)
-    print(filepaths_list, sampids_list)
+    full = concat_files(filepaths_list, sampids_list)
+
+    full.to_csv(f"{args.outfile}", sep="\t")
