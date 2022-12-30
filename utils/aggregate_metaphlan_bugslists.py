@@ -27,8 +27,11 @@ def get_filepaths(directory):
     # get list of only subdirectories
     subdirs = [d for d in os.listdir(directory) if os.path.isdir(d)]
     # assumes each of the subdirectories is named for a sample id,
+    # and each of these contains a subdir sampleid.concat_humann_temp
     # and each of the bugs list is named sampleid.concat_metaphlan_bugs_list.tsv
-    filepaths = [f"{sampid}/{sampid}.concat_metaphlan_bugs_list.tsv" for sampid in subdirs]
+    filepaths = [os.path.join(sampid,
+                              f"{sampid}.concat_humann_temp",
+                              f"{sampid}.concat_metaphlan_bugs_list.tsv") for sampid in subdirs]
     return filepaths, subdirs
 
 
