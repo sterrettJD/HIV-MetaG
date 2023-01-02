@@ -10,7 +10,7 @@ def get_args():
     """
     parser = argparse.ArgumentParser(
         prog="Convert MetaPhlan v4 reports to v3 format",
-        description="Convert MetaPhlan v4 reports to v3 format"
+        description="Convert MetaPhlan v4 reports to v3-like format, or at least close enough to trick Pavian. It really just modifies the first line"
     )
 
     parser.add_argument("-i", "--indir",
@@ -22,11 +22,12 @@ def get_args():
 
 def fix_files(filepaths):
     for file in filepaths:
+        print(f"Fixing: {file}")
         with open(file, "r") as f:
             contents = f.readlines()
 
         # replace the first line to pass the Pavian checks for Metaphlan v3
-        contents[0] = "mpa_v3"
+        contents[0] = "#mpa_v3\n"
 
         # create new filepath
         # should take "dir/subdir/bugs_list.tsv" -> "dir/subdir/bugs_list_v3.tsv"
@@ -35,11 +36,12 @@ def fix_files(filepaths):
         v3_path = ".".join(split_by_dot)
 
         # write it to a new file
+        print(f"Writing to {v3_path}")
         with open(v3_path, "w") as outfile:
             outfile.writelines(contents)
 
 
 if __name__ == "__main__":
     args = get_args()
-    filepaths = get_filepaths(args.indir)
+    filepaths, subdirs = get_filepaths(args.indir)
     fix_files(filepaths)
