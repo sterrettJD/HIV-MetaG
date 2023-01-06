@@ -1,0 +1,34 @@
+---
+title: "Analysis"
+author: "John Sterrett"
+date: "2023-1-6"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+# Note: This  requires microshades, which can be installed using
+# remotes::install_github("KarstensLab/microshades")
+# and speedyseq, which can be installed here
+# remotes::install_github("mikemc/speedyseq")
+
+
+pacman::p_load(tidyverse,
+               data.table,
+               ggplot2,
+               phyloseq,
+               patchwork,
+               microshades,
+               cowplot)
+
+
+kable.mod.cols <- c("Estimate", "Std. Error", "deg. freedom", "t value", "p")
+```
+
+# Load data
+```{r}
+bugslist <- fread("../hiv.t32.concat.humann/all_bugs_list.tsv")
+
+
+```
