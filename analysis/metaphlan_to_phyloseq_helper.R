@@ -1,4 +1,5 @@
 # Converts metaphlan formatted taxonomy names to a taxonomy table for phyloseq
+# based on https://gist.github.com/lwaldron/512d1925a8102e921f05c5b25de7ec94
 names_to_tax_table <- function(bugs){
     splitted <- strsplit(bugs, split="|", fixed=T)
     # create empty taxonomy matrix
