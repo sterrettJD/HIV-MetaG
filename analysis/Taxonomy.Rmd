@@ -28,7 +28,31 @@ kable.mod.cols <- c("Estimate", "Std. Error", "deg. freedom", "t value", "p")
 
 # Load data
 ```{r}
+source("metaphlan_to_phyloseq_helper.R")
 bugslist <- fread("../hiv.t32.concat.humann/all_bugs_list.tsv")
+rownames(bugslist) <- bugslist$`#clade_name`
+bugslist <- bugslist %>% 
+    select(-c(`#clade_name`,
+               NCBI_tax_id,
+               additional_species))
+
+# just get the lowest tax level. We can collapse again later
+bugslist <- filter_mphlan_by_taxonomy_level(bugslist, level="max")
+
+# check that our data are relative abundance adding up to 100 still
+hundreds <- rep(100, ncol(bugslist))
+names(hundreds) <- colnames(bugslist)
+if (isFALSE(all.equal(target=hundreds, 
+                      current=colSums(bugslist, na.rm=T), 
+                      tolerance=0.001))){
+    print("Data are NOT relative abundances summing to 100! Please check what's going on.")
+}
 
 
+bugs <- rownames(bugslist)
+taxonomy.table <- names_to_tax_table(bugs)
+
+
+pseq <- phyloseq(otu_table=otu_table(bugslist, taxa_are_rows=T),
+                 tax_table=tax_table(taxonomy.table))
 ```
