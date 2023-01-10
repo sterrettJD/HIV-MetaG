@@ -107,7 +107,7 @@ ggsave("../figures/taxa-bar-phyum-genus-microshades.pdf",plot=multi,height=6,wid
 
 
 ## All taxa - Phylum (species microshades) with expanded prevotella
-```{r,  warning=T, fig.height=8}
+```{r,  warning=T, fig.height=9, fig.width=8}
 # prep the microshades colors
 mdf_prep <- prep_mdf(pseq, subgroup_level="Species")
 
@@ -145,7 +145,7 @@ multi
 ```
 
 ## All taxa - Genus (species microshades) with expanded prevotella
-```{r, warning=T, fig.height=9, fig.width=6}
+```{r, warning=T, fig.height=9, fig.width=8}
 # prep the microshades colors
 mdf_prep <- prep_mdf(pseq, subgroup_level="Species")
 
@@ -197,4 +197,77 @@ plot_1 <- plot + scale_y_continuous(labels = scales::percent, expand = expansion
 multi <- plot_grid(plot_1, GP_legend,  rel_widths = c(1, .25))
 multi
 #ggsave("../figures/taxa-bar-phyum-genus-microshades.pdf",plot=multi,height=6,width=10)
+```
+
+
+# Prevotella specifically
+```{r}
+prev.only <- subset_taxa(pseq, Genus=="Prevotella") %>% 
+    tax_glom(taxrank="Species") 
+prev.only.df <- prev.only %>% otu_table() %>% as.data.frame()
+prev.only.tax <- prev.only %>% tax_table() %>% as.data.frame()
+
+# grab just the species level
+splitted <- lapply(rownames(prev.only.df),
+      FUN=function(x) strsplit(x, split="\\|")[[1]][7])
+# clean name and reassign rowname
+splitted <- gsub("[a-z]__", "", splitted)
+rownames(prev.only.df) <- splitted
+
+# calculate total relative abundance of prevotella in each sample
+total.prev <- colSums(prev.only.df)
+
+# calculate total relative abundance of prevotella copri in each sample
+copri.names <- splitted[grepl("copri", splitted)]
+total.copri <- colSums(prev.only.df[copri.names,])
+
+# calculate total non-copri prevotella
+total.noncopri <- total.prev - total.copri
+
+prev.stats <- data.frame("Prevotella"=total.prev, 
+                         "Prevotella_copri"=total.copri, 
+                         "Prevotella_noncopri"=total.noncopri)
+prev.stats$HIV <- metadata$HIV_Status
+```
+
+## Relative abundance boxplots {.tabset}
+### Prevotella
+```{r}
+ggplot(data=prev.stats,
+       mapping=aes(y=Prevotella, x=HIV)) +
+    geom_boxplot() + 
+    theme_bw()
+```
+
+### Prevotella copri {.tabset}
+#### Relative abundance
+```{r}
+ggplot(data=prev.stats,
+       mapping=aes(y=Prevotella_copri, x=HIV)) +
+    geom_boxplot() + 
+    theme_bw()
+```
+#### As percent of all Prevotella
+```{r}
+ggplot(data=prev.stats,
+       mapping=aes(y=Prevotella_copri/(Prevotella+0.001), x=HIV)) +
+    geom_boxplot() + 
+    theme_bw()
+```
+
+### Prevotella non-copri {.tabset}
+#### Relative abundance
+```{r}
+ggplot(data=prev.stats,
+       mapping=aes(y=Prevotella_noncopri, x=HIV)) +
+    geom_boxplot() + 
+    theme_bw()
+```
+
+#### As percent of all Prevotella
+```{r}
+ggplot(data=prev.stats,
+       mapping=aes(y=Prevotella_noncopri/(Prevotella+0.001), x=HIV)) +
+    geom_boxplot() + 
+    theme_bw()
 ```
