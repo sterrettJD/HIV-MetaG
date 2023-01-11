@@ -228,7 +228,22 @@ prev.stats <- data.frame("Prevotella"=total.prev,
                          "Prevotella_copri"=total.copri, 
                          "Prevotella_noncopri"=total.noncopri)
 prev.stats$HIV <- metadata$HIV_Status
+prev.stats$expected_Prevotella <- metadata$`%Prevotella`
 ```
+
+## Prevotella ~ expected (from 16S)
+```{r}
+
+ggplot(data=prev.stats,
+       mapping=aes(y=Prevotella, x=expected_Prevotella)) +
+    geom_point() + 
+    geom_smooth(method="lm") +
+    xlab("Expected % Prevotella from 16S") +
+    theme_bw()  
+
+summary(lm(Prevotella ~ expected_Prevotella, data=prev.stats))
+```
+
 
 ## Relative abundance boxplots {.tabset}
 ### Prevotella
