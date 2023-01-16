@@ -28,6 +28,7 @@ kable.mod.cols <- c("Estimate", "Std. Error", "deg. freedom", "t value", "p")
 
 # Load data
 ```{r}
+setwd("analysis/")
 source("metaphlan_to_phyloseq_helper.R")
 bugslist <- fread("../hiv.t32.concat.humann/all_bugs_list.tsv") %>% as.data.frame()
 rownames(bugslist) <- bugslist$`#clade_name`
@@ -49,6 +50,8 @@ if (isFALSE(all.equal(target=hundreds,
                       current=colSums(bugslist, na.rm=T), 
                       tolerance=0.001))){
     print("Data are NOT relative abundances summing to 100! Please check what's going on.")
+} else {
+    print("Samples sum to 100 (or close enough).")
 }
 
 # create tax table
@@ -80,7 +83,8 @@ rowSums(bugslist[eu_un,])/ncol(bugslist)
 ```
 
 # Taxa barplot {.tabset}
-## All taxa
+## All taxa { .tabset}
+### By HIV
 ```{r, warning=T, fig.height=8}
 # prep the microshades colors
 mdf_prep <- prep_mdf(pseq, subgroup_level="Genus")
@@ -114,10 +118,49 @@ plot_1 <- plot + scale_y_continuous(labels = scales::percent, expand = expansion
 multi <- plot_grid(plot_1, GP_legend,  rel_widths = c(1, .25))
 multi
 ggsave("../figures/taxa-bar-phyum-genus-microshades.pdf",plot=multi,height=6,width=10)
+
+```
+
+### By Risk Status
+```{r, warning=T, fig.height=8}
+# prep the microshades colors
+mdf_prep <- prep_mdf(pseq, subgroup_level="Genus")
+# sort the phylum names
+phylum_table <- tax_glom(pseq, taxrank="Phylum", ) %>% otu_table()
+phyla.otunames <- rownames(phylum_table)
+
+phylums <- taxonomy.table[phyla.otunames,"Phylum"]
+
+sorted_phylums <- phylums[order(rowSums(phylum_table), decreasing=T)]
+# create the colors object
+color_objs_GP <- create_color_dfs(mdf_prep, selected_groups = sorted_phylums[5:1], 
+                                  cvd = TRUE)
+# Extract
+mdf_GP <- color_objs_GP$mdf
+cdf_GP <- color_objs_GP$cdf
+# create a custom legend
+GP_legend <-custom_legend(mdf_GP, cdf_GP, 
+                          legend_key_size=unit(0.4, "cm"),
+                          legend_text_size=10)
+
+# plot
+plot <- plot_microshades(mdf_GP, cdf_GP)
+plot_1 <- plot + scale_y_continuous(labels = scales::percent, expand = expansion(0)) +
+  theme(legend.position = "none")  +
+  theme(axis.text.x = element_text(size= 7)) +
+  facet_grid(~(factor(Risk_Status, levels=c("Low", "High", "Positive"))), 
+               scales = "free_x", space="free_x"
+             )
+
+multi <- plot_grid(plot_1, GP_legend,  rel_widths = c(1, .25))
+multi
+ggsave("../figures/taxa-bar-Risk-phyum-genus-microshades.pdf",plot=multi,height=6,width=10)
+
 ```
 
 
-## All taxa - Phylum (species microshades) with expanded prevotella
+## All taxa - Phylum (species microshades) with expanded prevotella {.tabset}
+### by HIV
 ```{r,  warning=T, fig.height=9, fig.width=8}
 # prep the microshades colors
 mdf_prep <- prep_mdf(pseq, subgroup_level="Species")
@@ -153,9 +196,49 @@ plot_1 <- plot + scale_y_continuous(labels = scales::percent, expand = expansion
 multi <- plot_grid(plot_1, GP_legend,  rel_widths = c(1, .25))
 multi
 #ggsave("../figures/taxa-bar-phyum-genus-microshades.pdf",plot=multi,height=6,width=10)
+
 ```
 
-## All taxa - Genus (species microshades) with expanded prevotella
+### by Risk status
+```{r,  warning=T, fig.height=9, fig.width=8}
+# prep the microshades colors
+mdf_prep <- prep_mdf(pseq, subgroup_level="Species")
+
+# create the colors object
+# was going to force prevotella in, but it's already the top
+color_objs_GP <- create_color_dfs(mdf_prep, selected_groups = sorted_phylums[5:1], group_level="Phylum", subgroup_level="Species",
+                                  cvd = TRUE,)
+color_objs_GP <- extend_group(color_objs_GP$mdf, color_objs_GP$cdf,
+                              "Phylum", "Species", "Bacteroidetes",
+                              existing_palette="micro_cvd_purple", new_palette = "micro_purple",
+                              n_add=2)
+
+# Extract
+mdf_GP <- color_objs_GP$mdf
+cdf_GP <- color_objs_GP$cdf
+# create a custom legend
+GP_legend <-custom_legend(mdf_GP, cdf_GP, 
+                          legend_key_size=unit(0.4, "cm"),
+                          legend_text_size=10,
+                          group_level="Phylum",
+                          subgroup_level="Species")
+
+# plot
+plot <- plot_microshades(mdf_GP, cdf_GP)
+plot_1 <- plot + scale_y_continuous(labels = scales::percent, expand = expansion(0)) +
+  theme(legend.position = "none")  +
+  theme(axis.text.x = element_text(size= 7)) +
+  facet_grid(~(factor(Risk_Status, levels=c("Low", "High", "Positive"))), 
+               scales = "free_x", space="free_x"
+             )
+
+multi <- plot_grid(plot_1, GP_legend,  rel_widths = c(1, .25))
+multi
+#ggsave("../figures/taxa-bar-phyum-genus-microshades.pdf",plot=multi,height=6,width=10)
+```
+
+## All taxa - Genus (species microshades) with expanded prevotella {.tabset}
+### By HIV
 ```{r, warning=T, fig.height=9, fig.width=8}
 # prep the microshades colors
 mdf_prep <- prep_mdf(pseq, subgroup_level="Species")
@@ -203,6 +286,58 @@ plot_1 <- plot + scale_y_continuous(labels = scales::percent, expand = expansion
   # facet_grid(Phylum~HIV_Status, scales = "free", space="free_x"
   #            #labeller=labeller(Osteosarcoma=ost.names)
   #            )
+
+
+multi <- plot_grid(plot_1, GP_legend,  rel_widths = c(1, .25))
+multi
+#ggsave("../figures/taxa-bar-phyum-genus-microshades.pdf",plot=multi,height=6,width=10)
+
+```
+
+### By Risk Status
+```{r, warning=T, fig.height=9, fig.width=8}
+# prep the microshades colors
+mdf_prep <- prep_mdf(pseq, subgroup_level="Species")
+
+# create the colors object
+# was going to force prevotella in, but it's already the top
+
+# sort the genus names
+genus_table <- tax_glom(pseq, taxrank="Genus", ) %>% otu_table()
+genus.otunames <- rownames(genus_table)
+
+genera <- taxonomy.table[genus.otunames,"Genus"]
+
+sorted_genera <- genera[order(rowSums(genus_table), decreasing=T)]
+
+color_objs_GP <- create_color_dfs(mdf_prep, selected_groups = sorted_genera[5:1], group_level="Genus", subgroup_level="Species",
+                                  cvd = TRUE,)
+color_objs_GP <- extend_group(color_objs_GP$mdf, color_objs_GP$cdf,
+                              "Genus", "Species", "Prevotella",
+                              existing_palette="micro_cvd_purple", new_palette = "micro_purple",
+                              n_add=4)
+
+# Extract
+mdf_GP <- color_objs_GP$mdf
+cdf_GP <- color_objs_GP$cdf
+
+#make other other black
+#cdf_GP[cdf_GP$hex=="#F5F5F5", "hex"] <- "#000000"
+# create a custom legend
+GP_legend <-custom_legend(mdf_GP, cdf_GP, 
+                          legend_key_size=unit(0.4, "cm"),
+                          legend_text_size=10,
+                          group_level="Genus",
+                          subgroup_level="Species")
+
+# plot
+plot <- plot_microshades(mdf_GP, cdf_GP,)
+plot_1 <- plot + scale_y_continuous(labels = scales::percent, expand = expansion(0)) +
+  theme(legend.position = "none")  +
+  theme(axis.text.x = element_text(size= 7)) +
+  facet_grid(~(factor(Risk_Status, levels=c("Low", "High", "Positive"))), 
+               scales = "free_x", space="free_x"
+             )
 
 
 multi <- plot_grid(plot_1, GP_legend,  rel_widths = c(1, .25))
