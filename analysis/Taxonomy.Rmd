@@ -28,7 +28,7 @@ kable.mod.cols <- c("Estimate", "Std. Error", "deg. freedom", "t value", "p")
 
 # Load data
 ```{r}
-setwd("analysis/")
+setwd("~/Research-Projects/Lozupone/HIV-MetaG/analysis/")
 source("metaphlan_to_phyloseq_helper.R")
 bugslist <- fread("../hiv.t32.concat.humann/all_bugs_list.tsv") %>% as.data.frame()
 rownames(bugslist) <- bugslist$`#clade_name`
@@ -375,6 +375,7 @@ prev.stats <- data.frame("Prevotella"=total.prev,
                          "Prevotella_noncopri"=total.noncopri)
 prev.stats$HIV <- metadata$HIV_Status
 prev.stats$expected_Prevotella <- metadata$`%Prevotella`
+prev.stats$Risk_Status <- metadata$Risk_Status
 ```
 
 ## Prevotella ~ expected (from 16S) {.tabset}
@@ -399,7 +400,8 @@ print(lowest_resids)
 ```
 
 
-### Taxa bar plot of lower than expected Prevotella
+### Taxa bar plot of lower than expected Prevotella {.tabset}
+#### By HIV
 ```{r, warning=T, fig.height=9, fig.width=8}
 # prep the microshades colors
 mdf_prep <- prep_mdf(prune_samples(samples=names(lowest_resids), x=pseq), 
@@ -441,6 +443,51 @@ plot_1 <- plot + scale_y_continuous(labels = scales::percent, expand = expansion
 
 multi <- plot_grid(plot_1, GP_legend,  rel_widths = c(1, .25))
 multi
+
+```
+
+#### By Risk Status
+```{r, warning=T, fig.height=9, fig.width=8}
+# prep the microshades colors
+mdf_prep <- prep_mdf(prune_samples(samples=names(lowest_resids), x=pseq), 
+                     subgroup_level="Genus")
+
+# create the colors object
+# was going to force prevotella in, but it's already the top
+
+
+color_objs_GP <- create_color_dfs(mdf_prep, selected_groups = sorted_phylums[5:1], group_level="Phylum", subgroup_level="Genus",
+                                  cvd = TRUE,)
+color_objs_GP <- extend_group(color_objs_GP$mdf, color_objs_GP$cdf,
+                              "Phylum", "Genus", "Firmicutes",
+                              existing_palette="micro_cvd_green", new_palette = "micro_green",
+                              n_add=4)
+
+# Extract
+mdf_GP <- color_objs_GP$mdf
+cdf_GP <- color_objs_GP$cdf
+
+#make other other black
+#cdf_GP[cdf_GP$hex=="#F5F5F5", "hex"] <- "#000000"
+# create a custom legend
+GP_legend <-custom_legend(mdf_GP, cdf_GP, 
+                          legend_key_size=unit(0.4, "cm"),
+                          legend_text_size=10,
+                          group_level="Phylum",
+                          subgroup_level="Genus")
+
+# plot
+plot <- plot_microshades(mdf_GP, cdf_GP,) + theme_bw()
+plot_1 <- plot + scale_y_continuous(labels = scales::percent, expand = expansion(0)) +
+  theme(legend.position = "none")  +
+  theme(axis.text.x = element_text(size= 7)) +
+  facet_grid(~(factor(Risk_Status, levels=c("Low", "High", "Positive"))), 
+             scales = "free_x", space="free_x"
+             )
+
+
+multi <- plot_grid(plot_1, GP_legend,  rel_widths = c(1, .25))
+multi
 ```
 
 ### Firmicutes investigation
@@ -468,45 +515,112 @@ firm.only.weird.samps.otu[order(rowSums(firm.only.weird.samps.otu), decreasing=T
 ```
 
 ## Relative abundance boxplots {.tabset}
-### Prevotella
+### Prevotella {.tabset}
+#### by HIV
 ```{r}
 ggplot(data=prev.stats,
        mapping=aes(y=Prevotella, x=HIV)) +
     geom_boxplot() + 
+    geom_jitter(width=0.1) +
     theme_bw()
+
 ```
 
+#### by Risk Status
+```{r}
+ggplot(data=prev.stats,
+       mapping=aes(y=Prevotella, 
+                   x=factor(Risk_Status, levels=c("Low", "High", "Positive")))) +
+    geom_boxplot() + 
+    geom_jitter(width=0.1) +
+    theme_bw() +
+    xlab("Risk Status") +
+    ylab("% Prevotella")
+```
+
+
 ### Prevotella copri {.tabset}
-#### Relative abundance
+#### Relative abundance (HIV)
 ```{r}
 ggplot(data=prev.stats,
        mapping=aes(y=Prevotella_copri, x=HIV)) +
     geom_boxplot() + 
-    theme_bw()
-```
-#### As percent of all Prevotella
-```{r}
-ggplot(data=prev.stats,
-       mapping=aes(y=Prevotella_copri/(Prevotella+0.001), x=HIV)) +
-    geom_boxplot() + 
+    geom_jitter(width=0.1) +
     theme_bw()
 ```
 
+#### Relative abundance (Risk Status)
+```{r}
+ggplot(data=prev.stats,
+       mapping=aes(y=Prevotella_copri, 
+                   x=factor(Risk_Status, levels=c("Low", "High", "Positive")))) +
+    geom_boxplot() + 
+    geom_jitter(width=0.1) +
+    theme_bw() +
+    xlab("Risk Status") +
+    ylab("% Prevotella copri")
+```
+
+
+#### As percent of all Prevotella (HIV)
+```{r}
+ggplot(data=prev.stats,
+       mapping=aes(y=Prevotella_copri/(Prevotella+0.001), x=HIV)) +
+    geom_boxplot(outlier.shape=NA) + 
+    geom_jitter(width=0.1) +
+    theme_bw()
+```
+
+#### As percent of all Prevotella (Risk Status)
+```{r}
+ggplot(data=prev.stats,
+       mapping=aes(y=Prevotella_copri/(Prevotella+0.001), 
+                   x=factor(Risk_Status, levels=c("Low", "High", "Positive")))) +
+    geom_boxplot() + 
+    geom_jitter(width=0.1) +
+    theme_bw() +
+    xlab("Risk Status")
+```
+
 ### Prevotella non-copri {.tabset}
-#### Relative abundance
+#### Relative abundance (HIV)
 ```{r}
 ggplot(data=prev.stats,
        mapping=aes(y=Prevotella_noncopri, x=HIV)) +
     geom_boxplot() + 
+    geom_jitter(width=0.1) +
     theme_bw()
 ```
 
-#### As percent of all Prevotella
+#### Relative abundance (Risk Status)
+```{r}
+ggplot(data=prev.stats,
+       mapping=aes(y=Prevotella_noncopri, 
+                   x=factor(Risk_Status, levels=c("Low", "High", "Positive")))) +
+    geom_boxplot() + 
+    geom_jitter(width=0.1) +
+    theme_bw() +
+    xlab("Risk Status") +
+    ylab("% other Prevotella")
+```
+
+#### As percent of all Prevotella (HIV)
 ```{r}
 ggplot(data=prev.stats,
        mapping=aes(y=Prevotella_noncopri/(Prevotella+0.001), x=HIV)) +
-    geom_boxplot() + 
+    geom_boxplot(outlier.shape=NA) + 
+    geom_jitter(width=0.1) +
     theme_bw()
 ```
 
+#### As percent of all Prevotella (Risk Status)
+```{r}
+ggplot(data=prev.stats,
+       mapping=aes(y=Prevotella_noncopri/(Prevotella+0.001), 
+                   x=factor(Risk_Status, levels=c("Low", "High", "Positive")))) +
+    geom_boxplot() + 
+    geom_jitter(width=0.1) +
+    theme_bw() +
+    xlab("Risk Status")
+```
 
