@@ -3,6 +3,7 @@ import os
 import argparse
 import numpy as np
 
+
 def get_args():
     """
     handles arg parsing for this script
@@ -10,8 +11,8 @@ def get_args():
     returns the parsed args
     """
     parser = argparse.ArgumentParser(
-        prog="Concat paired reads",
-        description="Concatenates paired reads into a single fastq file"
+        prog="Run Humann",
+        description="Dispatches sbatch to run Humann for each sample"
     )
 
     parser.add_argument("-i", "--indir",
@@ -24,11 +25,13 @@ def get_args():
     parsed_args = parser.parse_args()
     return parsed_args
 
+
 def make_outdir(outdir):
     if os.path.isdir(outdir) is False:
         os.mkdir(outdir)
 
     return None
+
 
 def get_files(dir):
     """
@@ -52,6 +55,7 @@ def get_files(dir):
 
     return return_list
 
+
 def dispatch_humann(id_read_list, indir, outdir, slurm_script):
     for id, read in id_read_list:
         in_read = os.path.join(indir, read)
@@ -60,8 +64,9 @@ def dispatch_humann(id_read_list, indir, outdir, slurm_script):
         command = f"sbatch {slurm_script} -i {in_read} -o {outfile}"
         print(f"Executing {command}")
         comp = subprocess.run(command,
-                            shell=True)
+                              shell=True)
         print(comp)
+
 
 if __name__ == "__main__":
     args = get_args()
