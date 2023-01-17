@@ -20,13 +20,20 @@ pacman::p_load(tidyverse,
 
 # Load data
 ```{r}
+metadata <- fread("../metadata.txt") %>% as.data.frame()
+rownames(metadata) <- metadata$PID
+
 source("HUMAnN_to_phyloseq_helper.R")
 gn <- fread("../hiv.t32.concat.humann/all_genefamilies_grouped_named.tsv")
 rownames(gn) <- gn$`# Gene Family`
+gn$`# Gene Family` <- NULL
+# sanitize the sample IDs
+colnames(gn) <- sapply(colnames(gn), 
+                        FUN=function(x) str_split(x, "\\.")[[1]][1])
 
 genefams <- filter_only_genes(gn)
-rownames(genefams) <- genefams$`# Gene Family`
-genefams$`# Gene Family` <- NULL
+genefams <- genefams %>% filter(rownames(genefams) %in% c("UNMAPPED", "UNGROUPED")==F)
+# lots of unmapped and ungrouped, see here https://groups.google.com/g/humann-users/c/4Pz8NritMzw
 
 genes <- rownames(genefams)
 hier.tab <- make_pseq_tax_table_from_genefams(genes)
@@ -34,7 +41,77 @@ hier.tab <- make_pseq_tax_table_from_genefams(genes)
 ecs.pseq <- phyloseq(otu_table=otu_table(genefams, taxa_are_rows=T), 
                      tax_table=tax_table(hier.tab))
 
-
 genefams.withtax <- filter_only_genes(gn, with_taxa=T)
 ```
 
+# Barplot of Functional profiles {.tabset}
+## Top group: L1 {.tabset}
+### Subgroup: L2
+```{r, warning=T, fig.height=9, fig.width=8}
+make_simple_microshades <- function(pseq, group_level, subgroup_level){
+    # get list of top ta1 to plot
+    l1.tax <- tax_glom(pseq, taxrank=group_level) %>% tax_table()
+    l1.otu <- tax_glom(pseq, taxrank=group_level) %>% otu_table()
+    top.ta1 <- l1.tax[order(rowSums(l1.otu), decreasing=T),] %>% 
+        as.data.frame()
+    top.ta1 <- top.ta1[1:5,group_level]
+    
+    # prep the microshades colors
+    mdf_prep <- prep_mdf(ecs.pseq, subgroup_level=subgroup_level)
+    
+    # create the colors object
+    color_objs_GP <- create_color_dfs(mdf_prep, selected_groups=top.ta1,
+                                      group_level=group_level, subgroup_level=subgroup_level,
+                                      cvd = TRUE)
+    # Extract
+    mdf_GP <- color_objs_GP$mdf
+    cdf_GP <- color_objs_GP$cdf
+    # create a custom legend
+    GP_legend <-custom_legend(mdf_GP, cdf_GP, 
+                              legend_key_size=unit(0.4, "cm"),
+                              legend_text_size=10,
+                              group_level=group_level,
+                              subgroup_level=subgroup_level)
+    
+    # plot
+    plot <- plot_microshades(mdf_GP, cdf_GP)
+    plot_1 <- plot + scale_y_continuous(labels = scales::percent, expand = expansion(0)) +
+      theme(legend.position = "none")  +
+      theme(axis.text.x = element_text(size= 7)) 
+    
+    multi <- plot_grid(plot_1, GP_legend,  rel_widths = c(1, .4))
+    multi
+}
+
+make_simple_microshades(ecs.pseq, "ta1", "ta2")
+
+```
+
+### Subgroup: L3
+
+```{r, warning=T, fig.height=9, fig.width=8}
+make_simple_microshades(ecs.pseq, "ta1", "ta3")
+
+```
+
+
+### Subgroup: L4
+```{r, warning=T, fig.height=9, fig.width=8}
+make_simple_microshades(ecs.pseq, "ta1", "ta4")
+
+```
+
+
+## Top group: L2 {.tabset}
+
+### Subgroup: L3
+```{r, warning=T, fig.height=9, fig.width=8}
+make_simple_microshades(ecs.pseq, "ta2", "ta3")
+
+```
+
+### Subgroup: L4
+```{r, warning=T, fig.height=9, fig.width=8}
+make_simple_microshades(ecs.pseq, "ta2", "ta4")
+
+```
