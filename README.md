@@ -86,10 +86,28 @@ Sequencing performed end of November 2022
 ### Taxonomy
 - `analysis/Taxonomy.Rmd` contains taxa barplots and comparison of 16S Prevotella to metagenome Prevotella relative abundances.
 
+#### Procrustes analysis
+- How well do samples match?
+- see if any samples match up better from the permutations
+
+#### Greengenes vs SILVA vs new Greengenes on 16S
+
 ### Functional profiles
 
 ## Assembling metagenome-assembled genomes (MAGs)
+- Don't coassemble, our reads are deep anyway, and strain level variation migh break that up
+- presence/absence
 
 ### MetaSPAdes
 
+### Prodigal
+
+## Pangenome
+- see [r gnavus paper](https://genomemedicine.biomedcentral.com/articles/10.1186/s13073-017-0490-5#Sec2)
+
+## Strain level (SNPs)
+- see [Katherine Pollard SNP paper] (https://genome.cshlp.org/content/26/11/1612.short)
+- [MIDAS](https://github.com/snayfach/MIDAS)
+
 ### Other datasets
+
