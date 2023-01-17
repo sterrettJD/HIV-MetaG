@@ -36,7 +36,8 @@ get_ec_class_db <- function(){
     colnames(df) <- c("EC", "name")
     # trim ECs for hierarchical mapping
     df$EC.trimmed <- df$EC %>% 
-        sapply(FUN=function(x) str_split(x, pattern="-")[[1]][1])
+        sapply(FUN=function(x) str_split(x, pattern="-")[[1]][1] %>%
+                   gsub(pattern="\\ ", replacement=""))
     
     # create a hashmap to map keys and values
     mapper <- hashmap()
@@ -44,4 +45,42 @@ get_ec_class_db <- function(){
     return(mapper)
 }
 
+extract_ecs <- function(genes){
+    # in the case of multiple ECs, this only extracts the first. 
+    # Should be good enough for general plotting though.
+    # Regex grabs the pattern num.num.num.num, like 1.1.1.1
+    return(str_extract(genes, 
+                        pattern="([1-9|-]+\\.){3}[1-9|-]+"))
+}
 
+get_ecs_hierarchy <- function(ecs){
+    cbind(str_extract(ecs, 
+                pattern="([1-9|-]+\\.)"),
+          str_extract(ecs, 
+                      pattern="([1-9|-]+\\.){2}"),
+        
+          str_extract(ecs, 
+                      pattern="([1-9|-]+\\.){3}")
+          )
+}
+
+make_pseq_tax_table_from_genefams <- function(genes){
+    mapper <- get_ec_class_db()
+    
+    ecs <- extract_ecs(genes)
+    ecs.hier <- get_ecs_hierarchy(ecs)
+    
+    ecs.hier.names <- data.frame(matrix(nrow=length(genes)))
+    ecs.hier.names$Level.1 <- mapper[ecs.hier[,1]]
+    ecs.hier.names$Level.2 <- mapper[ecs.hier[,2]]
+    ecs.hier.names$Level.3 <- mapper[ecs.hier[,3]]
+    ecs.hier.names$matrix.nrow...length.genes.. <- NULL
+    
+    cleaned.names <- sapply(genes, 
+                           FUN=function(x) str_split(x, pattern="\\(expasy\\) ")[[1]][2])
+    
+    ecs.hier.names$Level.4 <- cleaned.names
+    rownames(ecs.hier.names) <- genes
+    
+    return(ecs.hier.names)
+}
