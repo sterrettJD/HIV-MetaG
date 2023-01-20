@@ -1,0 +1,19 @@
+---
+title: "BLAST-unmapped-reads"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+if (Sys.which("blastn")==""){
+  curr.path <- Sys.getenv("PATH")
+  new.path <- paste(curr.path, "/Users/jost9358/tools/ncbi-blast-2.13.0+/bin", sep=":")
+  Sys.setenv(PATH=new.path)
+}
+
+library(rBLAST)
+
+```
+
+# 
