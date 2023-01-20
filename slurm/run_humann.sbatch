@@ -7,8 +7,8 @@
 #SBATCH --ntasks=8 # Run on 8 CPUs
 #SBATCH --mem=150gb # Memory limit
 #SBATCH --time=23:59:00 # Time limit hrs:min:sec
-#SBATCH --output=/scratch/Users/jost9358/MetaG_HIV/slurm_outs/humann_%j.out # Standard output and error log
-#SBATCH --error=/scratch/Users/jost9358/MetaG_HIV/slurm_outs/humann_%j.err # %j inserts job number
+#SBATCH --output=/scratch/Users/jost9358/HIV-MetaG/slurm_outs/humann_%j.out # Standard output and error log
+#SBATCH --error=/scratch/Users/jost9358/HIV-MetaG/slurm_outs/humann_%j.err # %j inserts job number
 
 
 # README

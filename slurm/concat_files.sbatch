@@ -7,8 +7,8 @@
 #SBATCH --ntasks=1 # Run on a single CPU
 #SBATCH --mem=30gb # Memory limit
 #SBATCH --time=2:30:00 # Time limit hrs:min:sec
-#SBATCH --output=/Users/jost9358/MetaG_HIV/slurm_outs/concat_%j.out # Standard output and error log
-#SBATCH --error=/Users/jost9358/MetaG_HIV/slurm_outs/concat_%j.err # %j inserts job number
+#SBATCH --output=/scratch/Users/jost9358/HIV-MetaG/slurm_outs/concat_%j.out # Standard output and error log
+#SBATCH --error=/scratch/Users/jost9358/HIV-MetaG/slurm_outs/concat_%j.err # %j inserts job number
 
 
 # README
