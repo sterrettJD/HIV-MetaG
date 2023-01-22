@@ -1,12 +1,12 @@
 #!/bin/bash
-#SBATCH -p short # Partition or queue.
+#SBATCH -p long # Partition or queue.
 #SBATCH --job-name=humann # Job name
-#SBATCH --mail-type=FAIL # Mail events (NONE, BEGIN, END, FAIL, ALL)
+#SBATCH --mail-type=ALL # Mail events (NONE, BEGIN, END, FAIL, ALL)
 #SBATCH --mail-user=jost9358@colorado.edu
 #SBATCH --nodes=1 # Only use a single node
-#SBATCH --ntasks=8 # Run on 8 CPUs
+#SBATCH --ntasks=16 # Run on 16 CPUs
 #SBATCH --mem=150gb # Memory limit
-#SBATCH --time=23:59:00 # Time limit hrs:min:sec
+#SBATCH --time=47:59:00 # Time limit hrs:min:sec
 #SBATCH --output=/scratch/Users/jost9358/HIV-MetaG/slurm_outs/humann_%j.out # Standard output and error log
 #SBATCH --error=/scratch/Users/jost9358/HIV-MetaG/slurm_outs/humann_%j.err # %j inserts job number
 
@@ -30,4 +30,4 @@ source activate humannenv4
 echo $inpath
 echo $outpath
 
-humann -i $inpath -o $outpath --threads 8 --search-mode uniref90
+humann -i $inpath -o $outpath --threads 16 --search-mode uniref90
