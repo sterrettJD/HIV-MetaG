@@ -56,7 +56,7 @@ Sequencing performed end of November 2022
 - **Join:** Used the following command to join the gene family tables `humann_join_tables -i . -o all_genefamilies.tsv --file_name genefamilies.tsv --search-subdirectories`
 - **MetaCyc RXN naming:**
   - Used the following command to group the genes into reaction `humann_regroup_table -i all_genefamilies.tsv -g uniref90_rxn -o all_genefamilies_grouped.tsv`
-    - This outputs: "Original Feature Count: 19948; Grouped 1+ times: 1016 (5.1%); Grouped 2+ times: 290 (1.5%)"
+    - This outputs: "Original Feature Count: 1701936; Grouped 1+ times: 183290 (10.8%); Grouped 2+ times: 51421 (3.0%)"
   - Used the following command to rename the grouped genes `humann_rename_table -i all_genefamilies_grouped.tsv -n metacyc-rxn -o all_genefamilies_grouped_named.tsv`
 - **UniRef90 naming:**
   - The UniRef90 mapping files are too big to download with conda/pip, so you need to download it with the following command: `humann_databases --download utility_mapping full $DIR` where `$DIR` is where you want to place the files. I used `../humann_utility/` mapping as my path
