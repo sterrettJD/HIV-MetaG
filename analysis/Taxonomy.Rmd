@@ -373,12 +373,18 @@ total.noncopri <- total.prev - total.copri
 prev.stats <- data.frame("Prevotella"=total.prev, 
                          "Prevotella_copri"=total.copri, 
                          "Prevotella_noncopri"=total.noncopri)
-prev.stats$HIV <- metadata$HIV_Status
-prev.stats$expected_Prevotella <- metadata$`%Prevotella`
-prev.stats$Risk_Status <- metadata$Risk_Status
 
-metadata[prev.stats$expected_Prevotella < 0.05, ]
-metadata[prev.stats$Prevotella < 5, ]
+prev.stats <- merge(prev.stats, metadata[c("HIV_Status", "%Prevotella", "Risk_Status")], by=0)
+prev.stats$expected_Prevotella <- prev.stats$`%Prevotella`
+prev.stats$HIV <- prev.stats$HIV_Status
+prev.stats$`%Prevotella` <- NULL
+prev.stats$HIV_Status <- NULL
+
+rownames(prev.stats) <- prev.stats$Row.names
+prev.stats$Row.names <- NULL
+
+metadata[rownames(prev.stats[prev.stats$expected_Prevotella < 0.05,]), ]
+metadata[rownames(prev.stats[prev.stats$Prevotella < 5,]), ]
 
 ```
 
@@ -390,6 +396,7 @@ metadata[prev.stats$Prevotella < 5, ]
 ggplot(data=prev.stats,
        mapping=aes(y=Prevotella, x=expected_Prevotella*100)) +
     geom_point() + 
+    geom_text(label=rownames(prev.stats)) +
     geom_smooth(method="lm") +
     ylab("% Prevotella (metagenomes)") +
     xlab("% Prevotella (16S)") +
@@ -629,3 +636,49 @@ ggplot(data=prev.stats,
     xlab("Risk Status")
 ```
 
+
+# Diversity of Prevotella {.tabset}
+## Calculating diversity
+```{r}
+observed.prev.feats <- colSums(prev.only.df > 0)
+observed.pcopri.feats <- colSums(prev.only.df[copri.names,] > 0 )
+
+p.div <- data.frame(observed.pcopri.feats, observed.prev.feats)
+p.div <- merge(p.div, metadata[c("HIV_Status", "%Prevotella", "Risk_Status")], by=0)
+p.div$expected_Prevotella <- p.div$`%Prevotella`
+p.div$HIV <- p.div$HIV_Status
+p.div$`%Prevotella` <- NULL
+p.div$HIV_Status <- NULL
+
+rownames(p.div) <- p.div$Row.names
+p.div$Row.names <- NULL
+
+```
+
+## Boxplot of Observed Prevotella features ~ Risk status
+```{r}
+ggplot(data=p.div,
+       mapping=aes(y=observed.prev.feats, 
+                   x=factor(Risk_Status, levels=c("Low", "High", "Positive")))) +
+    geom_boxplot(outlier.shape=NA) + 
+    geom_jitter(width=0.1, height=0, size=3) +
+    theme_bw() +
+    xlab("Risk Status") +
+    ylab("Observed Prevotella features")
+
+
+```
+
+
+## Boxplot of Observed P copri features ~ Risk status
+```{r}
+ggplot(data=p.div,
+       mapping=aes(y=observed.pcopri.feats, 
+                   x=factor(Risk_Status, levels=c("Low", "High", "Positive")))) +
+    geom_boxplot(outlier.shape=NA) + 
+    geom_jitter(width=0.1, height=0, size=3) +
+    theme_bw() +
+    xlab("Risk Status") +
+    ylab("Observed Prevotella copri clades")
+
+```
