@@ -24,7 +24,7 @@ metadata <- fread("../metadata.txt") %>% as.data.frame()
 rownames(metadata) <- metadata$PID
 
 source("HUMAnN_to_phyloseq_helper.R")
-gn <- fread("../hiv.t32.concat.humann/all_genefamilies_grouped_named.tsv")
+gn <- fread("../hiv.t32.concat.humann.long/all_genefamilies_grouped_named.tsv")
 rownames(gn) <- gn$`# Gene Family`
 gn$`# Gene Family` <- NULL
 # sanitize the sample IDs
@@ -32,6 +32,15 @@ colnames(gn) <- sapply(colnames(gn),
                         FUN=function(x) str_split(x, "\\.")[[1]][1])
 
 genefams <- filter_only_genes(gn)
+
+unmapped <- genefams[1,]
+rownames(unmapped) <- rownames(genefams)[1]
+colSums(unmapped)/colSums(genefams)* 100
+
+unmapped.or.ungrouped <- genefams[1:2,]
+rownames(unmapped.or.ungrouped) <- rownames(genefams)[1:2]
+colSums(unmapped.or.ungrouped)/colSums(genefams)* 100
+
 genefams <- genefams %>% filter(rownames(genefams) %in% c("UNMAPPED", "UNGROUPED")==F)
 # lots of unmapped and ungrouped, see here https://groups.google.com/g/humann-users/c/4Pz8NritMzw
 
@@ -39,7 +48,8 @@ genes <- rownames(genefams)
 hier.tab <- make_pseq_tax_table_from_genefams(genes)
 
 ecs.pseq <- phyloseq(otu_table=otu_table(genefams, taxa_are_rows=T), 
-                     tax_table=tax_table(hier.tab))
+                     tax_table=tax_table(hier.tab),
+                     sample_data=sample_data(metadata))
 
 genefams.withtax <- filter_only_genes(gn, with_taxa=T)
 ```
@@ -47,7 +57,7 @@ genefams.withtax <- filter_only_genes(gn, with_taxa=T)
 # Barplot of Functional profiles {.tabset}
 ## Top group: L1 {.tabset}
 ### Subgroup: L2
-```{r, warning=T, fig.height=9, fig.width=8}
+```{r, warning=F, fig.height=9, fig.width=8}
 make_simple_microshades <- function(pseq, group_level, subgroup_level){
     # get list of top ta1 to plot
     l1.tax <- tax_glom(pseq, taxrank=group_level) %>% tax_table()
@@ -77,26 +87,29 @@ make_simple_microshades <- function(pseq, group_level, subgroup_level){
     plot <- plot_microshades(mdf_GP, cdf_GP)
     plot_1 <- plot + scale_y_continuous(labels = scales::percent, expand = expansion(0)) +
       theme(legend.position = "none")  +
-      theme(axis.text.x = element_text(size= 7)) 
+      theme(axis.text.x = element_text(size= 7)) +
+      facet_grid(~(factor(Risk_Status, levels=c("Low", "High", "Positive"))), 
+               scales = "free_x", space="free_x"
+             )
     
     multi <- plot_grid(plot_1, GP_legend,  rel_widths = c(1, .4))
     multi
 }
 
-make_simple_microshades(ecs.pseq, "ta1", "ta2")
+make_simple_microshades(ecs.pseq, "ta1", "ta2") 
 
 ```
 
 ### Subgroup: L3
 
-```{r, warning=T, fig.height=9, fig.width=8}
+```{r, warning=F, fig.height=9, fig.width=8}
 make_simple_microshades(ecs.pseq, "ta1", "ta3")
 
 ```
 
 
 ### Subgroup: L4
-```{r, warning=T, fig.height=9, fig.width=8}
+```{r, warning=F, fig.height=9, fig.width=8}
 make_simple_microshades(ecs.pseq, "ta1", "ta4")
 
 ```
@@ -105,13 +118,35 @@ make_simple_microshades(ecs.pseq, "ta1", "ta4")
 ## Top group: L2 {.tabset}
 
 ### Subgroup: L3
-```{r, warning=T, fig.height=9, fig.width=8}
+```{r, warning=F, fig.height=9, fig.width=8}
 make_simple_microshades(ecs.pseq, "ta2", "ta3")
 
 ```
 
 ### Subgroup: L4
-```{r, warning=T, fig.height=9, fig.width=8}
+```{r, warning=F, fig.height=9, fig.width=8}
 make_simple_microshades(ecs.pseq, "ta2", "ta4")
+
+```
+
+
+# Genes in Prevotella
+```{r, warning=F, fig.height=9, fig.width=8}
+prev.genes <- rownames(genefams.withtax) %>% grepl(pattern="Prevotella")
+prev.genes.df <- genefams.withtax[prev.genes,]
+rownames(prev.genes.df) <- rownames(genefams.withtax)[prev.genes]
+
+prev.genes.df.sorted <- prev.genes.df[order(rowSums(prev.genes.df), decreasing=T),]
+rownames(prev.genes.df.sorted) <- rownames(prev.genes.df)[order(rowSums(prev.genes.df), decreasing=T)]
+
+cbind(rownames(prev.genes.df.sorted)[1:20],
+      rowSums(prev.genes.df.sorted[1:20])/sum(prev.genes.df.sorted)*100) %>%
+    knitr::kable(col.names=c("gene", "percent of total prevotella reads"))
+
+prev.pseq <- phyloseq(otu_table=otu_table(prev.genes.df, taxa_are_rows=T),
+                      tax_table=tax_table(ecs.pseq),
+                      sample_data(metadata))
+
+make_simple_microshades(prev.pseq, "ta1", "ta2")
 
 ```
