@@ -30,7 +30,7 @@ kable.mod.cols <- c("Estimate", "Std. Error", "deg. freedom", "t value", "p")
 ```{r}
 setwd("~/Research-Projects/Lozupone/HIV-MetaG/analysis/")
 source("metaphlan_to_phyloseq_helper.R")
-bugslist <- fread("../hiv.t32.concat.humann/all_bugs_list.tsv") %>% as.data.frame()
+bugslist <- fread("../hiv.t32.concat.humann.long/all_bugs_list.tsv") %>% as.data.frame()
 rownames(bugslist) <- bugslist$`#clade_name`
 bugslist <- bugslist %>% 
     select(-c(`#clade_name`,
@@ -376,7 +376,12 @@ prev.stats <- data.frame("Prevotella"=total.prev,
 prev.stats$HIV <- metadata$HIV_Status
 prev.stats$expected_Prevotella <- metadata$`%Prevotella`
 prev.stats$Risk_Status <- metadata$Risk_Status
+
+metadata[prev.stats$expected_Prevotella < 0.05, ]
+metadata[prev.stats$Prevotella < 5, ]
+
 ```
+
 
 ## Prevotella ~ expected (from 16S) {.tabset}
 ### LM and plot
@@ -507,8 +512,8 @@ splitted <- lapply(splitted, FUN=function(x) gsub("[a-z]__", "", x))
 joined <- lapply(splitted, FUN=function(x) paste(x, collapse=" "))
 rownames(firm.only.weird.samps.otu) <- joined
 
-firm.only.weird.samps.otu[order(rowSums(firm.only.weird.samps.otu), decreasing=T),] %>% as.data.frame() %>%
-    select("DM087", "LG026", "LG043", "LG045", "LG049") %>%
+firm.only.weird.samps.otu[order(rowSums(firm.only.weird.samps.otu), decreasing=T),] %>% 
+    as.data.frame() %>%
     head(n=15) %>% 
     knitr::kable()
 
