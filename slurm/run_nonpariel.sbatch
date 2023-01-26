@@ -27,7 +27,7 @@ done
 source activate nonparielenv
 
 # Unzip fastq
-gunzip $inpath temp_unzipped_input.fq
+gunzip $inpath > temp_unzipped_input.fq
 
 # fastq is recommended for kmer algorithm, so defaulting to those
 nonpareil -s temp_unzipped_input.fq \
