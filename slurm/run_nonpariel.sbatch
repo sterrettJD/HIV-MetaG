@@ -26,4 +26,8 @@ done
 source activate nonparielenv
 
 # fastq is recommended for kmer algorithm, so defaulting to those
-nonpareil -s $inpath -T kmer -f fastq -b $outpath
+nonpareil -s $inpath \
+-T kmer \ #algorithm
+-f fastq \ #filetype
+-b $outpath \
+-t 16 #threads
