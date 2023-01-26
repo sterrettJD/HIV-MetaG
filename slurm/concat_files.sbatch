@@ -12,7 +12,7 @@
 
 
 # README
-# PASS TWO PARAMS TO THIS SCRIPT
+# PASS THREE PARAMS TO THIS SCRIPT
 # -f: forward reads
 # -r: reverse reads
 # -o: your output file
