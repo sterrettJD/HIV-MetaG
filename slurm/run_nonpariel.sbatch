@@ -23,11 +23,18 @@ do
     esac
 done
 
+# Activate conda enviroment
 source activate nonparielenv
 
+# Unzip fastq
+gunzip $inpath temp_unzipped_input.fq
+
 # fastq is recommended for kmer algorithm, so defaulting to those
-nonpareil -s $inpath \
+nonpareil -s temp_unzipped_input.fq \
 -T kmer \ #algorithm
 -f fastq \ #filetype
 -b $outpath \
 -t 16 #threads
+
+# remove the temp file
+rm temp_unzipped_input.fq
