@@ -25,21 +25,21 @@ rule all:
 
 
 rule nix_shortreads:
-  resources:
-        partition: "short"
-        mem_mb: 25000 # MiB
-        runtime: 60 # min
-        tasks: 8
-        slurm_extra="--mail-type=END --mail-user=jost9358@colorado.edu"
   input:
       FORWARD=f"hiv.trim_trimmomaticT32/{{sample}}.R1.fq.gz",
       REVERSE=f"hiv.trim_trimmomaticT32/{{sample}}.R2.fq.gz"
   output:
       FORWARD=f"hiv.t32.nix40/{{sample}}.R1.{nixing_len}.fq.gz",
       REVERSE=f"hiv.t32.nix40/{{sample}}.R2.{nixing_len}.fq.gz"
+  resources:
+        partition="short",
+        mem_mb=25000, # MiB
+        runtime=60, # min
+        tasks=8,
+        slurm_extra="--error=/scratch/Users/jost9358/HIV-MetaG/slurm_outs/nixshort_%j.err --output=/scratch/Users/jost9358/HIV-MetaG/slurm_outs/nixshort_%j.out --mail-type=END --mail-user=jost9358@colorado.edu"
   run:
       shell("mkdir -p %s" % nixing_dir) #in case this directory doesn't exist. if it does, nothing will be done
-      shell(f"sbatch slurm/nix_shortreads.sbatch {{input.FORWARD}} {{input.REVERSE}} {nixing_len} {{output.FORWARD}} {{output.REVERSE}}")
+      shell(f"bash slurm/nix_shortreads.sh {{input.FORWARD}} {{input.REVERSE}} {nixing_len} {{output.FORWARD}} {{output.REVERSE}}")
 
 """
 # TODO: FORMAT CORRECTLY
