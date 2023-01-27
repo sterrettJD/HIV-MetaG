@@ -9,10 +9,14 @@ filter_only_genes <- function(df, with_taxa=F){
     contains.taxa <- grepl(x=feature.names, pattern="\\|")
     
     if (with_taxa){
-        return(gn[contains.taxa,])
+        to.return <- gn[contains.taxa,]
+        rownames(to.return) <- feature.names[contains.taxa]
     } else {
-        return(gn[!contains.taxa,])
+        to.return <- gn[!contains.taxa,]
+        rownames(to.return) <- feature.names[!contains.taxa]
     }
+    
+    return(to.return)
 }
 
 
