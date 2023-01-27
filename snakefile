@@ -25,6 +25,12 @@ rule all:
 
 
 rule nix_shortreads:
+  resources:
+        partition: "short"
+        mem_mb: 25000 # MiB
+        runtime: 60 # min
+        tasks: 8
+        slurm_extra="--mail-type=END --mail-user=jost9358@colorado.edu"
   input:
       FORWARD=f"hiv.trim_trimmomaticT32/{{sample}}.R1.fq.gz",
       REVERSE=f"hiv.trim_trimmomaticT32/{{sample}}.R2.fq.gz"
