@@ -21,6 +21,10 @@ Sequencing performed end of November 2022
     - Many of the reverse fastqs have some moderate quality reads, so maybe that could be something to address at some point
 
 ## Data processing outside of YMP
+### Snakemake
+- All important following steps should be in `snakefile`
+- Run using `snakemake --cluster "sbatch" -j 30 --latency-wait 60`
+
 ### Concatenating paired reads for HUMAnN
  - For HUMAnN, both forward and paired reads need to be in a single fastq file.
  - There is no need to merge them, since output abundances are normalized by kilobase.
