@@ -26,11 +26,11 @@ rule all:
 
 rule nix_shortreads:
   input:
-      FORWARD=expand(f"hiv.trim_trimmomaticT32/{{sample}}.R1.fq.gz", sample=SAMPLES),
-      REVERSE=expand(f"hiv.trim_trimmomaticT32/{{sample}}.R2.fq.gz", sample=SAMPLES)
+      FORWARD=f"hiv.trim_trimmomaticT32/{{sample}}.R1.fq.gz",
+      REVERSE=f"hiv.trim_trimmomaticT32/{{sample}}.R2.fq.gz"
   output:
-      FORWARD = expand(f"hiv.t32.nix40/{{sample}}.R1.{nixing_len}.fq.gz", sample=SAMPLES),
-      REVERSE = expand(f"hiv.t32.nix40/{{sample}}.R2.{nixing_len}.fq.gz", sample=SAMPLES)
+      FORWARD=f"hiv.t32.nix40/{{sample}}.R1.{nixing_len}.fq.gz",
+      REVERSE=f"hiv.t32.nix40/{{sample}}.R2.{nixing_len}.fq.gz"
   run:
       shell("mkdir -p %s" % nixing_dir) #in case this directory doesn't exist. if it does, nothing will be done
       shell(f"sbatch slurm/nix_shortreads.sbatch {{input.FORWARD}} {{input.REVERSE}} {nixing_len} {{output.FORWARD}} {{output.REVERSE}}")
