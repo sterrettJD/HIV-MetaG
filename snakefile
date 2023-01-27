@@ -1,10 +1,19 @@
+import pandas as pd
+
+df = pd.read_csv("metadata.txt", sep="\t")
+SAMPLES = df["PID"].tolist()
+
+nixing_len = 40
+
+
 rule all:
 # Starting input is data processed through YMP, feels a bit silly to use snakemake to run ymp, which runs snakemake
 # Consider the input to be trimmomatic-trimmed forward and reverse reads
     input:
         directory("hiv.t32.nix40/")
+        expand(f"hiv.t32.nix40/{sample}.R1.{nixing_len}.fq.gz", sample=SAMPLES)
+        expand(f"hiv.t32.nix40/{sample}.R2.{nixing_len}.fq.gz", sample=SAMPLES)
 
-nixing_len = 40
 
 rule make_nixed_dir:
     output:
