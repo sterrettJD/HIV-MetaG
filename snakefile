@@ -55,6 +55,65 @@ rule get_biobakery_dbs:
 #   shell:
 #       "sbatch slurm/run_humann.sbatch -i CONCATENATED -o hiv.t32.concat.humann.full.{sample}"
 
+# TODO: manage conda environment
+rule aggregate_bugslists:
+    input:
+        - all of the bugslists
+    output:
+        hiv.t32.concat.humann.full/all_bugslist.tsv
+    shell:
+        "python utils/aggregate_metaphlan_bugslists.py -i hiv.t32.concat.humann.full -o {output}"
+
+# TODO: manage conda environment
+rule aggregate_humann_pathcoverage:
+    input:
+        - all of the humann pathcoverage
+    output:
+        hiv.t32.concat.humann.full/all_pathcoverage.tsv
+    shell:
+        "source activate humannenv4"
+        "humann_join_tables -i hiv.t32.concat.humann.full -o {output} --file_name pathcoverage.tsv --search-subdirectories"
+
+# TODO: manage conda environment
+rule aggregate_humann_pathabundance:
+    input:
+        - all of the humann pathabundance
+    output:
+        hiv.t32.concat.humann.full/all_pathabundance.tsv
+    shell:
+        "source activate humannenv4"
+        "humann_join_tables -i hiv.t32.concat.humann.full -o {output} --file_name pathabundance.tsv --search-subdirectories"
+
+# TODO: manage conda environment
+rule aggregate_humann_genefams:
+    input:
+        - all of the humann genefamilies
+    output:
+        hiv.t32.concat.humann.full/all_genefamilies.tsv
+    shell:
+        "source activate humannenv4"
+        "humann_join_tables -i hiv.t32.concat.humann.full -o {output} --file_name genefamilies.tsv --search-subdirectories"
+
+# TODO: manage conda environment
+rule group_humann_genefams:
+    input:
+        hiv.t32.concat.humann.full/all_genefamilies.tsv
+    output:
+        hiv.t32.concat.humann.full/all_genefamilies_grouped.tsv
+    shell:
+        "source activate humannenv4"
+        "humann_regroup_table -i {input} -g uniref90_rxn -o {output}"
+
+# TODO: manage conda environment
+rule rename_humann_genefams_metacyc:
+    input:
+        - hiv.t32.concat.humann.full/all_genefamilies_grouped.tsv
+    output:
+        - hiv.t32.concat.humann.full/all_genefamilies_grouped_named.tsv
+    shell:
+        "source activate humannenv4"
+        "humann_rename_table -i {input} -n metacyc-rxn -o {output}"
+
 # TODO: ADD OTHER NONPARIEL FILES
 rule run_nonpariel:
     input:
