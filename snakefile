@@ -2,20 +2,29 @@ rule all:
 # Starting input is data processed through YMP, feels a bit silly to use snakemake to run ymp, which runs snakemake
 # Consider the input to be trimmomatic-trimmed forward and reverse reads
     input:
-        "hiv.trim_trimmomaticT32/{sample}.R1.fq.gz"
-        "hiv.trim_trimmomaticT32/{sample}.R2.fq.gz"
+        directory("hiv.t32.nix40/")
 
-# TODO: FORMAT CORRECTLY
-# rule nix_shortreads:
-#   input:
-#       FORWARD = "hiv.trim_trimmomaticT32/{sample}.R1.fq.gz"
-#       REVERSE = "hiv.trim_trimmomaticT32/{sample}.R2.fq.gz"
-#   output:
-#       - nixed forward reads (formatted as FORWARD.LENGTHPARAM)
-#       - nixed reverse reads (REVERSE.LENGTHPARAM)
-#   shell:
-#       "sbatch slurm/nix_shortreads.sbatch {input.FORWARD} {input.REVERSE} LENGTHPARAM"
+nixing_len = 40
 
+rule make_nixed_dir:
+    output:
+        directory("hiv.t32.nix40/")
+    shell:
+        f"mkdir hiv.t32.nix{nixing_len}/"
+
+
+rule nix_shortreads:
+  input:
+      FORWARD = "hiv.trim_trimmomaticT32/{sample}.R1.fq.gz",
+      REVERSE = "hiv.trim_trimmomaticT32/{sample}.R2.fq.gz"
+  output:
+      FORWARD = f"hiv.t32.nix40/{sample}.R1.{nixing_len}.fq.gz",
+      REVERSE = f"hiv.t32.nix40/{sample}.R2.{nixing_len}.fq.gz"
+
+  shell:
+      f"sbatch slurm/nix_shortreads.sbatch {input.FORWARD} {input.REVERSE} {nixing_len} {output.FORWARD} {output.REVERSE}"
+
+"""
 # TODO: FORMAT CORRECTLY
 # rule concat_files:
 #   input:
@@ -132,3 +141,4 @@ rule assemble_metaspades:
         # TODO: figure out structure of metaSPAdes output
     shell:
         "sbatch slurm/run_metaSPAdes.sbatch -f FORWARD -r REVERSE -o OUTPUT"
+"""
