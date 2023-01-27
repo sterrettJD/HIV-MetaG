@@ -94,8 +94,16 @@ Sequencing performed end of November 2022
 
 ### Functional profiles
 
+## Estimating metagenome coverage
+### Nonpareil
+- See documentation [here](https://nonpareil.readthedocs.io/en/latest/)
+- Installed via conda on Jan 26, 2023
+#### Running Nonpareil
+- Run in slurm using `slurm/run_nonpariel.sbatch`
+- 
+
 ## Assembling metagenome-assembled genomes (MAGs)
-- Don't coassemble, our reads are deep anyway, and strain level variation migh break that up
+- Don't coassemble, our reads are deep anyway, and strain level variation might break that up
 - presence/absence
 
 ### MetaSPAdes
