@@ -26,15 +26,21 @@ done
 # Activate conda enviroment
 source activate nonparielenv
 
+# make directory for the temp file and output
+if [ -d $outpath ] 
+then
+    echo "Directory exists." 
+else
+    echo "Directory does not exist. Making Outpath now."
+    mkdir $outpath
+fi
+
+
 # Unzip fastq
-gunzip $inpath > temp_unzipped_input.fq
+zcat $inpath > ${outpath}/temp_unzipped_input.fq
 
 # fastq is recommended for kmer algorithm, so defaulting to those
-nonpareil -s temp_unzipped_input.fq \
--T kmer \ #algorithm
--f fastq \ #filetype
--b $outpath \
--t 16 #threads
+nonpareil -s ${outpath}/temp_unzipped_input.fq -T kmer -f fastq -b ${outpath} -t 16 #16 threads
 
 # remove the temp file
-rm temp_unzipped_input.fq
+# rm ${outpath}/temp_unzipped_input.fq
