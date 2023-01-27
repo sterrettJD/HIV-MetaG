@@ -4,34 +4,36 @@ df = pd.read_csv("metadata.txt", sep="\t")
 SAMPLES = df["PID"].tolist()
 
 nixing_len = 40
+nixing_dir = f"hiv.t32.nix{nixing_len}"
+
 
 
 rule all:
 # Starting input is data processed through YMP, feels a bit silly to use snakemake to run ymp, which runs snakemake
 # Consider the input to be trimmomatic-trimmed forward and reverse reads
     input:
-        directory("hiv.t32.nix40/")
-        expand(f"hiv.t32.nix40/{sample}.R1.{nixing_len}.fq.gz", sample=SAMPLES)
-        expand(f"hiv.t32.nix40/{sample}.R2.{nixing_len}.fq.gz", sample=SAMPLES)
+ #       nixing_dir,
+        expand(f"{nixing_dir}/{{sample}}.R1.{nixing_len}.fq.gz", sample=SAMPLES),
+        expand(f"{nixing_dir}/{{sample}}.R2.{nixing_len}.fq.gz", sample=SAMPLES)
 
 
-rule make_nixed_dir:
-    output:
-        directory("hiv.t32.nix40/")
-    shell:
-        f"mkdir hiv.t32.nix{nixing_len}/"
+#rule make_nixed_dir:
+#    output:
+#        directory("hiv.t32.nix40/")
+#    shell:
+#        f"mkdir hiv.t32.nix{nixing_len}/"
 
 
 rule nix_shortreads:
   input:
-      FORWARD = "hiv.trim_trimmomaticT32/{sample}.R1.fq.gz",
-      REVERSE = "hiv.trim_trimmomaticT32/{sample}.R2.fq.gz"
+      FORWARD=expand(f"hiv.trim_trimmomaticT32/{{sample}}.R1.fq.gz", sample=SAMPLES),
+      REVERSE=expand(f"hiv.trim_trimmomaticT32/{{sample}}.R2.fq.gz", sample=SAMPLES)
   output:
-      FORWARD = f"hiv.t32.nix40/{sample}.R1.{nixing_len}.fq.gz",
-      REVERSE = f"hiv.t32.nix40/{sample}.R2.{nixing_len}.fq.gz"
-
-  shell:
-      f"sbatch slurm/nix_shortreads.sbatch {input.FORWARD} {input.REVERSE} {nixing_len} {output.FORWARD} {output.REVERSE}"
+      FORWARD = expand(f"hiv.t32.nix40/{{sample}}.R1.{nixing_len}.fq.gz", sample=SAMPLES),
+      REVERSE = expand(f"hiv.t32.nix40/{{sample}}.R2.{nixing_len}.fq.gz", sample=SAMPLES)
+  run:
+      shell("mkdir -p %s" % nixing_dir) #in case this directory doesn't exist. if it does, nothing will be done
+      shell(f"sbatch slurm/nix_shortreads.sbatch {{input.FORWARD}} {{input.REVERSE}} {nixing_len} {{output.FORWARD}} {{output.REVERSE}}")
 
 """
 # TODO: FORMAT CORRECTLY
