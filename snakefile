@@ -12,16 +12,10 @@ rule all:
 # Starting input is data processed through YMP, feels a bit silly to use snakemake to run ymp, which runs snakemake
 # Consider the input to be trimmomatic-trimmed forward and reverse reads
     input:
- #       nixing_dir,
         expand(f"{nixing_dir}/{{sample}}.R1.{nixing_len}.fq.gz", sample=SAMPLES),
-        expand(f"{nixing_dir}/{{sample}}.R2.{nixing_len}.fq.gz", sample=SAMPLES)
-
-
-#rule make_nixed_dir:
-#    output:
-#        directory("hiv.t32.nix40/")
-#    shell:
-#        f"mkdir hiv.t32.nix{nixing_len}/"
+        expand(f"{nixing_dir}/{{sample}}.R2.{nixing_len}.fq.gz", sample=SAMPLES),
+        expand(f"hiv.t32.concat/{{sample}}.concat.fq.gz", sample=SAMPLES),
+        expand(f"hiv.t32.concat.n40/{{sample}}.concat.fq.gz", sample=SAMPLES)
 
 
 rule nix_shortreads:
@@ -41,27 +35,41 @@ rule nix_shortreads:
       shell("mkdir -p %s" % nixing_dir) #in case this directory doesn't exist. if it does, nothing will be done
       shell(f"bash slurm/nix_shortreads.sh {{input.FORWARD}} {{input.REVERSE}} {nixing_len} {{output.FORWARD}} {{output.REVERSE}}")
 
+
+rule concat_files:
+  input:
+      FORWARD=f"hiv.trim_trimmomaticT32/{{sample}}.R1.fq.gz",
+      REVERSE=f"hiv.trim_trimmomaticT32/{{sample}}.R2.fq.gz"
+  output:
+      f"hiv.t32.concat/{{sample}}.concat.fq.gz"
+  resources:
+        partition="short",
+        mem_mb=30000, # MiB
+        runtime=60*2.5, # min
+        tasks=1,
+        slurm_extra="--error=/scratch/Users/jost9358/HIV-MetaG/slurm_outs/nixshort_%j.err --output=/scratch/Users/jost9358/HIV-MetaG/slurm_outs/nixshort_%j.out --mail-type=END --mail-user=jost9358@colorado.edu"
+  shell:
+      shell("mkdir -p hiv.t32.concat") #in case this directory doesn't exist. if it does, nothing will be done
+      shell(f"bash slurm/concat_files.sh -f {{input.FORWARD}} -r {{input.REVERSE}} -o {{output}}")
+
+
+rule concat_nixed_files:
+  input:
+      FORWARD=f"hiv.t32.nix40/{{sample}}.R1.{nixing_len}.fq.gz",
+      REVERSE=f"hiv.t32.nix40/{{sample}}.R2.{nixing_len}.fq.gz"
+  output:
+      f"hiv.t32.concat.n40/{{sample}}.concat.fq.gz"
+  resources:
+        partition="short",
+        mem_mb=30000, # MiB
+        runtime=60*2.5, # min
+        tasks=1,
+        slurm_extra="--error=/scratch/Users/jost9358/HIV-MetaG/slurm_outs/nixshort_%j.err --output=/scratch/Users/jost9358/HIV-MetaG/slurm_outs/nixshort_%j.out --mail-type=END --mail-user=jost9358@colorado.edu"
+  shell:
+      shell("mkdir -p hiv.t32.concat.n40") #in case this directory doesn't exist. if it does, nothing will be done
+      shell(f"bash slurm/concat_files.sh -f {{input.FORWARD}} -r {{input.REVERSE}} -o {{output}}")
+
 """
-# TODO: FORMAT CORRECTLY
-# rule concat_files:
-#   input:
-#       - forward reads
-#       - reverse reads
-#   output:
-#       - concatenated reads
-#   shell:
-#       "sbatch slurm/concat_files.sbatch -f FORWARD -r REVERSE -o CONCATENATED"
-
-# TODO: FORMAT CORRECTLY
-# rule concat_nixed_files:
-#   input:
-#       - forward reads
-#       - reverse reads
-#   output:
-#       - concatenated reads
-#   shell:
-#       "sbatch slurm/concat_files.sbatch -f FORWARD -r REVERSE -o CONCATENATED"
-
 rule get_biobakery_dbs:
     output:
         "~/humann_dbs/chocophlan/"
