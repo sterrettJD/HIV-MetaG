@@ -43,4 +43,4 @@ zcat $inpath > ${outpath}/temp_unzipped_input.fq
 nonpareil -s ${outpath}/temp_unzipped_input.fq -T kmer -f fastq -b ${outpath} -t 16 #16 threads
 
 # remove the temp file
-# rm ${outpath}/temp_unzipped_input.fq
+rm -r ${outpath}
