@@ -24,6 +24,8 @@ Sequencing performed end of November 2022
 ### Snakemake
 - All important following steps should be in `snakefile`
 - Run using `snakemake --cluster "sbatch" -j 30 --latency-wait 60`
+- If jobs are running when FIJI times out, run `snakemake --unlock` next time you need to run snakemake. This is because snakemake will lock the directory if it closes unexpectedly.
+- A dag of jobs can be made using `snakemake --dag | dot -Tsvg > dag.svg`
 
 ### Concatenating paired reads for HUMAnN
  - For HUMAnN, both forward and paired reads need to be in a single fastq file.
