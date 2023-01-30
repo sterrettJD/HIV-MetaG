@@ -15,7 +15,10 @@ rule all:
         expand(f"{nixing_dir}/{{sample}}.R1.{nixing_len}.fq.gz", sample=SAMPLES),
         expand(f"{nixing_dir}/{{sample}}.R2.{nixing_len}.fq.gz", sample=SAMPLES),
         expand(f"hiv.t32.concat/{{sample}}.concat.fq.gz", sample=SAMPLES),
-        expand(f"hiv.t32.concat.n40/{{sample}}.concat.fq.gz", sample=SAMPLES)
+        expand(f"hiv.t32.concat.n40/{{sample}}.concat.fq.gz", sample=SAMPLES),
+        expand("hiv.t32.concat.n40.nonpariel/{sample}.npl", sample=SAMPLES),
+        expand("hiv.t32.concat.n40.nonpariel/{sample}.npo", sample=SAMPLES),
+        expand("hiv.t32.concat.n40.nonpariel/{sample}.npa", sample=SAMPLES)
 
 
 rule nix_shortreads:
@@ -27,7 +30,7 @@ rule nix_shortreads:
       REVERSE=f"hiv.t32.nix40/{{sample}}.R2.{nixing_len}.fq.gz"
   resources:
         partition="short",
-        mem_mb=25000, # MiB
+        mem_mb=25000, # MB
         runtime=60, # min
         tasks=8,
         slurm_extra="--error=/scratch/Users/jost9358/HIV-MetaG/slurm_outs/nixshort_%j.err --output=/scratch/Users/jost9358/HIV-MetaG/slurm_outs/nixshort_%j.out --mail-type=END --mail-user=jost9358@colorado.edu"
@@ -44,7 +47,7 @@ rule concat_files:
       f"hiv.t32.concat/{{sample}}.concat.fq.gz"
   resources:
         partition="short",
-        mem_mb=30000, # MiB
+        mem_mb=30000, # MB
         runtime=int(60*2.5), # min
         tasks=1,
         slurm_extra="--error=/scratch/Users/jost9358/HIV-MetaG/slurm_outs/nixshort_%j.err --output=/scratch/Users/jost9358/HIV-MetaG/slurm_outs/nixshort_%j.out --mail-type=END --mail-user=jost9358@colorado.edu"
@@ -61,13 +64,32 @@ rule concat_nixed_files:
       f"hiv.t32.concat.n40/{{sample}}.concat.fq.gz"
   resources:
         partition="short",
-        mem_mb=30000, # MiB
+        mem_mb=30000, # MB
         runtime=int(60*2.5), # min
         tasks=1,
         slurm_extra="--error=/scratch/Users/jost9358/HIV-MetaG/slurm_outs/nixshort_%j.err --output=/scratch/Users/jost9358/HIV-MetaG/slurm_outs/nixshort_%j.out --mail-type=END --mail-user=jost9358@colorado.edu"
   run:
       shell("mkdir -p hiv.t32.concat.n40") #in case this directory doesn't exist. if it does, nothing will be done
       shell(f"bash slurm/concat_files.sh -f {{input.FORWARD}} -r {{input.REVERSE}} -o {{output}}")
+
+
+rule run_nonpariel:
+    input:
+        "hiv.t32.concat.n40/{sample}.concat.fq.gz"
+    output:
+        "hiv.t32.concat.n40.nonpariel/{sample}.npl"
+        "hiv.t32.concat.n40.nonpariel/{sample}.npo"
+        "hiv.t32.concat.n40.nonpariel/{sample}.npa"
+    resources:
+        partition="short",
+        mem_mb=30000, # MB
+        runtime=int(60*3), # min
+        tasks=16,
+        slurm_extra="--error=/scratch/Users/jost9358/HIV-MetaG/slurm_outs/nixshort_%j.err --output=/scratch/Users/jost9358/HIV-MetaG/slurm_outs/nixshort_%j.out --mail-type=END --mail-user=jost9358@colorado.edu"
+    run:
+        shell("mkdir -p hiv.t32.concat.n40")
+        shell("sbatch slurm/run_nonpariel.sh -i {input} -o hiv.t32.concat.n40/{sample}")
+
 
 """
 rule get_biobakery_dbs:
