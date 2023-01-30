@@ -45,10 +45,10 @@ rule concat_files:
   resources:
         partition="short",
         mem_mb=30000, # MiB
-        runtime=60*2.5, # min
+        runtime=int(60*2.5), # min
         tasks=1,
         slurm_extra="--error=/scratch/Users/jost9358/HIV-MetaG/slurm_outs/nixshort_%j.err --output=/scratch/Users/jost9358/HIV-MetaG/slurm_outs/nixshort_%j.out --mail-type=END --mail-user=jost9358@colorado.edu"
-  shell:
+  run:
       shell("mkdir -p hiv.t32.concat") #in case this directory doesn't exist. if it does, nothing will be done
       shell(f"bash slurm/concat_files.sh -f {{input.FORWARD}} -r {{input.REVERSE}} -o {{output}}")
 
@@ -62,10 +62,10 @@ rule concat_nixed_files:
   resources:
         partition="short",
         mem_mb=30000, # MiB
-        runtime=60*2.5, # min
+        runtime=int(60*2.5), # min
         tasks=1,
         slurm_extra="--error=/scratch/Users/jost9358/HIV-MetaG/slurm_outs/nixshort_%j.err --output=/scratch/Users/jost9358/HIV-MetaG/slurm_outs/nixshort_%j.out --mail-type=END --mail-user=jost9358@colorado.edu"
-  shell:
+  run:
       shell("mkdir -p hiv.t32.concat.n40") #in case this directory doesn't exist. if it does, nothing will be done
       shell(f"bash slurm/concat_files.sh -f {{input.FORWARD}} -r {{input.REVERSE}} -o {{output}}")
 
