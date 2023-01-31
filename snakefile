@@ -16,9 +16,9 @@ rule all:
         expand(f"{nixing_dir}/{{sample}}.R2.{nixing_len}.fq.gz", sample=SAMPLES),
         expand(f"hiv.t32.concat/{{sample}}.concat.fq.gz", sample=SAMPLES),
         expand(f"hiv.t32.concat.n40/{{sample}}.concat.fq.gz", sample=SAMPLES),
-        expand("hiv.t32.concat.n40.nonpariel/{sample}.npl", sample=SAMPLES),
-        expand("hiv.t32.concat.n40.nonpariel/{sample}.npo", sample=SAMPLES),
-        expand("hiv.t32.concat.n40.nonpariel/{sample}.npa", sample=SAMPLES)
+        expand(f"hiv.t32.concat.n40.nonpariel/{{sample}}.npl", sample=SAMPLES),
+        expand(f"hiv.t32.concat.n40.nonpariel/{{sample}}.npo", sample=SAMPLES),
+        expand(f"hiv.t32.concat.n40.nonpariel/{{sample}}.npa", sample=SAMPLES)
 
 
 rule nix_shortreads:
@@ -77,9 +77,9 @@ rule run_nonpariel:
     input:
         "hiv.t32.concat.n40/{sample}.concat.fq.gz"
     output:
-        "hiv.t32.concat.n40.nonpariel/{sample}.npl"
-        "hiv.t32.concat.n40.nonpariel/{sample}.npo"
-        "hiv.t32.concat.n40.nonpariel/{sample}.npa"
+        f"hiv.t32.concat.n40.nonpariel/{{sample}}.npl",
+        f"hiv.t32.concat.n40.nonpariel/{{sample}}.npo",
+        f"hiv.t32.concat.n40.nonpariel/{{sample}}.npa"
     resources:
         partition="short",
         mem_mb=30000, # MB
@@ -88,7 +88,7 @@ rule run_nonpariel:
         slurm_extra="--error=/scratch/Users/jost9358/HIV-MetaG/slurm_outs/nixshort_%j.err --output=/scratch/Users/jost9358/HIV-MetaG/slurm_outs/nixshort_%j.out --mail-type=END --mail-user=jost9358@colorado.edu"
     run:
         shell("mkdir -p hiv.t32.concat.n40")
-        shell("sbatch slurm/run_nonpariel.sh -i {input} -o hiv.t32.concat.n40/{sample}")
+        shell("bash slurm/run_nonpariel.sh -i {input} -o hiv.t32.concat.n40.nonpariel/{wildcards.sample}")
 
 
 """
