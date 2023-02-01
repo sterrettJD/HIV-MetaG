@@ -99,6 +99,7 @@ rule run_nonpareil:
         shell("mkdir -p hiv.t32.concat.n40.nonpareil")
         shell("bash slurm/run_nonpareil.sh -i {input} -o hiv.t32.concat.n40.nonpareil/{wildcards.sample}")
 
+# Should probably delete one of these once I figure out the issues with nonpareil
 rule run_nonpareil_bigmem:
     input:
         "hiv.t32.concat.n40/{sample}.concat.fq.gz"
@@ -136,19 +137,25 @@ rule get_biobakery_dbs:
         humann_databases --download uniref uniref90_diamond ~/humann_dbs/uniref/ --update-config yes
         """
 
-"""
-# TODO: FORMAT CORRECTLY
-# rule run_humann:
-#   input:
-#       - concatenated trimmed reads
-#   output:
-#       - outdir/path abundance
-#       - outdir/path coverage
-#       - outdir/gene families
-#       - outdir/sample_temp/bugslist.tsv
-#   shell:
-#       "sbatch slurm/run_humann.sbatch -i CONCATENATED -o hiv.t32.concat.humann.full.{sample}"
+rule run_humann:
+  input:
+      CHOCO_DB="~/humann_dbs/chocophlan/",
+      UNIREF_DB="~/humann_dbs/uniref/",
+      CONCAT_FILES=f"hiv.t32.concat/{{sample}}.concat.fq.gz"
+  output:
+      PATHABUND="hiv.t32.concat.humann/{sample}/pathabundance.tsv",
+      PATHCOV="hiv.t32.concat.humann/{sample}/pathcoverage.tsv",
+      GENEFAMS="hiv.t32.concat.humann/{sample}/genefamilies.tsv",
+      BUGSLIST="hiv.t32.concat.humann/{sample}/{sample}.concat_humann_temp/{sample}.concat_metaphlan_bugs_list.tsv"
+  partition="short",
+        mem_mb=int(150*1000), # MB, or 150 GB
+        runtime=int(48*60), # min, or 48 hours
+        tasks=16,
+        slurm_extra="--error=/scratch/Users/jost9358/HIV-MetaG/slurm_outs/humann_%j.err --output=/scratch/Users/jost9358/HIV-MetaG/slurm_outs/humann_%j.out --mail-type=END --mail-user=jost9358@colorado.edu"
+  shell:
+      "bash slurm/run_humann.sh -i {input.CONCAT_FILES} -o hiv.t32.concat.humann/{wildcards.sample}"
 
+"""
 # TODO: manage conda environment
 rule aggregate_bugslists:
     input:
