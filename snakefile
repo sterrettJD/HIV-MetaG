@@ -28,7 +28,14 @@ rule all:
         expand(f"hiv.t32.concat.n40.nonpareil.bigmem/{{sample}}.npl", sample=SAMPLES),
         expand(f"hiv.t32.concat.n40.nonpareil.bigmem/{{sample}}.npo", sample=SAMPLES),
         expand(f"hiv.t32.concat.n40.nonpareil.bigmem/{{sample}}.npa", sample=SAMPLES),
-        # Made by Humann
+
+        # Made by Humann (and aggregated by aggregate_humann_outs)
+        "hiv.t32.concat.humann/all_pathabundance.tsv"
+        "hiv.t32.concat.humann/all_pathcoverage.tsv"
+        "hiv.t32.concat.humann/all_genefamilies.tsv"
+        "hiv.t32.concat.humann/all_genefamilies_grouped.tsv"
+        "hiv.t32.concat.humann/all_genefamilies_grouped.tsv"
+        "hiv.t32.concat.humann/all_bugs_list.tsv"
 
 
 
@@ -159,83 +166,49 @@ rule run_humann:
       "bash slurm/run_humann.sh -i {input.CONCAT_FILES} -o hiv.t32.concat.humann/{wildcards.sample}"
 
 
-rule aggregate_bugslists:
+rule aggregate_humann_outs:
+    # EXPAND MIGHT NOT BE THE RIGHT CHOICE HERE
+    # TODO: CHECK IF THIS SHOULD BE EXPANDED
     input:
-        expand("hiv.t32.concat.humann/{sample}/{sample}.concat_humann_temp/{sample}.concat_metaphlan_bugs_list.tsv",
+        PATHABUND=expand("hiv.t32.concat.humann/{sample}/pathabundance.tsv",
+                sample=SAMPLES),
+        PATHCOV=expand("hiv.t32.concat.humann/{sample}/pathcoverage.tsv",
+                sample=SAMPLES),
+        GENEFAMS=expand("hiv.t32.concat.humann/{sample}/genefamilies.tsv",
+                sample=SAMPLES),
+        BUGSLIST=expand("hiv.t32.concat.humann/{sample}/{sample}.concat_humann_temp/{sample}.concat_metaphlan_bugs_list.tsv",
                 sample=SAMPLES)
     output:
-        "hiv.t32.concat.humann/all_bugslist.tsv"
+        PATHABUND="hiv.t32.concat.humann/all_pathabundance.tsv"
+        PATHCOV="hiv.t32.concat.humann/all_pathcoverage.tsv"
+        GENEFAMS="hiv.t32.concat.humann/all_genefamilies.tsv"
+        GENEFAMS_GROUPED="hiv.t32.concat.humann/all_genefamilies_grouped.tsv"
+        GENEFAMS_GROUPED_NAMED="hiv.t32.concat.humann/all_genefamilies_grouped.tsv"
+        BUGSLIST="hiv.t32.concat.humann/all_bugs_list.tsv"
+
     resources:
         partition="short",
-        mem_mb=int(8*1000), # MB, or 8 GB
-        runtime=60, # min
+        mem_mb=int(20*1000), # MB, or 20 GB
+        runtime=120, # min
         tasks=1,
         slurm_extra="--error=/scratch/Users/jost9358/HIV-MetaG/slurm_outs/agg_bug_%j.err --output=/scratch/Users/jost9358/HIV-MetaG/slurm_outs/agg_bug_%j.out --mail-type=END --mail-user=jost9358@colorado.edu"
     shell:
         """
         source activate humannenv4
-        python utils/aggregate_metaphlan_bugslists.py -i hiv.t32.concat.humann -o {output}
+
+        humann_join_tables -i hiv.t32.concat.humann -o {output.PATHABUND} --file_name pathabundance.tsv --search-subdirectories
+
+        humann_join_tables -i hiv.t32.concat.humann -o {output.PATHCOV} --file_name pathcoverage.tsv --search-subdirectories
+
+        humann_join_tables -i hiv.t32.concat.humann -o {output.GENEFAMS} --file_name genefamilies.tsv --search-subdirectories
+        humann_regroup_table -i {output.GENEFAMS} -g uniref90_rxn -o {output.GENEFAMS_GROUPED}
+        humann_rename_table -i {output.GENEFAMS_GROUPED} -n metacyc-rxn -o {output.GENEFAMS_GROUPED_NAMED}
+
+        python utils/aggregate_metaphlan_bugslists.py -i hiv.t32.concat.humann -o {output.BUGSLIST}
         """
+
+
 """
-# TODO: manage conda environment
-rule aggregate_humann_pathcoverage:
-    input:
-        - all of the humann pathcoverage
-    output:
-        hiv.t32.concat.humann.full/all_pathcoverage.tsv
-    shell:
-        "source activate humannenv4"
-        "humann_join_tables -i hiv.t32.concat.humann.full -o {output} --file_name pathcoverage.tsv --search-subdirectories"
-
-# TODO: manage conda environment
-rule aggregate_humann_pathabundance:
-    input:
-        - all of the humann pathabundance
-    output:
-        hiv.t32.concat.humann.full/all_pathabundance.tsv
-    shell:
-        "source activate humannenv4"
-        "humann_join_tables -i hiv.t32.concat.humann.full -o {output} --file_name pathabundance.tsv --search-subdirectories"
-
-# TODO: manage conda environment
-rule aggregate_humann_genefams:
-    input:
-        - all of the humann genefamilies
-    output:
-        hiv.t32.concat.humann.full/all_genefamilies.tsv
-    shell:
-        "source activate humannenv4"
-        "humann_join_tables -i hiv.t32.concat.humann.full -o {output} --file_name genefamilies.tsv --search-subdirectories"
-
-# TODO: manage conda environment
-rule group_humann_genefams:
-    input:
-        hiv.t32.concat.humann.full/all_genefamilies.tsv
-    output:
-        hiv.t32.concat.humann.full/all_genefamilies_grouped.tsv
-    shell:
-        "source activate humannenv4"
-        "humann_regroup_table -i {input} -g uniref90_rxn -o {output}"
-
-# TODO: manage conda environment
-rule rename_humann_genefams_metacyc:
-    input:
-        - hiv.t32.concat.humann.full/all_genefamilies_grouped.tsv
-    output:
-        - hiv.t32.concat.humann.full/all_genefamilies_grouped_named.tsv
-    shell:
-        "source activate humannenv4"
-        "humann_rename_table -i {input} -n metacyc-rxn -o {output}"
-
-# TODO: ADD OTHER nonpareil FILES
-rule run_nonpareil:
-    input:
-        - nixed trimmed concatenated reads
-    output:
-        - hiv.t32.nix.concat.nonpareil/{sample}/{sample}.npl
-        - OTHER nonpareil FILES
-    shell:
-        "sbatch slurm/run_nonpareil.sbatch -i {input} -o hiv.t32.nix.concat.nonpareil/{sample}/"
 
 rule assemble_metaspades:
     input:
