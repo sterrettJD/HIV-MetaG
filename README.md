@@ -38,7 +38,7 @@ Sequencing performed end of November 2022
  - `utils/run_humann.py` dispatches the sbatch script `slurm/run_humann.sbatch`
  - I did it using the following command `python utils/run_humann.py -i hiv.t32.concat/ -o hiv.t32.concat.humann -s slurm/run_humann.sbatch`
  - This executed one slurm job for every sample. Each job was allocated 8 cores, and here are the stats for reference: 
-   - They took a minimum of ~4 hours and a maximum of 6 hours to run.
+   - They took a minimum of ~20 hours and a maximum of 36 hours to run.
    - The input files were 5-8 GB.
    - The output files totaled to 2 TB.
 
