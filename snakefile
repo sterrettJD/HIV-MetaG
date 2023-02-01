@@ -27,7 +27,9 @@ rule all:
         # Made by nonpareil when allocated more resources (WHICH SEEMS TO BE SILENTLY ERRORING OUT MID-RUN)
         expand(f"hiv.t32.concat.n40.nonpareil.bigmem/{{sample}}.npl", sample=SAMPLES),
         expand(f"hiv.t32.concat.n40.nonpareil.bigmem/{{sample}}.npo", sample=SAMPLES),
-        expand(f"hiv.t32.concat.n40.nonpareil.bigmem/{{sample}}.npa", sample=SAMPLES)
+        expand(f"hiv.t32.concat.n40.nonpareil.bigmem/{{sample}}.npa", sample=SAMPLES),
+        # Made by Humann
+
 
 
 rule nix_shortreads:
@@ -147,24 +149,34 @@ rule run_humann:
       PATHCOV="hiv.t32.concat.humann/{sample}/pathcoverage.tsv",
       GENEFAMS="hiv.t32.concat.humann/{sample}/genefamilies.tsv",
       BUGSLIST="hiv.t32.concat.humann/{sample}/{sample}.concat_humann_temp/{sample}.concat_metaphlan_bugs_list.tsv"
-  partition="short",
-        mem_mb=int(150*1000), # MB, or 150 GB
-        runtime=int(48*60), # min, or 48 hours
-        tasks=16,
-        slurm_extra="--error=/scratch/Users/jost9358/HIV-MetaG/slurm_outs/humann_%j.err --output=/scratch/Users/jost9358/HIV-MetaG/slurm_outs/humann_%j.out --mail-type=END --mail-user=jost9358@colorado.edu"
+  resources:
+      partition="long",
+      mem_mb=int(150*1000), # MB, or 150 GB
+      runtime=int(48*60), # min, or 48 hours
+      tasks=16,
+      slurm_extra="--error=/scratch/Users/jost9358/HIV-MetaG/slurm_outs/humann_%j.err --output=/scratch/Users/jost9358/HIV-MetaG/slurm_outs/humann_%j.out --mail-type=END --mail-user=jost9358@colorado.edu"
   shell:
       "bash slurm/run_humann.sh -i {input.CONCAT_FILES} -o hiv.t32.concat.humann/{wildcards.sample}"
 
-"""
-# TODO: manage conda environment
+
 rule aggregate_bugslists:
     input:
-        - all of the bugslists
+        expand("hiv.t32.concat.humann/{sample}/{sample}.concat_humann_temp/{sample}.concat_metaphlan_bugs_list.tsv",
+                sample=SAMPLES)
     output:
-        hiv.t32.concat.humann.full/all_bugslist.tsv
+        "hiv.t32.concat.humann/all_bugslist.tsv"
+    resources:
+        partition="short",
+        mem_mb=int(8*1000), # MB, or 8 GB
+        runtime=60, # min
+        tasks=1,
+        slurm_extra="--error=/scratch/Users/jost9358/HIV-MetaG/slurm_outs/agg_bug_%j.err --output=/scratch/Users/jost9358/HIV-MetaG/slurm_outs/agg_bug_%j.out --mail-type=END --mail-user=jost9358@colorado.edu"
     shell:
-        "python utils/aggregate_metaphlan_bugslists.py -i hiv.t32.concat.humann.full -o {output}"
-
+        """
+        source activate humannenv4
+        python utils/aggregate_metaphlan_bugslists.py -i hiv.t32.concat.humann -o {output}
+        """
+"""
 # TODO: manage conda environment
 rule aggregate_humann_pathcoverage:
     input:
