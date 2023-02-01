@@ -12,13 +12,19 @@ rule all:
 # Starting input is data processed through YMP, feels a bit silly to use snakemake to run ymp, which runs snakemake
 # Consider the input to be trimmomatic-trimmed forward and reverse reads
     input:
+        # Made by nixing short reads
         expand(f"{nixing_dir}/{{sample}}.R1.{nixing_len}.fq.gz", sample=SAMPLES),
         expand(f"{nixing_dir}/{{sample}}.R2.{nixing_len}.fq.gz", sample=SAMPLES),
+        # Made by concatenating reads
+        # Necessary for steps like humann that require forward and reverse reads to be concatenated
         expand(f"hiv.t32.concat/{{sample}}.concat.fq.gz", sample=SAMPLES),
+        # Made by concatenating the nixed reads
         expand(f"hiv.t32.concat.n40/{{sample}}.concat.fq.gz", sample=SAMPLES),
+        # Made by nonpareil (WHICH SEEMS TO BE SILENTLY ERRORING OUT MID-RUN)
         expand(f"hiv.t32.concat.n40.nonpareil/{{sample}}.npl", sample=SAMPLES),
         expand(f"hiv.t32.concat.n40.nonpareil/{{sample}}.npo", sample=SAMPLES),
         expand(f"hiv.t32.concat.n40.nonpareil/{{sample}}.npa", sample=SAMPLES),
+        # Made by nonpareil when allocated more resources (WHICH SEEMS TO BE SILENTLY ERRORING OUT MID-RUN)
         expand(f"hiv.t32.concat.n40.nonpareil.bigmem/{{sample}}.npl", sample=SAMPLES),
         expand(f"hiv.t32.concat.n40.nonpareil.bigmem/{{sample}}.npo", sample=SAMPLES),
         expand(f"hiv.t32.concat.n40.nonpareil.bigmem/{{sample}}.npa", sample=SAMPLES)
@@ -53,7 +59,7 @@ rule concat_files:
         mem_mb=30000, # MB
         runtime=int(60*2.5), # min
         tasks=1,
-        slurm_extra="--error=/scratch/Users/jost9358/HIV-MetaG/slurm_outs/nixshort_%j.err --output=/scratch/Users/jost9358/HIV-MetaG/slurm_outs/nixshort_%j.out --mail-type=END --mail-user=jost9358@colorado.edu"
+        slurm_extra="--error=/scratch/Users/jost9358/HIV-MetaG/slurm_outs/concat_%j.err --output=/scratch/Users/jost9358/HIV-MetaG/slurm_outs/concat_%j.out --mail-type=END --mail-user=jost9358@colorado.edu"
   run:
       shell("mkdir -p hiv.t32.concat") #in case this directory doesn't exist. if it does, nothing will be done
       shell(f"bash slurm/concat_files.sh -f {{input.FORWARD}} -r {{input.REVERSE}} -o {{output}}")
@@ -70,7 +76,7 @@ rule concat_nixed_files:
         mem_mb=30000, # MB
         runtime=int(60*2.5), # min
         tasks=1,
-        slurm_extra="--error=/scratch/Users/jost9358/HIV-MetaG/slurm_outs/nixshort_%j.err --output=/scratch/Users/jost9358/HIV-MetaG/slurm_outs/nixshort_%j.out --mail-type=END --mail-user=jost9358@colorado.edu"
+        slurm_extra="--error=/scratch/Users/jost9358/HIV-MetaG/slurm_outs/concatnix_%j.err --output=/scratch/Users/jost9358/HIV-MetaG/slurm_outs/concatnix_%j.out --mail-type=END --mail-user=jost9358@colorado.edu"
   run:
       shell("mkdir -p hiv.t32.concat.n40") #in case this directory doesn't exist. if it does, nothing will be done
       shell(f"bash slurm/concat_files.sh -f {{input.FORWARD}} -r {{input.REVERSE}} -o {{output}}")
@@ -88,7 +94,7 @@ rule run_nonpareil:
         mem_mb=30000, # MB
         runtime=int(60*3), # min
         tasks=16,
-        slurm_extra="--error=/scratch/Users/jost9358/HIV-MetaG/slurm_outs/nixshort_%j.err --output=/scratch/Users/jost9358/HIV-MetaG/slurm_outs/nixshort_%j.out --mail-type=END --mail-user=jost9358@colorado.edu"
+        slurm_extra="--error=/scratch/Users/jost9358/HIV-MetaG/slurm_outs/nonpareil_%j.err --output=/scratch/Users/jost9358/HIV-MetaG/slurm_outs/nonpareil_%j.out --mail-type=END --mail-user=jost9358@colorado.edu"
     run:
         shell("mkdir -p hiv.t32.concat.n40.nonpareil")
         shell("bash slurm/run_nonpareil.sh -i {input} -o hiv.t32.concat.n40.nonpareil/{wildcards.sample}")
@@ -105,20 +111,32 @@ rule run_nonpareil_bigmem:
         mem_mb=60000, # MB
         runtime=int(60*5), # min
         tasks=16,
-        slurm_extra="--error=/scratch/Users/jost9358/HIV-MetaG/slurm_outs/nixshort_%j.err --output=/scratch/Users/jost9358/HIV-MetaG/slurm_outs/nixshort_%j.out --mail-type=END --mail-user=jost9358@colorado.edu"
+        slurm_extra="--error=/scratch/Users/jost9358/HIV-MetaG/slurm_outs/nonpareil_%j.err --output=/scratch/Users/jost9358/HIV-MetaG/slurm_outs/nonpareil_%j.out --mail-type=END --mail-user=jost9358@colorado.edu"
     run:
         shell("mkdir -p hiv.t32.concat.n40.nonpareil.bigmem")
         shell("bash slurm/run_nonpareil.sh -i {input} -o hiv.t32.concat.n40.nonpareil.bigmem/{wildcards.sample}")
 
 
-"""
 rule get_biobakery_dbs:
     output:
         "~/humann_dbs/chocophlan/"
         "~/humann_dbs/uniref/"
+    resources:
+        partition="short",
+        mem_mb=100000, # MB
+        runtime=int(60*5), # min
+        tasks=1,
+        slurm_extra="--error=/scratch/Users/jost9358/HIV-MetaG/slurm_outs/up_biobake_%j.err --output=/scratch/Users/jost9358/HIV-MetaG/slurm_outs/up_biobake_%j.out --mail-type=END --mail-user=jost9358@colorado.edu"
+    # This can also be run using slurm/update_biobake_dbs.sbatch
     shell:
-        "sbatch slurm/update_biobake_dbs.sbatch"
+        """
+        source activate humannenv4
 
+        humann_databases --download chocophlan full ~/humann_dbs/chocophlan/ --update-config yes
+        humann_databases --download uniref uniref90_diamond ~/humann_dbs/uniref/ --update-config yes
+        """
+
+"""
 # TODO: FORMAT CORRECTLY
 # rule run_humann:
 #   input:
