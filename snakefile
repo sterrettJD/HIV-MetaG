@@ -16,12 +16,12 @@ rule all:
         expand(f"{nixing_dir}/{{sample}}.R2.{nixing_len}.fq.gz", sample=SAMPLES),
         expand(f"hiv.t32.concat/{{sample}}.concat.fq.gz", sample=SAMPLES),
         expand(f"hiv.t32.concat.n40/{{sample}}.concat.fq.gz", sample=SAMPLES),
-        expand(f"hiv.t32.concat.n40.nonpariel/{{sample}}.npl", sample=SAMPLES),
-        expand(f"hiv.t32.concat.n40.nonpariel/{{sample}}.npo", sample=SAMPLES),
-        expand(f"hiv.t32.concat.n40.nonpariel/{{sample}}.npa", sample=SAMPLES),
-        expand(f"hiv.t32.concat.n40.nonpariel.bigmem/{{sample}}.npl", sample=SAMPLES),
-        expand(f"hiv.t32.concat.n40.nonpariel.bigmem/{{sample}}.npo", sample=SAMPLES),
-        expand(f"hiv.t32.concat.n40.nonpariel.bigmem/{{sample}}.npa" sample=SAMPLES)
+        expand(f"hiv.t32.concat.n40.nonpareil/{{sample}}.npl", sample=SAMPLES),
+        expand(f"hiv.t32.concat.n40.nonpareil/{{sample}}.npo", sample=SAMPLES),
+        expand(f"hiv.t32.concat.n40.nonpareil/{{sample}}.npa", sample=SAMPLES),
+        expand(f"hiv.t32.concat.n40.nonpareil.bigmem/{{sample}}.npl", sample=SAMPLES),
+        expand(f"hiv.t32.concat.n40.nonpareil.bigmem/{{sample}}.npo", sample=SAMPLES),
+        expand(f"hiv.t32.concat.n40.nonpareil.bigmem/{{sample}}.npa", sample=SAMPLES)
 
 
 rule nix_shortreads:
@@ -76,13 +76,13 @@ rule concat_nixed_files:
       shell(f"bash slurm/concat_files.sh -f {{input.FORWARD}} -r {{input.REVERSE}} -o {{output}}")
 
 
-rule run_nonpariel:
+rule run_nonpareil:
     input:
         "hiv.t32.concat.n40/{sample}.concat.fq.gz"
     output:
-        f"hiv.t32.concat.n40.nonpariel/{{sample}}.npl",
-        f"hiv.t32.concat.n40.nonpariel/{{sample}}.npo",
-        f"hiv.t32.concat.n40.nonpariel/{{sample}}.npa"
+        f"hiv.t32.concat.n40.nonpareil/{{sample}}.npl",
+        f"hiv.t32.concat.n40.nonpareil/{{sample}}.npo",
+        f"hiv.t32.concat.n40.nonpareil/{{sample}}.npa"
     resources:
         partition="short",
         mem_mb=30000, # MB
@@ -90,16 +90,16 @@ rule run_nonpariel:
         tasks=16,
         slurm_extra="--error=/scratch/Users/jost9358/HIV-MetaG/slurm_outs/nixshort_%j.err --output=/scratch/Users/jost9358/HIV-MetaG/slurm_outs/nixshort_%j.out --mail-type=END --mail-user=jost9358@colorado.edu"
     run:
-        shell("mkdir -p hiv.t32.concat.n40.nonpariel")
-        shell("bash slurm/run_nonpariel.sh -i {input} -o hiv.t32.concat.n40.nonpariel/{wildcards.sample}")
+        shell("mkdir -p hiv.t32.concat.n40.nonpareil")
+        shell("bash slurm/run_nonpareil.sh -i {input} -o hiv.t32.concat.n40.nonpareil/{wildcards.sample}")
 
-rule run_nonpariel_bigmem:
+rule run_nonpareil_bigmem:
     input:
         "hiv.t32.concat.n40/{sample}.concat.fq.gz"
     output:
-        f"hiv.t32.concat.n40.nonpariel.bigmem/{{sample}}.npl",
-        f"hiv.t32.concat.n40.nonpariel.bigmem/{{sample}}.npo",
-        f"hiv.t32.concat.n40.nonpariel.bigmem/{{sample}}.npa"
+        f"hiv.t32.concat.n40.nonpareil.bigmem/{{sample}}.npl",
+        f"hiv.t32.concat.n40.nonpareil.bigmem/{{sample}}.npo",
+        f"hiv.t32.concat.n40.nonpareil.bigmem/{{sample}}.npa"
     resources:
         partition="short",
         mem_mb=60000, # MB
@@ -107,8 +107,8 @@ rule run_nonpariel_bigmem:
         tasks=16,
         slurm_extra="--error=/scratch/Users/jost9358/HIV-MetaG/slurm_outs/nixshort_%j.err --output=/scratch/Users/jost9358/HIV-MetaG/slurm_outs/nixshort_%j.out --mail-type=END --mail-user=jost9358@colorado.edu"
     run:
-        shell("mkdir -p hiv.t32.concat.n40.nonpariel.bigmem")
-        shell("bash slurm/run_nonpariel.sh -i {input} -o hiv.t32.concat.n40.nonpariel.bigmem/{wildcards.sample}")
+        shell("mkdir -p hiv.t32.concat.n40.nonpareil.bigmem")
+        shell("bash slurm/run_nonpareil.sh -i {input} -o hiv.t32.concat.n40.nonpareil.bigmem/{wildcards.sample}")
 
 
 """
@@ -190,15 +190,15 @@ rule rename_humann_genefams_metacyc:
         "source activate humannenv4"
         "humann_rename_table -i {input} -n metacyc-rxn -o {output}"
 
-# TODO: ADD OTHER NONPARIEL FILES
-rule run_nonpariel:
+# TODO: ADD OTHER nonpareil FILES
+rule run_nonpareil:
     input:
         - nixed trimmed concatenated reads
     output:
-        - hiv.t32.nix.concat.nonpariel/{sample}/{sample}.npl
-        - OTHER NONPARIEL FILES
+        - hiv.t32.nix.concat.nonpareil/{sample}/{sample}.npl
+        - OTHER nonpareil FILES
     shell:
-        "sbatch slurm/run_nonpariel.sbatch -i {input} -o hiv.t32.nix.concat.nonpariel/{sample}/"
+        "sbatch slurm/run_nonpareil.sbatch -i {input} -o hiv.t32.nix.concat.nonpareil/{sample}/"
 
 rule assemble_metaspades:
     input:
