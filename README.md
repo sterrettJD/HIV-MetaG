@@ -21,6 +21,12 @@ Sequencing performed end of November 2022
     - Many of the reverse fastqs have some moderate quality reads, so maybe that could be something to address at some point
 
 ## Data processing outside of YMP
+### Snakemake
+- All important following steps should be in `snakefile`
+- Run using `snakemake --cluster "sbatch" -j 30 --latency-wait 60`
+- If jobs are running when FIJI times out, run `snakemake --unlock` next time you need to run snakemake. This is because snakemake will lock the directory if it closes unexpectedly.
+- A dag of jobs can be made using `snakemake --dag | dot -Tsvg > dag.svg`
+
 ### Concatenating paired reads for HUMAnN
  - For HUMAnN, both forward and paired reads need to be in a single fastq file.
  - There is no need to merge them, since output abundances are normalized by kilobase.
@@ -32,7 +38,7 @@ Sequencing performed end of November 2022
  - `utils/run_humann.py` dispatches the sbatch script `slurm/run_humann.sbatch`
  - I did it using the following command `python utils/run_humann.py -i hiv.t32.concat/ -o hiv.t32.concat.humann -s slurm/run_humann.sbatch`
  - This executed one slurm job for every sample. Each job was allocated 8 cores, and here are the stats for reference: 
-   - They took a minimum of ~4 hours and a maximum of 6 hours to run.
+   - They took a minimum of ~20 hours and a maximum of 36 hours to run.
    - The input files were 5-8 GB.
    - The output files totaled to 2 TB.
 
@@ -94,8 +100,16 @@ Sequencing performed end of November 2022
 
 ### Functional profiles
 
+## Estimating metagenome coverage
+### Nonpareil
+- See documentation [here](https://nonpareil.readthedocs.io/en/latest/)
+- Installed via conda on Jan 26, 2023
+#### Running Nonpareil
+- Run in slurm using `slurm/run_nonpariel.sbatch`
+- 
+
 ## Assembling metagenome-assembled genomes (MAGs)
-- Don't coassemble, our reads are deep anyway, and strain level variation migh break that up
+- Don't coassemble, our reads are deep anyway, and strain level variation might break that up
 - presence/absence
 
 ### MetaSPAdes

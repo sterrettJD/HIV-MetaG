@@ -1,15 +1,4 @@
 #!/bin/bash
-#SBATCH -p short # Partition or queue.
-#SBATCH --job-name=nixshort # Job name
-#SBATCH --mail-type=END # Mail events (NONE, BEGIN, END, FAIL, ALL)
-#SBATCH --mail-user=jost9358@colorado.edu
-#SBATCH --nodes=1 # Only use a single node
-#SBATCH --ntasks=8 # Run on a single CPU
-#SBATCH --mem=25gb # Memory limit
-#SBATCH --time=01:00:00 # Time limit hrs:min:sec
-#SBATCH --output=/scratch/Users/jost9358/HIV-MetaG/slurm_outs/nixshort_%j.out # Standard output and error log
-#SBATCH --error=/scratch/Users/jost9358/HIV-MetaG/slurm_outs/nixshort_%j.err # %j inserts job number
-
 
 # This removes reads of a below a certain length from paired read files in fastq format (e.g., R1 and R2 from the same library)
 # Graciously adapted from https://www.seqanswers.com/forum/bioinformatics/bioinformatics-aa/27218-removing-short-reads-from-paired-end-fastqs?t=31845
