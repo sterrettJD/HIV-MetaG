@@ -152,10 +152,14 @@ rule run_humann:
       UNIREF_DB="~/humann_dbs/uniref/",
       CONCAT_FILES=f"hiv.t32.concat/{{sample}}.concat.fq.gz"
   output:
-      PATHABUND="hiv.t32.concat.humann/{sample}/pathabundance.tsv",
-      PATHCOV="hiv.t32.concat.humann/{sample}/pathcoverage.tsv",
-      GENEFAMS="hiv.t32.concat.humann/{sample}/genefamilies.tsv",
-      BUGSLIST="hiv.t32.concat.humann/{sample}/{sample}.concat_humann_temp/{sample}.concat_metaphlan_bugs_list.tsv"
+      PATHABUND=expand("hiv.t32.concat.humann/{sample}/pathabundance.tsv",
+                sample=SAMPLES),
+      PATHCOV=expand("hiv.t32.concat.humann/{sample}/pathcoverage.tsv",
+                sample=SAMPLES),
+      GENEFAMS=expand("hiv.t32.concat.humann/{sample}/genefamilies.tsv",
+                sample=SAMPLES),
+      BUGSLIST=expand("hiv.t32.concat.humann/{sample}/{sample}.concat_humann_temp/{sample}.concat_metaphlan_bugs_list.tsv",
+                sample=SAMPLES)
   resources:
       partition="long",
       mem_mb=int(150*1000), # MB, or 150 GB
