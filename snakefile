@@ -129,8 +129,8 @@ rule run_nonpareil_bigmem:
 
 rule get_biobakery_dbs:
     output:
-        "~/humann_dbs/chocophlan/"
-        "~/humann_dbs/uniref/"
+        "/Users/jost9358/humann_dbs/chocophlan/"
+        "/Users/jost9358/humann_dbs/uniref/"
     resources:
         partition="short",
         mem_mb=100000, # MB
@@ -148,9 +148,9 @@ rule get_biobakery_dbs:
 
 rule run_humann:
   input:
-      CHOCO_DB="~/humann_dbs/chocophlan/",
-      UNIREF_DB="~/humann_dbs/uniref/",
-      CONCAT_FILES=f"hiv.t32.concat/{{sample}}.concat.fq.gz"
+      CHOCO_DB="/Users/jost9358/humann_dbs/chocophlan/",
+      UNIREF_DB="/Users/jost9358/humann_dbs/uniref/",
+      CONCAT_FILES=expand(f"hiv.t32.concat/{{sample}}.concat.fq.gz", sample=SAMPLES)
   output:
       PATHABUND=expand("hiv.t32.concat.humann/{sample}/pathabundance.tsv",
                 sample=SAMPLES),
