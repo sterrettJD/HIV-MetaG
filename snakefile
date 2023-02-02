@@ -150,7 +150,7 @@ rule run_humann:
   input:
       CHOCO_DB="/Users/jost9358/humann_dbs/chocophlan/",
       UNIREF_DB="/Users/jost9358/humann_dbs/uniref/",
-      CONCAT_FILES=expand(f"hiv.t32.concat/{{sample}}.concat.fq.gz", sample=SAMPLES)
+      CONCAT_FILES=f"hiv.t32.concat/{{sample}}.concat.fq.gz"
   output:
       PATHABUND=expand("hiv.t32.concat.humann/{sample}/pathabundance.tsv",
                 sample=SAMPLES),
