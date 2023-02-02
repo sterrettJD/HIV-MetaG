@@ -30,11 +30,11 @@ rule all:
         expand(f"hiv.t32.concat.n40.nonpareil.bigmem/{{sample}}.npa", sample=SAMPLES),
 
         # Made by Humann (and aggregated by aggregate_humann_outs)
-        "hiv.t32.concat.humann/all_pathabundance.tsv"
-        "hiv.t32.concat.humann/all_pathcoverage.tsv"
-        "hiv.t32.concat.humann/all_genefamilies.tsv"
-        "hiv.t32.concat.humann/all_genefamilies_grouped.tsv"
-        "hiv.t32.concat.humann/all_genefamilies_grouped.tsv"
+        "hiv.t32.concat.humann/all_pathabundance.tsv",
+        "hiv.t32.concat.humann/all_pathcoverage.tsv",
+        "hiv.t32.concat.humann/all_genefamilies.tsv",
+        "hiv.t32.concat.humann/all_genefamilies_grouped.tsv",
+        "hiv.t32.concat.humann/all_genefamilies_grouped.tsv",
         "hiv.t32.concat.humann/all_bugs_list.tsv"
 
 
@@ -179,11 +179,11 @@ rule aggregate_humann_outs:
         BUGSLIST=expand("hiv.t32.concat.humann/{sample}/{sample}.concat_humann_temp/{sample}.concat_metaphlan_bugs_list.tsv",
                 sample=SAMPLES)
     output:
-        PATHABUND="hiv.t32.concat.humann/all_pathabundance.tsv"
-        PATHCOV="hiv.t32.concat.humann/all_pathcoverage.tsv"
-        GENEFAMS="hiv.t32.concat.humann/all_genefamilies.tsv"
-        GENEFAMS_GROUPED="hiv.t32.concat.humann/all_genefamilies_grouped.tsv"
-        GENEFAMS_GROUPED_NAMED="hiv.t32.concat.humann/all_genefamilies_grouped.tsv"
+        PATHABUND="hiv.t32.concat.humann/all_pathabundance.tsv",
+        PATHCOV="hiv.t32.concat.humann/all_pathcoverage.tsv",
+        GENEFAMS="hiv.t32.concat.humann/all_genefamilies.tsv",
+        GENEFAMS_GROUPED="hiv.t32.concat.humann/all_genefamilies_grouped.tsv",
+        GENEFAMS_GROUPED_NAMED="hiv.t32.concat.humann/all_genefamilies_grouped_named.tsv",
         BUGSLIST="hiv.t32.concat.humann/all_bugs_list.tsv"
 
     resources:
