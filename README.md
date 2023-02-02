@@ -1,6 +1,21 @@
-# Prevotella rich HIV metagenomics
+# Prevotella rich HIV/MSM shotgun metagenomics
 
 Sequencing performed end of November 2022
+
+Main sections:
+1. Processing/QC with YMP
+2. Processing in Snakemake
+  - Removing short reads (for NonPareil) TODO: add to readme
+  - Concatenating paired reads
+  - Running HUMANN pipeline
+  - Aggregating HUMANN results
+  - Pull in other datasets to assess strain-level differences in Prevotella
+  - Assessing metagenome coverage (NonPareil) TODO: add to readme
+  - Assembling genomes (MetaSPAdes) TODO: add to readme, perform
+  - Assessing strain-level variation (inStrain, other tools too?) TODO: all
+  - Assess SNPs in Prevotella genomes (MIDAS) TODO: all
+3. Analysis of taxonomic/functional data
+4. Analysis of strain-level differences (TODO: all)
 
 ## Data processing with YMP
 ### Creation of YMP metadata
