@@ -21,6 +21,9 @@ def get_args():
                         required=True)
     parser.add_argument("-d", "--directory",
                         required=True)
+    parser.add_argument("-s", "--skipnrows",
+                        required=True,
+                        default=5, type=int)
 
     parsed_args = parser.parse_args()
     return parsed_args
@@ -49,8 +52,9 @@ if __name__ == "__main__":
     args = get_args()
 
     df = pd.read_csv(args.infile,
-                     skiprows=5).drop(0, axis=0)
+                     skiprows=args.skipnrows).drop(0, axis=0)
 
+    print(df)
     df["ForwardReads"] = df["Sample"].apply(
         lambda x: sample_id_to_files(args.directory, x, "R1")
     )
