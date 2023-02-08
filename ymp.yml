@@ -2,11 +2,6 @@ projects:
   hiv:
     data:
     - ymp_metadata.csv
-    id_col:
-    - Sample
-    reads_cols:
-    - ForwardReads
-    - ReverseReads
 
 pipelines:
   myqc:
