@@ -4,8 +4,8 @@
 #SBATCH --mail-type=END # Mail events (NONE, BEGIN, END, FAIL, ALL)
 #SBATCH --mail-user=jost9358@colorado.edu
 #SBATCH --nodes=1 # Only use a single node
-#SBATCH --ntasks=16 # Run on a single CPU
-#SBATCH --mem=100gb # Memory limit
+#SBATCH --ntasks=32 # Run on a single CPU
+#SBATCH --mem=250gb # Memory limit
 #SBATCH --time=48:00:00 # Time limit hrs:min:sec
 #SBATCH --output=/scratch/Users/jost9358/HIV-MetaG/slurm_outs/metaspades_%j.out # Standard output and error log
 #SBATCH --error=/scratch/Users/jost9358/HIV-MetaG/slurm_outs/metaspades_%j.err # %j inserts job number
@@ -26,4 +26,4 @@ do
     esac
 done
 
-metaspades.py -o $outpath --pe1-1 $forward --pe1-2 $reverse
+metaspades.py -o $outpath --pe1-1 $forward --pe1-2 $reverse --threads 32
