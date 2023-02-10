@@ -49,7 +49,7 @@ rule all:
         expand(f"hiv.t32.n40.metaspades/{{sample}}/contigs.paths", sample=SAMPLES),
         expand(f"hiv.t32.n40.metaspades/{{sample}}/scaffolds.paths", sample=SAMPLES),
         expand(f"hiv.t32.n40.metaspades/{{sample}}/assembly_graph.fastg", sample=SAMPLES),
-        expand(f"hiv.t32.n40.metaspades/{{sample}}/assembly_graph_with_scaffolds.gfa" sample=SAMPLES)
+        expand(f"hiv.t32.n40.metaspades/{{sample}}/assembly_graph_with_scaffolds.gfa", sample=SAMPLES)
 
 
 
@@ -228,8 +228,8 @@ rule aggregate_humann_outs:
 
 rule assemble_metaspades:
     input:
-        FORWARD=f"hiv.t32.nix40/{{sample}}.R1.fq.gz",
-        REVERSE=f"hiv.t32.nix40/{{sample}}.R2.fq.gz"
+        FORWARD=f"hiv.t32.nix40/{{sample}}.R1.{nixing_len}.fq.gz",
+        REVERSE=f"hiv.t32.nix40/{{sample}}.R2.{nixing_len}.fq.gz"
     output:
         CORRECT_R1=f"hiv.t32.n40.metaspades/{{sample}}/corrected/{{sample}}.R1.{nixing_len}.fq.00.0_0.cor.fastq.gz",
         CORRECT_R2=f"hiv.t32.n40.metaspades/{{sample}}/corrected/{{sample}}.R2.{nixing_len}.fq.00.0_0.cor.fastq.gz",
@@ -249,5 +249,5 @@ rule assemble_metaspades:
     shell:
         """
         mkdir -p hiv.t32.n40.metaspades
-        bash slurm/run_metaSPAdes.sh -f {input.FORWARD} -r {input.REVERSE} -o hiv.t32.n40.metaspades/
+        bash slurm/run_metaSPAdes.sh -f {input.FORWARD} -r {input.REVERSE} -o hiv.t32.n40.metaspades/{wildcards.sample}
         """
