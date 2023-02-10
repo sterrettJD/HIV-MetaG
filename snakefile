@@ -1,5 +1,8 @@
 import pandas as pd
 
+# TODO: document unnecesary f strings
+# TODO: update readme
+# TODO: SLURM profile
 df = pd.read_csv("metadata.txt", sep="\t")
 SAMPLES = df["PID"].tolist()
 
@@ -212,14 +215,28 @@ rule aggregate_humann_outs:
         """
 
 
-"""
-
 rule assemble_metaspades:
     input:
-        - nixed FORWARD
-        - nixed REVERSE
+        FORWARD=f"hiv.t32.nix40/{{sample}}.R1.fq.gz",
+        REVERSE=f"hiv.t32.nix40/{{sample}}.R2.fq.gz"
     output:
-        # TODO: figure out structure of metaSPAdes output
+        CORRECT_R1=f"hiv.t32.n40.metaspades/{{sample}}/corrected/{sample}.R1.{nixing_len}.fq.00.0_0.cor.fastq.gz",
+        CORRECT_R2=f"hiv.t32.n40.metaspades/{{sample}}/corrected/{sample}.R2.{nixing_len}.fq.00.0_0.cor.fastq.gz",
+        CORRECT_UNPAIRED=f"hiv.t32.n40.metaspades/{{sample}}/corrected/{sample}.R_unpaired.{nixing_len}.fq.00.0_0.cor.fastq.gz",
+        CONTIGS=f"hiv.t32.n40.metaspades/{{sample}}/contigs.fasta",
+        SCAFFOLDS=f"hiv.t32.n40.metaspades/{{sample}}/scaffolds.fasta",
+        CONTIG_PATHS=f"hiv.t32.n40.metaspades/{{sample}}/contigs.paths",
+        SCAFFOLD_PATHS=f"hiv.t32.n40.metaspades/{{sample}}/scaffolds.paths",
+        GRAPH=f"hiv.t32.n40.metaspades/{{sample}}/assembly_graph.fastg",
+        GRAPH_SCAFFOLDS=f"hiv.t32.n40.metaspades/{{sample}}/assembly_graph_with_scaffolds.gfa"
+    resources:
+      partition="short",
+      mem_mb=int(250*1000), # MB, or 250 GB
+      runtime=int(23*60), # min, or 23 hours
+      tasks=32,
+      slurm_extra="--error=/scratch/Users/jost9358/HIV-MetaG/slurm_outs/metaspades_%j.err --output=/scratch/Users/jost9358/HIV-MetaG/slurm_outs/metaspades_%j.out --mail-type=END --mail-user=jost9358@colorado.edu"
     shell:
-        "sbatch slurm/run_metaSPAdes.sbatch -f FORWARD -r REVERSE -o OUTPUT"
-"""
+        """
+        mkdir -p hiv.t32.n40.metaspades
+        bash slurm/run_metaSPAdes.sh -f {input.FORWARD} -r {input.REVERSE} -o hiv.t32.n40.metaspades/
+        """
