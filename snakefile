@@ -38,7 +38,18 @@ rule all:
         "hiv.t32.concat.humann/all_genefamilies.tsv",
         "hiv.t32.concat.humann/all_genefamilies_grouped.tsv",
         "hiv.t32.concat.humann/all_genefamilies_grouped.tsv",
-        "hiv.t32.concat.humann/all_bugs_list.tsv"
+        "hiv.t32.concat.humann/all_bugs_list.tsv",
+
+        # Made by metaspades
+        expand(f"hiv.t32.n40.metaspades/{{sample}}/corrected/{{sample}}.R1.{nixing_len}.fq.00.0_0.cor.fastq.gz", sample=SAMPLES),
+        expand(f"hiv.t32.n40.metaspades/{{sample}}/corrected/{{sample}}.R2.{nixing_len}.fq.00.0_0.cor.fastq.gz", sample=SAMPLES),
+        expand(f"hiv.t32.n40.metaspades/{{sample}}/corrected/{{sample}}.R_unpaired.{nixing_len}.fq.00.0_0.cor.fastq.gz", sample=SAMPLES),
+        expand(f"hiv.t32.n40.metaspades/{{sample}}/contigs.fasta", sample=SAMPLES),
+        expand(f"hiv.t32.n40.metaspades/{{sample}}/scaffolds.fasta", sample=SAMPLES),
+        expand(f"hiv.t32.n40.metaspades/{{sample}}/contigs.paths", sample=SAMPLES),
+        expand(f"hiv.t32.n40.metaspades/{{sample}}/scaffolds.paths", sample=SAMPLES),
+        expand(f"hiv.t32.n40.metaspades/{{sample}}/assembly_graph.fastg", sample=SAMPLES),
+        expand(f"hiv.t32.n40.metaspades/{{sample}}/assembly_graph_with_scaffolds.gfa" sample=SAMPLES)
 
 
 
@@ -220,9 +231,9 @@ rule assemble_metaspades:
         FORWARD=f"hiv.t32.nix40/{{sample}}.R1.fq.gz",
         REVERSE=f"hiv.t32.nix40/{{sample}}.R2.fq.gz"
     output:
-        CORRECT_R1=f"hiv.t32.n40.metaspades/{{sample}}/corrected/{sample}.R1.{nixing_len}.fq.00.0_0.cor.fastq.gz",
-        CORRECT_R2=f"hiv.t32.n40.metaspades/{{sample}}/corrected/{sample}.R2.{nixing_len}.fq.00.0_0.cor.fastq.gz",
-        CORRECT_UNPAIRED=f"hiv.t32.n40.metaspades/{{sample}}/corrected/{sample}.R_unpaired.{nixing_len}.fq.00.0_0.cor.fastq.gz",
+        CORRECT_R1=f"hiv.t32.n40.metaspades/{{sample}}/corrected/{{sample}}.R1.{nixing_len}.fq.00.0_0.cor.fastq.gz",
+        CORRECT_R2=f"hiv.t32.n40.metaspades/{{sample}}/corrected/{{sample}}.R2.{nixing_len}.fq.00.0_0.cor.fastq.gz",
+        CORRECT_UNPAIRED=f"hiv.t32.n40.metaspades/{{sample}}/corrected/{{sample}}.R_unpaired.{nixing_len}.fq.00.0_0.cor.fastq.gz",
         CONTIGS=f"hiv.t32.n40.metaspades/{{sample}}/contigs.fasta",
         SCAFFOLDS=f"hiv.t32.n40.metaspades/{{sample}}/scaffolds.fasta",
         CONTIG_PATHS=f"hiv.t32.n40.metaspades/{{sample}}/contigs.paths",
