@@ -64,8 +64,8 @@ rule nix_shortreads:
         partition="short",
         mem_mb=25000, # MB
         runtime=60, # min
-        tasks=8,
         slurm_extra="--error=/scratch/Users/jost9358/HIV-MetaG/slurm_outs/nixshort_%j.err --output=/scratch/Users/jost9358/HIV-MetaG/slurm_outs/nixshort_%j.out --mail-type=END --mail-user=jost9358@colorado.edu"
+  threads: 8
   run:
       shell("mkdir -p %s" % nixing_dir) #in case this directory doesn't exist. if it does, nothing will be done
       shell(f"bash slurm/nix_shortreads.sh {{input.FORWARD}} {{input.REVERSE}} {nixing_len} {{output.FORWARD}} {{output.REVERSE}}")
@@ -81,8 +81,8 @@ rule concat_files:
         partition="short",
         mem_mb=30000, # MB
         runtime=int(60*2.5), # min
-        tasks=1,
         slurm_extra="--error=/scratch/Users/jost9358/HIV-MetaG/slurm_outs/concat_%j.err --output=/scratch/Users/jost9358/HIV-MetaG/slurm_outs/concat_%j.out --mail-type=END --mail-user=jost9358@colorado.edu"
+  threads: 1
   run:
       shell("mkdir -p hiv.t32.concat") #in case this directory doesn't exist. if it does, nothing will be done
       shell(f"bash slurm/concat_files.sh -f {{input.FORWARD}} -r {{input.REVERSE}} -o {{output}}")
@@ -98,8 +98,8 @@ rule concat_nixed_files:
         partition="short",
         mem_mb=30000, # MB
         runtime=int(60*2.5), # min
-        tasks=1,
         slurm_extra="--error=/scratch/Users/jost9358/HIV-MetaG/slurm_outs/concatnix_%j.err --output=/scratch/Users/jost9358/HIV-MetaG/slurm_outs/concatnix_%j.out --mail-type=END --mail-user=jost9358@colorado.edu"
+  threads: 1
   run:
       shell("mkdir -p hiv.t32.concat.n40") #in case this directory doesn't exist. if it does, nothing will be done
       shell(f"bash slurm/concat_files.sh -f {{input.FORWARD}} -r {{input.REVERSE}} -o {{output}}")
@@ -116,8 +116,8 @@ rule run_nonpareil:
         partition="short",
         mem_mb=30000, # MB
         runtime=int(60*3), # min
-        tasks=16,
         slurm_extra="--error=/scratch/Users/jost9358/HIV-MetaG/slurm_outs/nonpareil_%j.err --output=/scratch/Users/jost9358/HIV-MetaG/slurm_outs/nonpareil_%j.out --mail-type=END --mail-user=jost9358@colorado.edu"
+    threads: 16
     run:
         shell("mkdir -p hiv.t32.concat.n40.nonpareil")
         shell("bash slurm/run_nonpareil.sh -i {input} -o hiv.t32.concat.n40.nonpareil/{wildcards.sample}")
@@ -134,8 +134,8 @@ rule run_nonpareil_bigmem:
         partition="short",
         mem_mb=60000, # MB
         runtime=int(60*5), # min
-        tasks=16,
         slurm_extra="--error=/scratch/Users/jost9358/HIV-MetaG/slurm_outs/nonpareil_%j.err --output=/scratch/Users/jost9358/HIV-MetaG/slurm_outs/nonpareil_%j.out --mail-type=END --mail-user=jost9358@colorado.edu"
+    threads: 16
     run:
         shell("mkdir -p hiv.t32.concat.n40.nonpareil.bigmem")
         shell("bash slurm/run_nonpareil.sh -i {input} -o hiv.t32.concat.n40.nonpareil.bigmem/{wildcards.sample}")
@@ -149,9 +149,9 @@ rule get_biobakery_dbs:
         partition="short",
         mem_mb=100000, # MB
         runtime=int(60*5), # min
-        tasks=1,
         slurm_extra="--error=/scratch/Users/jost9358/HIV-MetaG/slurm_outs/up_biobake_%j.err --output=/scratch/Users/jost9358/HIV-MetaG/slurm_outs/up_biobake_%j.out --mail-type=END --mail-user=jost9358@colorado.edu"
     # This can also be run using slurm/update_biobake_dbs.sbatch
+    threads: 1
     shell:
         """
         source activate humannenv4
@@ -178,8 +178,8 @@ rule run_humann:
       partition="long",
       mem_mb=int(150*1000), # MB, or 150 GB
       runtime=int(48*60), # min, or 48 hours
-      tasks=16,
       slurm_extra="--error=/scratch/Users/jost9358/HIV-MetaG/slurm_outs/humann_%j.err --output=/scratch/Users/jost9358/HIV-MetaG/slurm_outs/humann_%j.out --mail-type=END --mail-user=jost9358@colorado.edu"
+  threads: 16
   shell:
       "bash slurm/run_humann.sh -i {input.CONCAT_FILES} -o hiv.t32.concat.humann/{wildcards.sample}"
 
@@ -208,8 +208,8 @@ rule aggregate_humann_outs:
         partition="short",
         mem_mb=int(20*1000), # MB, or 20 GB
         runtime=120, # min
-        tasks=1,
         slurm_extra="--error=/scratch/Users/jost9358/HIV-MetaG/slurm_outs/agg_bug_%j.err --output=/scratch/Users/jost9358/HIV-MetaG/slurm_outs/agg_bug_%j.out --mail-type=END --mail-user=jost9358@colorado.edu"
+    threads: 1
     shell:
         """
         source activate humannenv4
@@ -244,10 +244,26 @@ rule assemble_metaspades:
       partition="short",
       mem_mb=int(250*1000), # MB, or 250 GB
       runtime=int(23*60), # min, or 23 hours
-      tasks=32,
       slurm_extra="--error=/scratch/Users/jost9358/HIV-MetaG/slurm_outs/metaspades_%j.err --output=/scratch/Users/jost9358/HIV-MetaG/slurm_outs/metaspades_%j.out --mail-type=END --mail-user=jost9358@colorado.edu"
+    threads: 32
     shell:
         """
         mkdir -p hiv.t32.n40.metaspades
         bash slurm/run_metaSPAdes.sh -f {input.FORWARD} -r {input.REVERSE} -o hiv.t32.n40.metaspades/{wildcards.sample}
         """
+
+# Add in Seqtk for subsampling?
+
+# MetaBAT2 for binning
+
+# PRODIGAL
+
+# CheckM for assessing MAGs
+
+# CheckV for viral MAGs
+
+# EukRep for eukaryyotic MAGs
+
+# dRep for de-replication
+
+# inStrain for strain-level diversity
