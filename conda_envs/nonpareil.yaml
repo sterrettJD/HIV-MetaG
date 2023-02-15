@@ -1,0 +1,7 @@
+name: nonpareilenv
+channels:
+  - biobakery
+  - conda-forge
+  - bioconda
+  - defaults
+prefix: /Users/jost9358/miniconda3/envs/nonpareilenv
