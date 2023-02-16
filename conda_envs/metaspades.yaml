@@ -1,0 +1,9 @@
+name: metaspades
+channels:
+  - biobakery
+  - conda-forge
+  - bioconda
+  - defaults
+dependencies:
+  - spades
+prefix: /Users/jost9358/miniconda3/envs/metaspades
