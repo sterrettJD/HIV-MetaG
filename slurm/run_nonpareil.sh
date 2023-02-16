@@ -13,9 +13,6 @@ do
     esac
 done
 
-# Activate conda enviroment
-source activate nonparielenv
-
 # make directory for the temp file and output
 if [ -d $outpath ]
 then
