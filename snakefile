@@ -63,8 +63,7 @@ rule nix_shortreads:
   resources:
         partition="short",
         mem_mb=25000, # MB
-        runtime=60, # min
-        slurm_extra="--error=/scratch/Users/jost9358/HIV-MetaG/slurm_outs/nixshort_%j.err --output=/scratch/Users/jost9358/HIV-MetaG/slurm_outs/nixshort_%j.out --mail-type=END --mail-user=jost9358@colorado.edu"
+        runtime=60 # min
   threads: 8
   run:
       shell("mkdir -p %s" % nixing_dir) #in case this directory doesn't exist. if it does, nothing will be done
@@ -80,8 +79,7 @@ rule concat_files:
   resources:
         partition="short",
         mem_mb=30000, # MB
-        runtime=int(60*2.5), # min
-        slurm_extra="--error=/scratch/Users/jost9358/HIV-MetaG/slurm_outs/concat_%j.err --output=/scratch/Users/jost9358/HIV-MetaG/slurm_outs/concat_%j.out --mail-type=END --mail-user=jost9358@colorado.edu"
+        runtime=int(60*2.5) # min
   threads: 1
   run:
       shell("mkdir -p hiv.t32.concat") #in case this directory doesn't exist. if it does, nothing will be done
@@ -97,8 +95,7 @@ rule concat_nixed_files:
   resources:
         partition="short",
         mem_mb=30000, # MB
-        runtime=int(60*2.5), # min
-        slurm_extra="--error=/scratch/Users/jost9358/HIV-MetaG/slurm_outs/concatnix_%j.err --output=/scratch/Users/jost9358/HIV-MetaG/slurm_outs/concatnix_%j.out --mail-type=END --mail-user=jost9358@colorado.edu"
+        runtime=int(60*2.5) # min
   threads: 1
   run:
       shell("mkdir -p hiv.t32.concat.n40") #in case this directory doesn't exist. if it does, nothing will be done
@@ -115,8 +112,7 @@ rule run_nonpareil:
     resources:
         partition="short",
         mem_mb=30000, # MB
-        runtime=int(60*3), # min
-        slurm_extra="--error=/scratch/Users/jost9358/HIV-MetaG/slurm_outs/nonpareil_%j.err --output=/scratch/Users/jost9358/HIV-MetaG/slurm_outs/nonpareil_%j.out --mail-type=END --mail-user=jost9358@colorado.edu"
+        runtime=int(60*3) # min
     threads: 16
     run:
         shell("mkdir -p hiv.t32.concat.n40.nonpareil")
@@ -133,8 +129,7 @@ rule run_nonpareil_bigmem:
     resources:
         partition="short",
         mem_mb=60000, # MB
-        runtime=int(60*5), # min
-        slurm_extra="--error=/scratch/Users/jost9358/HIV-MetaG/slurm_outs/nonpareil_%j.err --output=/scratch/Users/jost9358/HIV-MetaG/slurm_outs/nonpareil_%j.out --mail-type=END --mail-user=jost9358@colorado.edu"
+        runtime=int(60*5) # min
     threads: 16
     run:
         shell("mkdir -p hiv.t32.concat.n40.nonpareil.bigmem")
@@ -148,8 +143,7 @@ rule get_biobakery_dbs:
     resources:
         partition="short",
         mem_mb=100000, # MB
-        runtime=int(60*5), # min
-        slurm_extra="--error=/scratch/Users/jost9358/HIV-MetaG/slurm_outs/up_biobake_%j.err --output=/scratch/Users/jost9358/HIV-MetaG/slurm_outs/up_biobake_%j.out --mail-type=END --mail-user=jost9358@colorado.edu"
+        runtime=int(60*5) # min
     # This can also be run using slurm/update_biobake_dbs.sbatch
     threads: 1
     shell:
@@ -177,8 +171,7 @@ rule run_humann:
   resources:
       partition="long",
       mem_mb=int(150*1000), # MB, or 150 GB
-      runtime=int(48*60), # min, or 48 hours
-      slurm_extra="--error=/scratch/Users/jost9358/HIV-MetaG/slurm_outs/humann_%j.err --output=/scratch/Users/jost9358/HIV-MetaG/slurm_outs/humann_%j.out --mail-type=END --mail-user=jost9358@colorado.edu"
+      runtime=int(48*60) # min, or 48 hours
   threads: 16
   shell:
       "bash slurm/run_humann.sh -i {input.CONCAT_FILES} -o hiv.t32.concat.humann/{wildcards.sample}"
@@ -206,9 +199,8 @@ rule aggregate_humann_outs:
 
     resources:
         partition="short",
-        mem_mb=int(20*1000), # MB, or 20 GB
-        runtime=120, # min
-        slurm_extra="--error=/scratch/Users/jost9358/HIV-MetaG/slurm_outs/agg_bug_%j.err --output=/scratch/Users/jost9358/HIV-MetaG/slurm_outs/agg_bug_%j.out --mail-type=END --mail-user=jost9358@colorado.edu"
+        mem_mb=int(10*1000), # MB, or 10 GB
+        runtime=60 # min
     threads: 1
     shell:
         """
@@ -243,8 +235,7 @@ rule assemble_metaspades:
     resources:
       partition="short",
       mem_mb=int(250*1000), # MB, or 250 GB
-      runtime=int(23*60), # min, or 23 hours
-      slurm_extra="--error=/scratch/Users/jost9358/HIV-MetaG/slurm_outs/metaspades_%j.err --output=/scratch/Users/jost9358/HIV-MetaG/slurm_outs/metaspades_%j.out --mail-type=END --mail-user=jost9358@colorado.edu"
+      runtime=int(23*60) # min, or 23 hours
     threads: 32
     shell:
         """
