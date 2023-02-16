@@ -174,7 +174,10 @@ rule run_humann:
   threads: 16
   conda: "conda_envs/humann.yaml"
   shell:
-      "bash slurm/run_humann.sh -i {input.CONCAT_FILES} -o hiv.t32.concat.humann/{wildcards.sample}"
+      """
+      mkdir -p hiv.t32.concat.humann
+      humann -i {input.CONCAT_FILES} -o hiv.t32.concat.humann/{wildcards.sample} --threads 16 --search-mode uniref90
+      """
 
 
 rule aggregate_humann_outs:
@@ -238,7 +241,7 @@ rule assemble_metaspades:
     shell:
         """
         mkdir -p hiv.t32.n40.metaspades
-        bash slurm/run_metaSPAdes.sh -f {input.FORWARD} -r {input.REVERSE} -o hiv.t32.n40.metaspades/{wildcards.sample}
+        metaspades.py -o hiv.t32.n40.metaspades/{wildcards.sample} --pe1-1 {input.FORWARD} --pe1-2 {input.REVERSE} --threads 32
         """
 
 # Add in Seqtk for subsampling?
