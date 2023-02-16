@@ -38,7 +38,10 @@ Main sections:
 ## Data processing outside of YMP
 ### Snakemake
 - All important following steps should be in `snakefile`
-- Run using `snakemake --cluster "sbatch" -j 30 --latency-wait 60`
+- Run using `snakemake --profile slurm`
+  - This requires you to have a profile setup called `slurm` in your .config.
+  Mine is located at `~/.config/snakemake/slurm/` on my cluster. 
+  I used a [Cookiecutter snakemake slurm](https://github.com/Snakemake-Profiles/slurm). 
 - If jobs are running when FIJI times out, run `snakemake --unlock` next time you need to run snakemake. This is because snakemake will lock the directory if it closes unexpectedly.
 - A dag of jobs can be made using `snakemake --dag | dot -Tsvg > dag.svg`
 

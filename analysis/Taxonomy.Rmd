@@ -117,7 +117,7 @@ plot_1 <- plot + scale_y_continuous(labels = scales::percent, expand = expansion
 
 multi <- plot_grid(plot_1, GP_legend,  rel_widths = c(1, .25))
 multi
-ggsave("../figures/taxa-bar-phyum-genus-microshades.pdf",plot=multi,height=6,width=10)
+ggsave("../figures/taxa-bar-phyum-genus-microshades.pdf",plot=multi,height=10,width=10)
 
 ```
 
@@ -154,7 +154,7 @@ plot_1 <- plot + scale_y_continuous(labels = scales::percent, expand = expansion
 
 multi <- plot_grid(plot_1, GP_legend,  rel_widths = c(1, .25))
 multi
-ggsave("../figures/taxa-bar-Risk-phyum-genus-microshades.pdf",plot=multi,height=6,width=10)
+ggsave("../figures/taxa-bar-Risk-phyum-genus-microshades.pdf",plot=multi,height=10,width=10)
 
 ```
 
