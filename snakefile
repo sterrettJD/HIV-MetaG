@@ -1,8 +1,6 @@
 import pandas as pd
 
 # TODO: document unnecesary f strings
-# TODO: update readme
-# TODO: SLURM profile
 df = pd.read_csv("metadata.txt", sep="\t")
 SAMPLES = df["PID"].tolist()
 
@@ -114,6 +112,7 @@ rule run_nonpareil:
         mem_mb=30000, # MB
         runtime=int(60*3) # min
     threads: 16
+    conda: "conda_envs/nonpareil.yaml"
     run:
         shell("mkdir -p hiv.t32.concat.n40.nonpareil")
         shell("bash slurm/run_nonpareil.sh -i {input} -o hiv.t32.concat.n40.nonpareil/{wildcards.sample}")
@@ -131,6 +130,7 @@ rule run_nonpareil_bigmem:
         mem_mb=60000, # MB
         runtime=int(60*5) # min
     threads: 16
+    conda: "conda_envs/nonpareil.yaml"
     run:
         shell("mkdir -p hiv.t32.concat.n40.nonpareil.bigmem")
         shell("bash slurm/run_nonpareil.sh -i {input} -o hiv.t32.concat.n40.nonpareil.bigmem/{wildcards.sample}")
@@ -146,10 +146,9 @@ rule get_biobakery_dbs:
         runtime=int(60*5) # min
     # This can also be run using slurm/update_biobake_dbs.sbatch
     threads: 1
+    conda: "conda_envs/humann.yaml"
     shell:
         """
-        source activate humannenv4
-
         humann_databases --download chocophlan full ~/humann_dbs/chocophlan/ --update-config yes
         humann_databases --download uniref uniref90_diamond ~/humann_dbs/uniref/ --update-config yes
         """
@@ -173,13 +172,12 @@ rule run_humann:
       mem_mb=int(150*1000), # MB, or 150 GB
       runtime=int(48*60) # min, or 48 hours
   threads: 16
+  conda: "conda_envs/humann.yaml"
   shell:
       "bash slurm/run_humann.sh -i {input.CONCAT_FILES} -o hiv.t32.concat.humann/{wildcards.sample}"
 
 
 rule aggregate_humann_outs:
-    # EXPAND MIGHT NOT BE THE RIGHT CHOICE HERE
-    # TODO: CHECK IF THIS SHOULD BE EXPANDED
     input:
         PATHABUND=expand("hiv.t32.concat.humann/{sample}/pathabundance.tsv",
                 sample=SAMPLES),
@@ -202,10 +200,9 @@ rule aggregate_humann_outs:
         mem_mb=int(10*1000), # MB, or 10 GB
         runtime=60 # min
     threads: 1
+    conda: "conda_envs/humann.yaml"
     shell:
         """
-        source activate humannenv4
-
         humann_join_tables -i hiv.t32.concat.humann -o {output.PATHABUND} --file_name pathabundance.tsv --search-subdirectories
 
         humann_join_tables -i hiv.t32.concat.humann -o {output.PATHCOV} --file_name pathcoverage.tsv --search-subdirectories
@@ -237,6 +234,7 @@ rule assemble_metaspades:
       mem_mb=int(250*1000), # MB, or 250 GB
       runtime=int(23*60) # min, or 23 hours
     threads: 32
+    conda: "conda_envs/metaspades.yaml"
     shell:
         """
         mkdir -p hiv.t32.n40.metaspades
