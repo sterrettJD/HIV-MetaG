@@ -241,7 +241,7 @@ rule assemble_metaspades:
         GRAPH_SCAFFOLDS=f"hiv.t32.n40.metaspades/{{sample}}/assembly_graph_with_scaffolds.gfa"
     resources:
       partition="short",
-      mem_mb=int(150*1000), # MB, or 150 GB
+      mem_mb=int(125*1000), # MB, or 125 GB
       runtime=int(23*60) # min, or 23 hours
     threads: 32
     conda: "conda_envs/metaspades.yaml"
