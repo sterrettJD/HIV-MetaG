@@ -12,7 +12,9 @@ if (!require("Nonpareil")){
 if (!require("data.table")){
   install.packages('data.table');  
 }
-
+if (!require("ggplot2")){
+  install.packages('ggplot2');  
+}
 
 setwd("/scratch/Users/jost9358/HIV-MetaG")
 ```
@@ -25,9 +27,22 @@ filepaths <- paste0("hiv.t32.concat.n40.nonpareil/", metadata$PID, ".npo")
 np <- Nonpareil.set(filepaths, labels=metadata$PID)
 
 # Show current coverage (as %)
-summary(np)[,"C"]*100
+coverages <- summary(np)[,"C"]*100 
+summary(coverages)
 
-print(np) 
+plot(coverages, summary(np)[,"LR"]/1e9)
+
+ggplot(mapping=aes(y=coverages,
+                   x=summary(np)[,"LR"]/1e9)) +
+  geom_point(size=3) +
+  labs(y="Estimated Percent Coverage",
+       x="Effective Sequencing Effort (Gbp)")
+
+ggplot(mapping=aes(y=coverages,
+                   x=summary(np)[,"diversity"])) +
+  geom_point(size=3) +
+  labs(y="Estimated Percent Coverage",
+       x="Sequence Diversity Index")
 
 summary(np)[,"LR"]/1e9
 
