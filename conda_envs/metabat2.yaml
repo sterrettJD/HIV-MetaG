@@ -1,0 +1,9 @@
+name: metabat2
+channels:
+  - biobakery
+  - conda-forge
+  - bioconda
+  - defaults
+dependencies:
+  - metabat2
+prefix: /Users/jost9358/miniconda3/envs/metabat2
