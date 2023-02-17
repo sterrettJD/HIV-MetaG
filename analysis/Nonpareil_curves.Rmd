@@ -15,14 +15,12 @@ if (!require("data.table")){
 if (!require("ggplot2")){
   install.packages('ggplot2');  
 }
-
-setwd("/scratch/Users/jost9358/HIV-MetaG")
 ```
 
 # Curves
 ```{r}
-metadata <- data.table::fread("metadata.txt")
-filepaths <- paste0("hiv.t32.concat.n40.nonpareil/", metadata$PID, ".npo")
+metadata <- data.table::fread("../metadata.txt")
+filepaths <- paste0("../hiv.t32.concat.n40.nonpareil/", metadata$PID, ".npo")
 
 np <- Nonpareil.set(filepaths, labels=metadata$PID)
 
@@ -30,7 +28,6 @@ np <- Nonpareil.set(filepaths, labels=metadata$PID)
 coverages <- summary(np)[,"C"]*100 
 summary(coverages)
 
-plot(coverages, summary(np)[,"LR"]/1e9)
 
 ggplot(mapping=aes(y=coverages,
                    x=summary(np)[,"LR"]/1e9)) +
