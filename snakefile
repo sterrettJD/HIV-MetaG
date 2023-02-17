@@ -37,6 +37,8 @@ rule all:
         "hiv.t32.concat.humann/all_genefamilies_grouped.tsv",
         "hiv.t32.concat.humann/all_genefamilies_grouped.tsv",
         "hiv.t32.concat.humann/all_bugs_list.tsv",
+        expand("hiv.t32.concat.humann/{sample}/{sample}.concat_humann_temp/{sample}.concat_metaphlan_bugs_list_v3.tsv",
+               sample=SAMPLES),
 
         # Made by metaspades
         expand(f"hiv.t32.n40.metaspades/{{sample}}/corrected/{{sample}}.R1.{nixing_len}.fq.00.0_0.cor.fastq.gz", sample=SAMPLES),
@@ -253,7 +255,35 @@ rule assemble_metaspades:
 
 # Add in Seqtk for subsampling?
 
+#
+# rule map_fastq_to_contigs:
+"""
+bowtie2-build final.contigs.fa final.contigs
+bowtie2 -x final.contigs -1 tara_reads_R1.fastq.gz -2 tara_reads_R2.fastq.gz | \
+    samtools view -bS -o tara_to_sort.bam
+samtools sort tara_to_sort.bam -o tara.bam
+samtools index tara.bam
+"""
+
 # MetaBAT2 for binning
+#rule run_metabat2:
+#    input:
+#        SCAFFOLDS=f"hiv.t32.n40.metaspades/{{sample}}/scaffolds.fasta",
+#        SORTED_BAM= <NO INPUT YET>
+#
+#    output:
+#        ????? https://nf-co.re/mag/1.1.1/output#spades
+#    resources:
+#      partition="short",
+#      mem_mb=???, # MB, or 125 GB
+#      runtime=??? # min, or 23 hours
+#    threads: ???
+#    conda: "conda_envs/metabat2.yaml"
+#    shell:
+#        """
+#        runMetaBat.sh {input.SCAFFOLDS} {input.SORTED_BAM}
+#        """
+
 
 # PRODIGAL
 
