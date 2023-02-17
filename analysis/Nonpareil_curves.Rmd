@@ -1,0 +1,34 @@
+---
+title: "Nonpareil curves"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+if (!require("Nonpareil")){
+  install.packages('Nonpareil');  
+}
+if (!require("data.table")){
+  install.packages('data.table');  
+}
+
+
+setwd("/scratch/Users/jost9358/HIV-MetaG")
+```
+
+# Curves
+```{r}
+metadata <- data.table::fread("metadata.txt")
+filepaths <- paste0("hiv.t32.concat.n40.nonpareil/", metadata$PID, ".npo")
+
+np <- Nonpareil.set(filepaths, labels=metadata$PID)
+
+# Show current coverage (as %)
+summary(np)[,"C"]*100
+
+print(np) 
+
+summary(np)[,"LR"]/1e9
+
+```
