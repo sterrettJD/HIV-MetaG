@@ -199,7 +199,9 @@ rule aggregate_humann_outs:
         GENEFAMS="hiv.t32.concat.humann/all_genefamilies.tsv",
         GENEFAMS_GROUPED="hiv.t32.concat.humann/all_genefamilies_grouped.tsv",
         GENEFAMS_GROUPED_NAMED="hiv.t32.concat.humann/all_genefamilies_grouped_named.tsv",
-        BUGSLIST="hiv.t32.concat.humann/all_bugs_list.tsv"
+        BUGSLIST="hiv.t32.concat.humann/all_bugs_list.tsv",
+        V3_NOAGG_BUGS=expand("hiv.t32.concat.humann/{sample}/{sample}.concat_humann_temp/{sample}.concat_metaphlan_bugs_list_v3.tsv",
+                             sample=SAMPLES)
 
     resources:
         partition="short",
@@ -218,6 +220,8 @@ rule aggregate_humann_outs:
         humann_rename_table -i {output.GENEFAMS_GROUPED} -n metacyc-rxn -o {output.GENEFAMS_GROUPED_NAMED}
 
         python utils/aggregate_metaphlan_bugslists.py -i hiv.t32.concat.humann -o {output.BUGSLIST}
+
+        python utils/convert_mphlan_v4_to_v3.py -i hiv.t32.concat.humann
         """
 
 
