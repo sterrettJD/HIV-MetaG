@@ -44,6 +44,8 @@ ggplot(mapping=aes(y=coverages,
   labs(y="Estimated Percent Coverage",
        x="Sequence Diversity Index")
 
-summary(np)[,"LR"]/1e9
+hist(coverages)
+hist(summary(np)[,"diversity"])
+hist(summary(np)[,"LR"]/1e9)
 
 ```
