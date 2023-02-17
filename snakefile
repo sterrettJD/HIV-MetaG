@@ -113,9 +113,11 @@ rule run_nonpareil:
         runtime=int(60*3) # min
     threads: 16
     conda: "conda_envs/nonpareil.yaml"
-    run:
-        shell("mkdir -p hiv.t32.concat.n40.nonpareil")
-        shell("bash slurm/run_nonpareil.sh -i {input} -o hiv.t32.concat.n40.nonpareil/{wildcards.sample}")
+    shell:
+        """
+        mkdir -p hiv.t32.concat.n40.nonpareil
+        bash slurm/run_nonpareil.sh -i {input} -o hiv.t32.concat.n40.nonpareil/{wildcards.sample}
+        """
 
 # Should probably delete one of these once I figure out the issues with nonpareil
 rule run_nonpareil_bigmem:
@@ -131,10 +133,11 @@ rule run_nonpareil_bigmem:
         runtime=int(60*5) # min
     threads: 16
     conda: "conda_envs/nonpareil.yaml"
-    run:
-        shell("mkdir -p hiv.t32.concat.n40.nonpareil.bigmem")
-        shell("bash slurm/run_nonpareil.sh -i {input} -o hiv.t32.concat.n40.nonpareil.bigmem/{wildcards.sample}")
-
+    shell:
+        """
+        mkdir -p hiv.t32.concat.n40.nonpareil.bigmem
+        bash slurm/run_nonpareil.sh -i {input} -o hiv.t32.concat.n40.nonpareil.bigmem/{wildcards.sample}
+        """
 
 rule get_biobakery_dbs:
     output:
