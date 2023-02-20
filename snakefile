@@ -234,7 +234,7 @@ rule assemble_metaspades:
     output:
         CORRECT_R1=f"hiv.t32.n40.metaspades/{{sample}}/corrected/{{sample}}.R1.{nixing_len}.fq.00.0_0.cor.fastq.gz",
         CORRECT_R2=f"hiv.t32.n40.metaspades/{{sample}}/corrected/{{sample}}.R2.{nixing_len}.fq.00.0_0.cor.fastq.gz",
-        CORRECT_UNPAIRED=f"hiv.t32.n40.metaspades/{{sample}}/corrected/{{sample}}.R_unpaired.{nixing_len}.fq.00.0_0.cor.fastq.gz",
+        CORRECT_UNPAIRED=f"hiv.t32.n40.metaspades/{{sample}}/corrected/{{sample}}.R_unpaired.00.0_0.cor.fastq.gz",
         CONTIGS=f"hiv.t32.n40.metaspades/{{sample}}/contigs.fasta",
         SCAFFOLDS=f"hiv.t32.n40.metaspades/{{sample}}/scaffolds.fasta",
         CONTIG_PATHS=f"hiv.t32.n40.metaspades/{{sample}}/contigs.paths",
