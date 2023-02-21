@@ -25,10 +25,6 @@ rule all:
         expand(f"hiv.t32.concat.n40.nonpareil/{{sample}}.npl", sample=SAMPLES),
         expand(f"hiv.t32.concat.n40.nonpareil/{{sample}}.npo", sample=SAMPLES),
         expand(f"hiv.t32.concat.n40.nonpareil/{{sample}}.npa", sample=SAMPLES),
-        # Made by nonpareil when allocated more resources (WHICH SEEMS TO BE SILENTLY ERRORING OUT MID-RUN)
-        expand(f"hiv.t32.concat.n40.nonpareil.bigmem/{{sample}}.npl", sample=SAMPLES),
-        expand(f"hiv.t32.concat.n40.nonpareil.bigmem/{{sample}}.npo", sample=SAMPLES),
-        expand(f"hiv.t32.concat.n40.nonpareil.bigmem/{{sample}}.npa", sample=SAMPLES),
 
         # Made by Humann (and aggregated by aggregate_humann_outs)
         "hiv.t32.concat.humann/all_pathabundance.tsv",
@@ -119,26 +115,6 @@ rule run_nonpareil:
         """
         mkdir -p hiv.t32.concat.n40.nonpareil
         bash slurm/run_nonpareil.sh -i {input} -o hiv.t32.concat.n40.nonpareil/{wildcards.sample}
-        """
-
-# Should probably delete one of these once I figure out the issues with nonpareil
-rule run_nonpareil_bigmem:
-    input:
-        "hiv.t32.concat.n40/{sample}.concat.fq.gz"
-    output:
-        f"hiv.t32.concat.n40.nonpareil.bigmem/{{sample}}.npl",
-        f"hiv.t32.concat.n40.nonpareil.bigmem/{{sample}}.npo",
-        f"hiv.t32.concat.n40.nonpareil.bigmem/{{sample}}.npa"
-    resources:
-        partition="short",
-        mem_mb=60000, # MB
-        runtime=int(60*5) # min
-    threads: 16
-    conda: "conda_envs/nonpareil.yaml"
-    shell:
-        """
-        mkdir -p hiv.t32.concat.n40.nonpareil.bigmem
-        bash slurm/run_nonpareil.sh -i {input} -o hiv.t32.concat.n40.nonpareil.bigmem/{wildcards.sample}
         """
 
 rule get_biobakery_dbs:
