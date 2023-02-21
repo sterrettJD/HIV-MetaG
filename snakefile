@@ -243,7 +243,7 @@ rule assemble_metaspades:
         GRAPH_SCAFFOLDS=f"hiv.t32.n40.metaspades/{{sample}}/assembly_graph_with_scaffolds.gfa"
     resources:
       partition="short",
-      mem_mb=int(100*1000), # MB, or 125 GB
+      mem_mb=int(100*1000), # MB, or 100 GB
       runtime=int(23*60) # min, or 23 hours
     threads: 32
     conda: "conda_envs/metaspades.yaml"
@@ -252,8 +252,41 @@ rule assemble_metaspades:
         mkdir -p hiv.t32.n40.metaspades
         metaspades.py -o hiv.t32.n40.metaspades/{wildcards.sample} --pe1-1 {input.FORWARD} --pe1-2 {input.REVERSE} --threads 32
         """
+# QUAST
+rule MetaQUAST:
+    input:
+        SCAFFOLDS=f"hiv.t32.n40.metaspades/{{sample}}/scaffolds.fasta"
+    output
+        REP_TEX=f"hiv.t32.n40.metaspades.metaQUAST/{{sample}}/report.tex", # LaTeX version of the summary
+        REP_TXT=f"hiv.t32.n40.metaspades.metaQUAST/{{sample}}/report.txt", # assessment summary in plain text format
+        REP_TSV=f"hiv.t32.n40.metaspades.metaQUAST/{{sample}}/report.tsv", # tab-separated version of the summary, suitable for spreadsheets (Google Docs, Excel, etc)
+        REP_PDF=f"hiv.t32.n40.metaspades.metaQUAST/{{sample}}/report.pdf", # all other plots combined with all tables (file is created if matplotlib python library is installed),
+        REP_HTML=f"hiv.t32.n40.metaspades.metaQUAST/{{sample}}/report.html", # HTML version of the report with interactive plots inside,
+        ICARUS=f"hiv.t32.n40.metaspades.metaQUAST/{{sample}}/icarus.html" # Icarus main menu with links to interactive viewers
+        """
+        TODO: Add these
+        contigs_reports/	(only if a reference genome is provided)
+        misassemblies_report	detailed report on misassemblies. See section 3.1.2 for details,
+        unaligned_report	detailed report on unaligned and partially unaligned contigs. See section 3.1.3 for details,
+        k_mer_stats/	(only if --k-mer-stats option is specified)
+        kmers_report	detailed report on k-mer-based metrics,
+        reads_stats/	(only if reads are provided)
+        reads_report	detailed report on mapped reads statistics.
+        """
+        #https://github.com/ablab/quast/discussions/166
+    resources:
+      partition="short",
+      mem_mb=int(50*1000), # MB, or 50 GB
+      runtime=int(8*60) # min, or 8 hours
+    threads: 8
+    conda: "conda_envs/QUAST.yaml"
+    shell:
+        """
+        mkdir -p hiv.t32.n40.metaspades.metaQUAST
+        metaquast.py -o hiv.t32.n40.metaspades.metaQUAST/{wildcards.sample} {input.SCAFFOLDS} -t 8
+        """
 
-# Add in Seqtk for subsampling?
+# Add in Seqtk for subsampling? Probably not
 
 #
 # rule map_fastq_to_contigs:
@@ -296,3 +329,5 @@ samtools index tara.bam
 # dRep for de-replication
 
 # inStrain for strain-level diversity
+
+# Use https://instrain.readthedocs.io/en/latest/user_manual.html#gene-annotation to look at annotation
