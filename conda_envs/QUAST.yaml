@@ -1,0 +1,9 @@
+name: QUAST
+channels:
+  - biobakery
+  - conda-forge
+  - bioconda
+  - defaults
+dependencies:
+  - quast
+prefix: /Users/jost9358/miniconda3/envs/QUAST
