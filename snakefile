@@ -237,7 +237,7 @@ rule MetaQUAST_scaffolds:
     input:
         SCAFFOLDS=expand(f"hiv.t32.n40.metaspades/{{sample}}/scaffolds.fasta",
                          sample=SAMPLES)
-    output
+    output:
         REP_HTML=f"hiv.t32.n40.metaspades.metaQUAST/report.html" # HTML version of the report with interactive plots inside
         #https://github.com/ablab/quast/discussions/166
     resources:
@@ -256,7 +256,7 @@ rule MetaQUAST_contigs:
     input:
         CONTIGS=expand(f"hiv.t32.n40.metaspades/{{sample}}/contigs.fasta",
                          sample=SAMPLES)
-    output
+    output:
         REP_HTML=f"hiv.t32.n40.metaspades.metaQUASTc/report.html" # HTML version of the report with interactive plots inside
         #https://github.com/ablab/quast/discussions/166
     resources:
