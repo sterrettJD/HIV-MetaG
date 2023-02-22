@@ -49,8 +49,14 @@ rule all:
 
         # Made by metaQUAST
         f"hiv.t32.n40.metaspades.metaQUAST/report.html", # on scaffolds
-        f"hiv.t32.n40.metaspades.metaQUASTc/report.html" # on contigs
+        f"hiv.t32.n40.metaspades.metaQUASTc/report.html", # on contigs
 
+        # Made by bowtie2 build
+        expand(f"hiv.t32.n40.metaspades/{{sample}}/contigs.index", sample=SAMPLES),
+
+        # Made by bowtie2 mapping to contigs
+        expand(f"hiv.t32.n40.metaspades.mapped/{{sample}}_unsorted.bam", sample=SAMPLES),
+        expand(f"hiv.t32.n40.metaspades.mapped/{{sample}}.bam", sample=SAMPLES)
 
 
 rule nix_shortreads:
@@ -272,15 +278,45 @@ rule MetaQUAST_contigs:
 
 # Add in Seqtk for subsampling? Probably not
 
-#
-# rule map_fastq_to_contigs:
-"""
-bowtie2-build final.contigs.fa final.contigs
-bowtie2 -x final.contigs -1 tara_reads_R1.fastq.gz -2 tara_reads_R2.fastq.gz | \
-    samtools view -bS -o tara_to_sort.bam
-samtools sort tara_to_sort.bam -o tara.bam
-samtools index tara.bam
-"""
+rule build_contigs_index:
+    input:
+        CONTIGS=f"hiv.t32.n40.metaspades/{{sample}}/contigs.fasta"
+    output:
+        INDEX=f"hiv.t32.n40.metaspades/{{sample}}/contigs.index"
+    resources:
+      partition="short",
+      mem_mb=int(20*1000), # MB, or 20 GB
+      runtime=int(8*60) # min, or 8 hours
+    threads: 8
+    conda: "conda_envs/bowtie2.yaml"
+    shell:
+        """
+        bowtie2-build --threads 8 {input.CONTIGS} {output.INDEX}
+        """
+
+rule map_fastq_to_contigs:
+    input:
+        INDEX=f"hiv.t32.n40.metaspades/{{sample}}/contigs.index",
+        FORWARD=f"hiv.t32.nix40/{{sample}}.R1.{nixing_len}.fq.gz",
+        REVERSE=f"hiv.t32.nix40/{{sample}}.R2.{nixing_len}.fq.gz"
+    output:
+        BAM=f"hiv.t32.n40.metaspades.mapped/{{sample}}_unsorted.bam",
+        SORTED_BAM=f"hiv.t32.n40.metaspades.mapped/{{sample}}.bam"
+    resources:
+        partition="short",
+        mem_mb=int(20*1000), # MB, or 20 GB
+        runtime=int(8*60) # min, or 8 hours
+    threads: 8
+    conda: "conda_envs/bowtie2.yaml"
+    shell:
+        """
+        bowtie2 -x {input.INDEX} -1 {input.FORWARD} -2 {input.REVERSE} | \
+            samtools view -bS -o {output.BAM}
+        samtools sort {output.BAM} -o {output.SORTED_BAM}
+        samtools index {output.SORTED_BAM}
+        """
+
+
 
 # MetaBAT2 for binning
 #rule run_metabat2:
