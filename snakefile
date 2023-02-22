@@ -388,9 +388,25 @@ rule run_metabat2_scaffolds:
         touch hiv.t32.n40.metaspades.metabat2/{wildcards.sample}.metabat2done
         """
 
-# PRODIGAL
-
 # CheckM for assessing MAGs
+rule pull_checkM_db:
+    input:
+    output:
+        "checkm_data_2015_01_16"
+    resources:
+      partition="short",
+      mem_mb=int(10*1000), # MB, or 10 GB
+      runtime=int(2*60) # min, or 2 hours
+    threads: 1
+    conda: "conda_envs/checkM"
+    shell:
+        """
+        wget https://zenodo.org/record/7401545/files/checkm_data_2015_01_16.tar.gz?download=1
+        tar -xvf checkm_data_2015_01_16.tar.gz
+        checkM data setRoot checkm_data_2015_01_16
+        """
+
+# rule checkM:
 
 # CheckV for viral MAGs
 
