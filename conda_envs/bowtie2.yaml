@@ -1,0 +1,10 @@
+name: bowtie2
+channels:
+  - biobakery
+  - conda-forge
+  - bioconda
+  - defaults
+dependencies:
+  - samtools
+  - bowtie2
+prefix: /Users/jost9358/miniconda3/envs/bowtie2
