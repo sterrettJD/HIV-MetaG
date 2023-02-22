@@ -1,0 +1,17 @@
+name: checkM
+channels:
+  - biobakery
+  - conda-forge
+  - bioconda
+  - defaults
+dependencies:
+  - python=3.9
+  - pysam
+  - matplotlib
+  - numpy
+  - prodigal
+  - hmmer
+  - pplacer
+pip:
+  - checkm-genome
+prefix: /Users/jost9358/miniconda3/envs/checkM
