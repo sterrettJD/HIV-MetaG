@@ -52,11 +52,21 @@ rule all:
         f"hiv.t32.n40.metaspades.metaQUASTc/report.html", # on contigs
 
         # Made by bowtie2 build
+        expand(f"hiv.t32.n40.metaspades/{{sample}}/scaffolds.index", sample=SAMPLES),
         expand(f"hiv.t32.n40.metaspades/{{sample}}/contigs.index", sample=SAMPLES),
 
-        # Made by bowtie2 mapping to contigs
+        # Made by bowtie2 mapping to scaffolds
         expand(f"hiv.t32.n40.metaspades.mapped/{{sample}}_unsorted.bam", sample=SAMPLES),
-        expand(f"hiv.t32.n40.metaspades.mapped/{{sample}}.bam", sample=SAMPLES)
+        expand(f"hiv.t32.n40.metaspades.mapped/{{sample}}.bam", sample=SAMPLES),
+
+        # Made by bowtie2 mapping to contigs
+        expand(f"hiv.t32.n40.metaspades.mappedc/{{sample}}_unsorted.bam", sample=SAMPLES),
+        expand(f"hiv.t32.n40.metaspades.mappedc/{{sample}}.bam", sample=SAMPLES),
+
+        # Done file made by metabat2
+        expand(f"hiv.t32.n40.metaspades.metabat2/{{sample}}.metabat2done", sample=SAMPLES)
+
+
 
 
 rule nix_shortreads:
@@ -277,6 +287,45 @@ rule MetaQUAST_contigs:
         """
 
 # Add in Seqtk for subsampling? Probably not
+rule build_scaffolds_index:
+    input:
+        SCAFFOLDS=f"hiv.t32.n40.metaspades/{{sample}}/scaffolds.fasta"
+    output:
+        INDEX=f"hiv.t32.n40.metaspades/{{sample}}/scaffolds.index"
+    resources:
+      partition="short",
+      mem_mb=int(20*1000), # MB, or 20 GB
+      runtime=int(8*60) # min, or 8 hours
+    threads: 8
+    conda: "conda_envs/bowtie2.yaml"
+    shell:
+        """
+        bowtie2-build --threads 8 {input.SCAFFOLDS} {output.INDEX}
+        """
+
+rule map_fastq_to_scaffolds:
+    input:
+        INDEX=f"hiv.t32.n40.metaspades/{{sample}}/scaffolds.index",
+        FORWARD=f"hiv.t32.nix40/{{sample}}.R1.{nixing_len}.fq.gz",
+        REVERSE=f"hiv.t32.nix40/{{sample}}.R2.{nixing_len}.fq.gz"
+    output:
+        BAM=f"hiv.t32.n40.metaspades.mapped/{{sample}}_unsorted.bam",
+        SORTED_BAM=f"hiv.t32.n40.metaspades.mapped/{{sample}}.bam"
+    resources:
+        partition="short",
+        mem_mb=int(20*1000), # MB, or 20 GB
+        runtime=int(8*60) # min, or 8 hours
+    threads: 8
+    conda: "conda_envs/bowtie2.yaml"
+    shell:
+        """
+        bowtie2 -x {input.INDEX} -1 {input.FORWARD} -2 {input.REVERSE} | \
+            samtools view -bS -o {output.BAM}
+        samtools sort {output.BAM} -o {output.SORTED_BAM}
+        samtools index {output.SORTED_BAM}
+        """
+
+
 
 rule build_contigs_index:
     input:
@@ -300,8 +349,8 @@ rule map_fastq_to_contigs:
         FORWARD=f"hiv.t32.nix40/{{sample}}.R1.{nixing_len}.fq.gz",
         REVERSE=f"hiv.t32.nix40/{{sample}}.R2.{nixing_len}.fq.gz"
     output:
-        BAM=f"hiv.t32.n40.metaspades.mapped/{{sample}}_unsorted.bam",
-        SORTED_BAM=f"hiv.t32.n40.metaspades.mapped/{{sample}}.bam"
+        BAM=f"hiv.t32.n40.metaspades.mappedc/{{sample}}_unsorted.bam",
+        SORTED_BAM=f"hiv.t32.n40.metaspades.mappedc/{{sample}}.bam"
     resources:
         partition="short",
         mem_mb=int(20*1000), # MB, or 20 GB
@@ -319,24 +368,25 @@ rule map_fastq_to_contigs:
 
 
 # MetaBAT2 for binning
-#rule run_metabat2:
-#    input:
-#        SCAFFOLDS=f"hiv.t32.n40.metaspades/{{sample}}/scaffolds.fasta",
-#        SORTED_BAM= <NO INPUT YET>
-#
-#    output:
-#        ????? https://nf-co.re/mag/1.1.1/output#spades
-#    resources:
-#      partition="short",
-#      mem_mb=???, # MB, or 125 GB
-#      runtime=??? # min, or 23 hours
-#    threads: ???
-#    conda: "conda_envs/metabat2.yaml"
-#    shell:
-#        """
-#        runMetaBat.sh {input.SCAFFOLDS} {input.SORTED_BAM}
-#        """
-
+rule run_metabat2_scaffolds:
+# This currently cross-maps all bams to all
+    input:
+        SCAFFOLDS=f"hiv.t32.n40.metaspades/{{sample}}/scaffolds.fasta",
+        SORTED_BAM=f"hiv.t32.n40.metaspades.mapped/{{sample}}.bam"
+    output:
+        DONE=f"hiv.t32.n40.metaspades.metabat2/{{sample}}.metabat2done"
+    resources:
+      partition="short",
+      mem_mb=int(10*1000), # MB, or 10 GB
+      runtime=int(2*60) # min, or 2 hours
+    threads: 1
+    conda: "conda_envs/metabat2.yaml"
+    shell:
+        """
+        mkdir -p hiv.t32.n40.metaspades.metabat2/
+        runMetaBat.sh -m 1500 {input.SCAFFOLDS} {input.SORTED_BAM}
+        touch hiv.t32.n40.metaspades.metabat2/{wildcards.sample}.metabat2done
+        """
 
 # PRODIGAL
 
