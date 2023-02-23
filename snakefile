@@ -337,7 +337,7 @@ rule build_contigs_index:
     input:
         CONTIGS=f"hiv.t32.n40.metaspades/{{sample}}/contigs.fasta"
     output:
-        INDEX=multiex(f"hiv.t32.n40.metaspades/{{sample}}/contigs.index",
+        INDEX=multiext(f"hiv.t32.n40.metaspades/{{sample}}/contigs.index",
                       ".1.bt2", ".2.bt2", ".3.bt2", ".4.bt2",
                       ".rev.1.bt2", ".rev.2.bt2")
     resources:
@@ -353,7 +353,7 @@ rule build_contigs_index:
 
 rule map_fastq_to_contigs:
     input:
-        INDEX=multiex(f"hiv.t32.n40.metaspades/{{sample}}/contigs.index",
+        INDEX=multiext(f"hiv.t32.n40.metaspades/{{sample}}/contigs.index",
                       ".1.bt2", ".2.bt2", ".3.bt2", ".4.bt2",
                       ".rev.1.bt2", ".rev.2.bt2"),
         FORWARD=f"hiv.t32.nix40/{{sample}}.R1.{nixing_len}.fq.gz",
