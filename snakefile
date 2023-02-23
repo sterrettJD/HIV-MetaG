@@ -264,7 +264,7 @@ rule MetaQUAST_scaffolds:
     conda: "conda_envs/QUAST.yaml"
     shell:
         """
-        metaquast.py -o hiv.t32.n40.metaspades.metaQUAST/ hiv.t32.n40.metaspades/*/scaffolds.fasta -t 8
+        metaquast.py -o hiv.t32.n40.metaspades.metaQUAST/ hiv.t32.n40.metaspades/*/scaffolds.fasta -t 8 --no-icarus
         """
 
 # QUAST
@@ -283,7 +283,7 @@ rule MetaQUAST_contigs:
     conda: "conda_envs/QUAST.yaml"
     shell:
         """
-        metaquast.py -o hiv.t32.n40.metaspades.metaQUASTc/ hiv.t32.n40.metaspades/*/contigs.fasta -t 8
+        metaquast.py -o hiv.t32.n40.metaspades.metaQUASTc/ hiv.t32.n40.metaspades/*/contigs.fasta -t 8 --no-icarus
         """
 
 # Add in Seqtk for subsampling? Probably not
