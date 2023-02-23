@@ -52,8 +52,10 @@ rule all:
         f"hiv.t32.n40.metaspades.metaQUASTc/report.html", # on contigs
 
         # Made by bowtie2 build
-        expand(f"hiv.t32.n40.metaspades/{{sample}}/scaffolds.index", sample=SAMPLES),
-        expand(f"hiv.t32.n40.metaspades/{{sample}}/contigs.index", sample=SAMPLES),
+        expand(f"hiv.t32.n40.metaspades/{{sample}}/scaffolds.index{{ext}}", sample=SAMPLES,
+               ext=[".1.bt2", ".2.bt2", ".3.bt2", ".4.bt2", ".rev.1.bt2", ".rev.2.bt2"]),
+        expand(f"hiv.t32.n40.metaspades/{{sample}}/contigs.index{{ext}}", sample=SAMPLES,
+               ext=[".1.bt2", ".2.bt2", ".3.bt2", ".4.bt2", ".rev.1.bt2", ".rev.2.bt2"]),
 
         # Made by bowtie2 mapping to scaffolds
         expand(f"hiv.t32.n40.metaspades.mapped/{{sample}}_unsorted.bam", sample=SAMPLES),
@@ -291,21 +293,25 @@ rule build_scaffolds_index:
     input:
         SCAFFOLDS=f"hiv.t32.n40.metaspades/{{sample}}/scaffolds.fasta"
     output:
-        INDEX=f"hiv.t32.n40.metaspades/{{sample}}/scaffolds.index"
+        INDEX=multiext(f"hiv.t32.n40.metaspades/{{sample}}/scaffolds.index",
+                       ".1.bt2", ".2.bt2", ".3.bt2", ".4.bt2",
+                       ".rev.1.bt2", ".rev.2.bt2")
     resources:
       partition="short",
       mem_mb=int(20*1000), # MB, or 20 GB
-      runtime=int(8*60) # min, or 8 hours
+      runtime=int(1.5*60) # min, or 8 hours
     threads: 8
     conda: "conda_envs/bowtie2.yaml"
     shell:
         """
-        bowtie2-build --threads 8 {input.SCAFFOLDS} {output.INDEX}
+        bowtie2-build --threads 8 {input.SCAFFOLDS} hiv.t32.n40.metaspades/{wildcards.sample}/scaffolds.index
         """
 
 rule map_fastq_to_scaffolds:
     input:
-        INDEX=f"hiv.t32.n40.metaspades/{{sample}}/scaffolds.index",
+        INDEX=multiext(f"hiv.t32.n40.metaspades/{{sample}}/scaffolds.index",
+                       ".1.bt2", ".2.bt2", ".3.bt2", ".4.bt2",
+                       ".rev.1.bt2", ".rev.2.bt2"),
         FORWARD=f"hiv.t32.nix40/{{sample}}.R1.{nixing_len}.fq.gz",
         REVERSE=f"hiv.t32.nix40/{{sample}}.R2.{nixing_len}.fq.gz"
     output:
@@ -319,7 +325,7 @@ rule map_fastq_to_scaffolds:
     conda: "conda_envs/bowtie2.yaml"
     shell:
         """
-        bowtie2 -x {input.INDEX} -1 {input.FORWARD} -2 {input.REVERSE} | \
+        bowtie2 -x hiv.t32.n40.metaspades/{wildcards.sample}/scaffolds.index -1 {input.FORWARD} -2 {input.REVERSE} | \
             samtools view -bS -o {output.BAM}
         samtools sort {output.BAM} -o {output.SORTED_BAM}
         samtools index {output.SORTED_BAM}
@@ -331,21 +337,25 @@ rule build_contigs_index:
     input:
         CONTIGS=f"hiv.t32.n40.metaspades/{{sample}}/contigs.fasta"
     output:
-        INDEX=f"hiv.t32.n40.metaspades/{{sample}}/contigs.index"
+        INDEX=multiex(f"hiv.t32.n40.metaspades/{{sample}}/contigs.index",
+                      ".1.bt2", ".2.bt2", ".3.bt2", ".4.bt2",
+                      ".rev.1.bt2", ".rev.2.bt2")
     resources:
-      partition="short",
-      mem_mb=int(20*1000), # MB, or 20 GB
-      runtime=int(8*60) # min, or 8 hours
+        partition="short",
+        mem_mb=int(20*1000), # MB, or 20 GB
+        runtime=int(1.5*60) # min, or 8 hours
     threads: 8
     conda: "conda_envs/bowtie2.yaml"
     shell:
         """
-        bowtie2-build --threads 8 {input.CONTIGS} {output.INDEX}
+        bowtie2-build --threads 8 {input.CONTIGS} hiv.t32.n40.metaspades/{wildcards.sample}/contigs.index
         """
 
 rule map_fastq_to_contigs:
     input:
-        INDEX=f"hiv.t32.n40.metaspades/{{sample}}/contigs.index",
+        INDEX=multiex(f"hiv.t32.n40.metaspades/{{sample}}/contigs.index",
+                      ".1.bt2", ".2.bt2", ".3.bt2", ".4.bt2",
+                      ".rev.1.bt2", ".rev.2.bt2"),
         FORWARD=f"hiv.t32.nix40/{{sample}}.R1.{nixing_len}.fq.gz",
         REVERSE=f"hiv.t32.nix40/{{sample}}.R2.{nixing_len}.fq.gz"
     output:
@@ -359,7 +369,7 @@ rule map_fastq_to_contigs:
     conda: "conda_envs/bowtie2.yaml"
     shell:
         """
-        bowtie2 -x {input.INDEX} -1 {input.FORWARD} -2 {input.REVERSE} | \
+        bowtie2 -x hiv.t32.n40.metaspades/{wildcards.sample}/contigs.index -1 {input.FORWARD} -2 {input.REVERSE} | \
             samtools view -bS -o {output.BAM}
         samtools sort {output.BAM} -o {output.SORTED_BAM}
         samtools index {output.SORTED_BAM}
