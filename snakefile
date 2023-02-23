@@ -406,13 +406,13 @@ rule pull_checkM_db:
         """
 
 # CheckM
-rule checkM:
-    input:
-        BINS
-    output:
-    thread: 8
-    conda: "conda_envs/checkM.yaml"
-    shell:
+#rule checkM:
+#    input:
+#        BINS
+#    output:
+#    thread: 8
+#    conda: "conda_envs/checkM.yaml"
+#    shell:
 
 # CheckV for viral MAGs
 
