@@ -258,8 +258,8 @@ rule MetaQUAST_scaffolds:
         #https://github.com/ablab/quast/discussions/166
     resources:
       partition="short",
-      mem_mb=int(100*1000), # MB, or 100 GB TODO: SCALE BACK IF NEEDED
-      runtime=int(20*60) # min, or 18 hours
+      mem_mb=int(300*1000), # MB, needs a lot apparently
+      runtime=int(23.9*60) # min, or just under 24 hours. Icarus takes a long time.
     threads: 8
     conda: "conda_envs/QUAST.yaml"
     shell:
@@ -277,8 +277,8 @@ rule MetaQUAST_contigs:
         #https://github.com/ablab/quast/discussions/166
     resources:
       partition="short",
-      mem_mb=int(100*1000), # MB, or 100 GB TODO: SCALE BACK IF NEEDED
-      runtime=int(20*60) # min, or 18 hours
+      mem_mb=int(300*1000), # MB, needs a lot
+      runtime=int(23.9*60) # min, or just under 24 hours
     threads: 8
     conda: "conda_envs/QUAST.yaml"
     shell:
@@ -390,7 +390,6 @@ rule run_metabat2_scaffolds:
 
 # CheckM for assessing MAGs
 rule pull_checkM_db:
-    input:
     output:
         "checkm_data_2015_01_16"
     resources:
@@ -398,7 +397,7 @@ rule pull_checkM_db:
       mem_mb=int(10*1000), # MB, or 10 GB
       runtime=int(2*60) # min, or 2 hours
     threads: 1
-    conda: "conda_envs/checkM"
+    conda: "conda_envs/checkM.yaml"
     shell:
         """
         wget https://zenodo.org/record/7401545/files/checkm_data_2015_01_16.tar.gz?download=1
@@ -406,7 +405,14 @@ rule pull_checkM_db:
         checkM data setRoot checkm_data_2015_01_16
         """
 
-# rule checkM:
+# CheckM
+rule checkM:
+    input:
+        BINS
+    output:
+    thread: 8
+    conda: "conda_envs/checkM.yaml"
+    shell:
 
 # CheckV for viral MAGs
 
