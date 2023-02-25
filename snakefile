@@ -379,7 +379,6 @@ rule map_fastq_to_contigs:
 
 # MetaBAT2 for binning
 rule run_metabat2_scaffolds:
-# This currently cross-maps all bams to all
     input:
         SCAFFOLDS=f"hiv.t32.n40.metaspades/{{sample}}/scaffolds.fasta",
         SORTED_BAM=f"hiv.t32.n40.metaspades.mapped/{{sample}}.bam"
@@ -393,9 +392,11 @@ rule run_metabat2_scaffolds:
     conda: "conda_envs/metabat2.yaml"
     shell:
         """
-        mkdir -p hiv.t32.n40.metaspades.metabat2/
-        runMetaBat.sh -m 1500 {input.SCAFFOLDS} {input.SORTED_BAM}
-        touch hiv.t32.n40.metaspades.metabat2/{wildcards.sample}.metabat2done
+        mkdir -p hiv.t32.n40.metaspades.metabat2/{wildcards.sample}
+        # Move to this dir so there aren't any issues with each job making a depth.txt file named the same thing
+        cd hiv.t32.n40.metaspades.metabat2/{wildcards.sample}
+        runMetaBat.sh -m 1500 ../../{input.SCAFFOLDS} ../../{input.SORTED_BAM}
+        touch ../{wildcards.sample}.metabat2done
         """
 
 # CheckM for assessing MAGs
