@@ -325,10 +325,10 @@ rule map_fastq_to_scaffolds:
     conda: "conda_envs/bowtie2.yaml"
     shell:
         """
-        bowtie2 -x hiv.t32.n40.metaspades/{wildcards.sample}/scaffolds.index -1 {input.FORWARD} -2 {input.REVERSE} | \
+        bowtie2 -x hiv.t32.n40.metaspades/{wildcards.sample}/scaffolds.index -1 {input.FORWARD} -2 {input.REVERSE} -p 8 | \
             samtools view -bS -o {output.BAM}
-        samtools sort {output.BAM} -o {output.SORTED_BAM}
-        samtools index {output.SORTED_BAM}
+        samtools sort --threads 8 {output.BAM} -o {output.SORTED_BAM}
+        samtools index -@ 8 {output.SORTED_BAM}
         """
 
 
@@ -369,10 +369,10 @@ rule map_fastq_to_contigs:
     conda: "conda_envs/bowtie2.yaml"
     shell:
         """
-        bowtie2 -x hiv.t32.n40.metaspades/{wildcards.sample}/contigs.index -1 {input.FORWARD} -2 {input.REVERSE} | \
+        bowtie2 -x hiv.t32.n40.metaspades/{wildcards.sample}/contigs.index -1 {input.FORWARD} -2 {input.REVERSE} -p 8 | \
             samtools view -bS -o {output.BAM}
-        samtools sort {output.BAM} -o {output.SORTED_BAM}
-        samtools index {output.SORTED_BAM}
+        samtools sort -@ 8 {output.BAM} -o {output.SORTED_BAM}
+        samtools index -@ 8 {output.SORTED_BAM}
         """
 
 
