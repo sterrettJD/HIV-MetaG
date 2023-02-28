@@ -66,9 +66,10 @@ rule all:
         expand(f"hiv.t32.n40.metaspades.mappedc/{{sample}}.bam", sample=SAMPLES),
 
         # Done file made by metabat2
-        expand(f"hiv.t32.n40.metaspades.metabat2/{{sample}}.metabat2done", sample=SAMPLES)
+        expand(f"hiv.t32.n40.metaspades.metabat2/{{sample}}.metabat2done", sample=SAMPLES),
 
-
+        # CheckM database
+        "checkm_data_2015_01_16"
 
 
 rule nix_shortreads:
