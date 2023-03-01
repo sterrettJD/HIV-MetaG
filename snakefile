@@ -69,7 +69,7 @@ rule all:
         expand(f"hiv.t32.n40.metaspades.metabat2/{{sample}}.metabat2done", sample=SAMPLES),
 
         # CheckM database
-        "checkm_data_2015_01_16"
+        "checkM_db/taxon_marker_sets.tsv"
 
 
 rule nix_shortreads:
@@ -403,7 +403,7 @@ rule run_metabat2_scaffolds:
 # CheckM for assessing MAGs
 rule pull_checkM_db:
     output:
-        "checkm_data_2015_01_16"
+        "checkM_db/taxon_marker_sets.tsv"
     resources:
       partition="short",
       mem_mb=int(10*1000), # MB, or 10 GB
@@ -412,19 +412,32 @@ rule pull_checkM_db:
     conda: "conda_envs/checkM.yaml"
     shell:
         """
-        wget https://zenodo.org/record/7401545/files/checkm_data_2015_01_16.tar.gz?download=1
+        mkdir -p checkM_db
+        cd checkM_db
+        wget https://zenodo.org/record/7401545/files/checkm_data_2015_01_16.tar.gz
         tar -xvf checkm_data_2015_01_16.tar.gz
-        checkM data setRoot checkm_data_2015_01_16
+        cd ..
+        checkm data setRoot checkM_db
         """
 
 # CheckM
 #rule checkM:
 #    input:
-#        BINS
+#        DB="checkm_data_2015_01_16",
+#        bat2DONE=f"hiv.t32.n40.metaspades.metabat2/{{sample}}.metabat2done"
 #    output:
+#    resources:
 #    thread: 8
 #    conda: "conda_envs/checkM.yaml"
 #    shell:
+    """
+    mkdir -p hiv.t32.n40.metaspades.metabat2/bins_to_derep
+    cp hiv.t32.n40.metaspades.metabat2/*/scaffolds.fasta.metabat-bins*/bin.*.fa hiv.t32.n40.metaspades.metabat2/bins_to_derep/
+    checkm lineage_wf -t 8 -x fa hiv.t32.n40.metaspades.metabat2/bins_to_derep/ hiv.t32.n40.metaspades.metabat2.checkm
+
+    """
+
+
 
 # CheckV for viral MAGs
 
