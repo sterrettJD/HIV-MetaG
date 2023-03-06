@@ -69,7 +69,15 @@ rule all:
         expand(f"hiv.t32.n40.metaspades.metabat2/{{sample}}.metabat2done", sample=SAMPLES),
 
         # CheckM database
-        "checkM_db/taxon_marker_sets.tsv"
+        "checkM_db/taxon_marker_sets.tsv",
+
+        # CheckM setup
+        expand("hiv.t32.n40.metaspades.metabat2.checkm/checkM.copied/{sample}.done",
+               sample=SAMPLES),
+
+        # CheckM done
+        "hiv.t32.n40.metaspades.metabat2.checkm/checkM.done"
+
 
 
 rule nix_shortreads:
@@ -421,11 +429,36 @@ rule pull_checkM_db:
         checkm data setRoot checkM_db
         """
 
+rule setup_bins_for_checkM:
+    input:
+        BAT2DONE=f"hiv.t32.n40.metaspades.metabat2/{{sample}}.metabat2done"
+    output:
+        "hiv.t32.n40.metaspades.metabat2.checkm/checkM.copied/{sample}.done"
+    resources:
+        partition="short",
+        mem_mb=int(8*1000), # MB, or 8 GB
+        runtime=int(1*60) # min, or 1 hour
+    thread: 1
+    conda: "conda_envs/checkM.yaml"
+    shell:
+    """
+    mkdir -p hiv.t32.n40.metaspades.metabat2/bins_to_derep
+    cd hiv.t32.n40.metaspades.metabat2/{wildcards.sample}/bins/
+
+    # copy the bins over and prepend with the sample name so there aren't any with the same name
+    for f in bin.*.fa; do cp -v -- "$f" "../../bins_to_derep/{wildcards.sample}.$f"; done
+
+    cd ../../
+    mkdir -p checkM.copied/
+    touch checkM.copied/{wildcards.sample}.done
+    """
+
+
 # CheckM
 rule checkM:
     input:
         DB="checkm_data_2015_01_16",
-        BAT2DONE=expand(f"hiv.t32.n40.metaspades.metabat2/{{sample}}.metabat2done",
+        SETUPDONE=expand("hiv.t32.n40.metaspades.metabat2.checkm/checkM.copied/{sample}.done",
                         sample=SAMPLES)
     output:
         "hiv.t32.n40.metaspades.metabat2.checkm/checkM.done"
@@ -437,8 +470,6 @@ rule checkM:
     conda: "conda_envs/checkM.yaml"
     shell:
     """
-    mkdir -p hiv.t32.n40.metaspades.metabat2/bins_to_derep
-    cp hiv.t32.n40.metaspades.metabat2/*/bins/bin.*.fa hiv.t32.n40.metaspades.metabat2/bins_to_derep/
     checkm lineage_wf -t 40 -x fa hiv.t32.n40.metaspades.metabat2/bins_to_derep/ hiv.t32.n40.metaspades.metabat2.checkm
     touch hiv.t32.n40.metaspades.metabat2.checkm/checkM.done
     """
