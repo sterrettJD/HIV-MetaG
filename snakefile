@@ -475,8 +475,23 @@ rule checkM:
         """
 
 
-
 # CheckV for viral MAGs
+
+rule pull_checkM_db:
+    output:
+        directory("checkv-db-v1.5")
+    resources:
+        partition="short",
+        mem_mb=int(4*1000), # MB, or 4 GB
+        runtime=int(0.5*60) # min
+    threads: 1
+    conda: "conda_envs/checkV.yaml"
+    shell:
+        """
+        checkv download_database ./
+        export CHECKVDB=checkv-db-v1.5
+        """
+
 
 # EukRep for eukaryyotic MAGs
 
