@@ -1,0 +1,9 @@
+name: checkV
+channels:
+  - biobakery
+  - conda-forge
+  - bioconda
+  - defaults
+dependencies:
+  - checkv
+prefix: /Users/jost9358/miniconda3/envs/checkV
