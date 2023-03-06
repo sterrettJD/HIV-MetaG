@@ -422,21 +422,26 @@ rule pull_checkM_db:
         """
 
 # CheckM
-#rule checkM:
-#    input:
-#        DB="checkm_data_2015_01_16",
-#        bat2DONE=f"hiv.t32.n40.metaspades.metabat2/{{sample}}.metabat2done"
-#    output:
-#    resources:
-#    thread: 8
-#    conda: "conda_envs/checkM.yaml"
-#    shell:
-#    """
-#    mkdir -p hiv.t32.n40.metaspades.metabat2/bins_to_derep
-#    cp hiv.t32.n40.metaspades.metabat2/*/scaffolds.fasta.metabat-bins*/bin.*.fa hiv.t32.n40.metaspades.metabat2/bins_to_derep/
-#    checkm lineage_wf -t 8 -x fa hiv.t32.n40.metaspades.metabat2/bins_to_derep/ hiv.t32.n40.metaspades.metabat2.checkm
-#
-#    """
+rule checkM:
+    input:
+        DB="checkm_data_2015_01_16",
+        BAT2DONE=expand(f"hiv.t32.n40.metaspades.metabat2/{{sample}}.metabat2done",
+                        sample=SAMPLES)
+    output:
+        "hiv.t32.n40.metaspades.metabat2.checkm/checkM.done"
+    resources:
+        partition="short",
+        mem_mb=int(70*1000), # MB, or 70 GB
+        runtime=int(23*60) # min, or 23 hours
+    thread: 40
+    conda: "conda_envs/checkM.yaml"
+    shell:
+    """
+    mkdir -p hiv.t32.n40.metaspades.metabat2/bins_to_derep
+    cp hiv.t32.n40.metaspades.metabat2/*/bins/bin.*.fa hiv.t32.n40.metaspades.metabat2/bins_to_derep/
+    checkm lineage_wf -t 40 -x fa hiv.t32.n40.metaspades.metabat2/bins_to_derep/ hiv.t32.n40.metaspades.metabat2.checkm
+    touch hiv.t32.n40.metaspades.metabat2.checkm/checkM.done
+    """
 
 
 
