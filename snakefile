@@ -72,7 +72,7 @@ rule all:
         "checkM_db/taxon_marker_sets.tsv",
 
         # CheckM setup
-        expand("hiv.t32.n40.metaspades.metabat2.checkm/checkM.copied/{sample}.done",
+        expand("hiv.t32.n40.metaspades.metabat2/checkM.copied/{sample}.done",
                sample=SAMPLES),
 
         # CheckM done
@@ -433,7 +433,7 @@ rule setup_bins_for_checkM:
     input:
         BAT2DONE=f"hiv.t32.n40.metaspades.metabat2/{{sample}}.metabat2done"
     output:
-        "hiv.t32.n40.metaspades.metabat2.checkm/checkM.copied/{sample}.done"
+        "hiv.t32.n40.metaspades.metabat2/checkM.copied/{sample}.done"
     resources:
         partition="short",
         mem_mb=int(8*1000), # MB, or 8 GB
@@ -458,7 +458,7 @@ rule setup_bins_for_checkM:
 rule checkM:
     input:
         DB="checkM_db/taxon_marker_sets.tsv",
-        SETUPDONE=expand("hiv.t32.n40.metaspades.metabat2.checkm/checkM.copied/{sample}.done",
+        SETUPDONE=expand("hiv.t32.n40.metaspades.metabat2/checkM.copied/{sample}.done",
                         sample=SAMPLES)
     output:
         "hiv.t32.n40.metaspades.metabat2.checkm/checkM.done"
