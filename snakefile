@@ -48,8 +48,8 @@ rule all:
         expand(f"hiv.t32.n40.metaspades/{{sample}}/assembly_graph_with_scaffolds.gfa", sample=SAMPLES),
 
         # Made by metaQUAST
-        f"hiv.t32.n40.metaspades.metaQUAST/report.html", # on scaffolds
-        f"hiv.t32.n40.metaspades.metaQUASTc/report.html", # on contigs
+#        f"hiv.t32.n40.metaspades.metaQUAST/report.html", # on scaffolds
+#        f"hiv.t32.n40.metaspades.metaQUASTc/report.html", # on contigs
 
         # Made by bowtie2 build
         expand(f"hiv.t32.n40.metaspades/{{sample}}/scaffolds.index{{ext}}", sample=SAMPLES,
@@ -430,12 +430,12 @@ rule pull_checkM_db:
 #    thread: 8
 #    conda: "conda_envs/checkM.yaml"
 #    shell:
-    """
-    mkdir -p hiv.t32.n40.metaspades.metabat2/bins_to_derep
-    cp hiv.t32.n40.metaspades.metabat2/*/scaffolds.fasta.metabat-bins*/bin.*.fa hiv.t32.n40.metaspades.metabat2/bins_to_derep/
-    checkm lineage_wf -t 8 -x fa hiv.t32.n40.metaspades.metabat2/bins_to_derep/ hiv.t32.n40.metaspades.metabat2.checkm
-
-    """
+#    """
+#    mkdir -p hiv.t32.n40.metaspades.metabat2/bins_to_derep
+#    cp hiv.t32.n40.metaspades.metabat2/*/scaffolds.fasta.metabat-bins*/bin.*.fa hiv.t32.n40.metaspades.metabat2/bins_to_derep/
+#    checkm lineage_wf -t 8 -x fa hiv.t32.n40.metaspades.metabat2/bins_to_derep/ hiv.t32.n40.metaspades.metabat2.checkm
+#
+#    """
 
 
 
