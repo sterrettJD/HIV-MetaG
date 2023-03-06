@@ -438,7 +438,7 @@ rule setup_bins_for_checkM:
         partition="short",
         mem_mb=int(8*1000), # MB, or 8 GB
         runtime=int(1*60) # min, or 1 hour
-    thread: 1
+    threads: 1
     conda: "conda_envs/checkM.yaml"
     shell:
     """
@@ -466,7 +466,7 @@ rule checkM:
         partition="short",
         mem_mb=int(70*1000), # MB, or 70 GB
         runtime=int(23*60) # min, or 23 hours
-    thread: 40
+    threads: 40
     conda: "conda_envs/checkM.yaml"
     shell:
     """
