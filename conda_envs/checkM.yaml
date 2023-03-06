@@ -12,6 +12,6 @@ dependencies:
   - prodigal
   - hmmer
   - pplacer
-pip:
-  - checkm-genome
+  - pip:
+    - checkm-genome
 prefix: /Users/jost9358/miniconda3/envs/checkM
