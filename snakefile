@@ -457,7 +457,7 @@ rule setup_bins_for_checkM:
 # CheckM
 rule checkM:
     input:
-        DB="checkm_data_2015_01_16",
+        DB="checkM_db/taxon_marker_sets.tsv",
         SETUPDONE=expand("hiv.t32.n40.metaspades.metabat2.checkm/checkM.copied/{sample}.done",
                         sample=SAMPLES)
     output:
