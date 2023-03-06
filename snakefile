@@ -397,6 +397,7 @@ rule run_metabat2_scaffolds:
         # Move to this dir so there aren't any issues with each job making a depth.txt file named the same thing
         cd hiv.t32.n40.metaspades.metabat2/{wildcards.sample}
         runMetaBat.sh -m 1500 ../../{input.SCAFFOLDS} ../../{input.SORTED_BAM}
+        mv scaffolds.fasta.metabat-bins* bins
         touch ../{wildcards.sample}.metabat2done
         """
 
