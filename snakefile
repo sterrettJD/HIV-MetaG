@@ -441,17 +441,17 @@ rule setup_bins_for_checkM:
     threads: 1
     conda: "conda_envs/checkM.yaml"
     shell:
-    """
-    mkdir -p hiv.t32.n40.metaspades.metabat2/bins_to_derep
-    cd hiv.t32.n40.metaspades.metabat2/{wildcards.sample}/bins/
+        """
+        mkdir -p hiv.t32.n40.metaspades.metabat2/bins_to_derep
+        cd hiv.t32.n40.metaspades.metabat2/{wildcards.sample}/bins/
 
-    # copy the bins over and prepend with the sample name so there aren't any with the same name
-    for f in bin.*.fa; do cp -v -- "$f" "../../bins_to_derep/{wildcards.sample}.$f"; done
+        # copy the bins over and prepend with the sample name so there aren't any with the same name
+        for f in bin.*.fa; do cp -v -- "$f" "../../bins_to_derep/{wildcards.sample}.$f"; done
 
-    cd ../../
-    mkdir -p checkM.copied/
-    touch checkM.copied/{wildcards.sample}.done
-    """
+        cd ../../
+        mkdir -p checkM.copied/
+        touch checkM.copied/{wildcards.sample}.done
+        """
 
 
 # CheckM
@@ -469,10 +469,10 @@ rule checkM:
     threads: 40
     conda: "conda_envs/checkM.yaml"
     shell:
-    """
-    checkm lineage_wf -t 40 -x fa hiv.t32.n40.metaspades.metabat2/bins_to_derep/ hiv.t32.n40.metaspades.metabat2.checkm
-    touch hiv.t32.n40.metaspades.metabat2.checkm/checkM.done
-    """
+        """
+        checkm lineage_wf -t 40 -x fa hiv.t32.n40.metaspades.metabat2/bins_to_derep/ hiv.t32.n40.metaspades.metabat2.checkm
+        touch hiv.t32.n40.metaspades.metabat2.checkm/checkM.done
+        """
 
 
 
