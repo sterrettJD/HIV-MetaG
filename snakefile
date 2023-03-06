@@ -76,7 +76,11 @@ rule all:
                sample=SAMPLES),
 
         # CheckM done
-        "hiv.t32.n40.metaspades.metabat2.checkm/checkM.done"
+        "hiv.t32.n40.metaspades.metabat2.checkm/checkM.done",
+
+        # CheckV quality summary
+        expand(f"hiv.t32.n40.metaspades.checkV/{{sample}}/quality_summary.tsv",
+                sample=SAMPLES)
 
 
 
@@ -479,7 +483,7 @@ rule checkM:
 
 rule pull_checkM_db:
     output:
-        directory("checkv-db-v1.5")
+        "checkv-db-v1.5/genome_db/checkv_reps.faa" # just one of the files
     resources:
         partition="short",
         mem_mb=int(4*1000), # MB, or 4 GB
@@ -492,6 +496,24 @@ rule pull_checkM_db:
         export CHECKVDB=checkv-db-v1.5
         """
 
+rule checkV:
+    input:
+        DB="checkv-db-v1.5/genome_db/checkv_reps.faa",
+        CONTIGS=f"hiv.t32.n40.metaspades/{{sample}}/contigs.fasta"
+    output:
+        MAIN=directory(f"hiv.t32.n40.metaspades.checkV/{{sample}}/"),
+        QUAL=f"hiv.t32.n40.metaspades.checkV/{{sample}}/quality_summary.tsv"
+    resources:
+        partition="short",
+        mem_mb=int(16*1000), # MB, or 16 GB
+        runtime=int(10*60) # min, or 10 hours
+    threads: 16
+    conda: "conda_envs/checkV.yaml"
+    shell:
+        """
+        mkdir -p hiv.t32.n40.metaspades.checkV/
+        checkv end_to_end {input.CONTIGS} hiv.t32.n40.metaspades.checkV/{wildcards.sample}/ -t 16
+        """
 
 # EukRep for eukaryyotic MAGs
 
