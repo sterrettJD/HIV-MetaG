@@ -269,6 +269,8 @@ rule assemble_metaspades:
         mkdir -p hiv.t32.n40.metaspades
         metaspades.py -o hiv.t32.n40.metaspades/{wildcards.sample} --pe1-1 {input.FORWARD} --pe1-2 {input.REVERSE} --threads 32
         """
+
+############# ASSESS MAGS #############
 # QUAST
 rule MetaQUAST_scaffolds:
     input:
@@ -288,7 +290,6 @@ rule MetaQUAST_scaffolds:
         metaquast.py -o hiv.t32.n40.metaspades.metaQUAST/ hiv.t32.n40.metaspades/*/scaffolds.fasta -t 8 --no-icarus
         """
 
-############# ASSESS MAGS #############
 
 # QUAST
 rule MetaQUAST_contigs:
@@ -309,7 +310,7 @@ rule MetaQUAST_contigs:
         metaquast.py -o hiv.t32.n40.metaspades.metaQUASTc/ hiv.t32.n40.metaspades/*/contigs.fasta -t 8 --no-icarus
         """
 
-# Add in Seqtk for subsampling? Probably not
+
 rule build_scaffolds_index:
     input:
         SCAFFOLDS=f"hiv.t32.n40.metaspades/{{sample}}/scaffolds.fasta"
@@ -420,6 +421,28 @@ rule run_metabat2_scaffolds:
         touch ../{wildcards.sample}.metabat2done
         """
 
+rule run_metabat2_contigs:
+    input:
+        CONTIGS=f"hiv.t32.n40.metaspades/{{sample}}/contigs.fasta",
+        SORTED_BAM=f"hiv.t32.n40.metaspades.mappedc/{{sample}}.bam"
+    output:
+        DONE=f"hiv.t32.n40.metaspades.metabat2c/{{sample}}.metabat2done"
+    resources:
+        partition="short",
+        mem_mb=int(10*1000), # MB, or 10 GB
+        runtime=int(2*60) # min, or 2 hours
+    threads: 1
+    conda: "conda_envs/metabat2.yaml"
+    shell:
+        """
+        mkdir -p hiv.t32.n40.metaspades.metabat2c/{wildcards.sample}
+        # Move to this dir so there aren't any issues with each job making a depth.txt file named the same thing
+        cd hiv.t32.n40.metaspades.metabat2c/{wildcards.sample}
+        runMetaBat.sh -m 1500 ../../{input.CONTIGS} ../../{input.SORTED_BAM}
+        mv contigs.fasta.metabat-bins* bins
+        touch ../{wildcards.sample}.metabat2done
+        """
+
 # CheckM for assessing MAGs
 rule pull_checkM_db:
     output:
@@ -440,7 +463,7 @@ rule pull_checkM_db:
         checkm data setRoot checkM_db
         """
 
-rule setup_bins_for_checkM:
+rule setup_scaffold_bins_for_checkM:
     input:
         BAT2DONE=f"hiv.t32.n40.metaspades.metabat2/{{sample}}.metabat2done"
     output:
@@ -464,9 +487,33 @@ rule setup_bins_for_checkM:
         touch checkM.copied/{wildcards.sample}.done
         """
 
+rule setup_contig_bins_for_checkM:
+    input:
+        BAT2DONE=f"hiv.t32.n40.metaspades.metabat2c/{{sample}}.metabat2done"
+    output:
+        "hiv.t32.n40.metaspades.metabat2c/checkM.copied/{sample}.done"
+    resources:
+        partition="short",
+        mem_mb=int(8*1000), # MB, or 8 GB
+        runtime=int(1*60) # min, or 1 hour
+    threads: 1
+    conda: "conda_envs/checkM.yaml"
+    shell:
+        """
+        mkdir -p hiv.t32.n40.metaspades.metabat2c/bins_to_derep
+        cd hiv.t32.n40.metaspades.metabat2c/{wildcards.sample}/bins/
+
+        # copy the bins over and prepend with the sample name so there aren't any with the same name
+        for f in bin.*.fa; do cp -v -- "$f" "../../bins_to_derep/{wildcards.sample}.$f"; done
+
+        cd ../../
+        mkdir -p checkM.copied/
+        touch checkM.copied/{wildcards.sample}.done
+        """
+
 
 # CheckM
-rule checkM:
+rule checkM_scaffolds:
     input:
         DB="checkM_db/taxon_marker_sets.tsv",
         SETUPDONE=expand("hiv.t32.n40.metaspades.metabat2/checkM.copied/{sample}.done",
@@ -483,10 +530,30 @@ rule checkM:
         """
         # Make sure it has our correct DB
         checkm data setRoot checkM_db
-
+        mkdir -p hiv.t32.n40.metaspades.metabat2.checkm
         checkm lineage_wf -t 40 -x fa hiv.t32.n40.metaspades.metabat2/bins_to_derep/ hiv.t32.n40.metaspades.metabat2.checkm > hiv.t32.n40.metaspades.metabat2.checkm/checkM.stats.tsv
         """
 
+rule checkM_contigs:
+    input:
+        DB="checkM_db/taxon_marker_sets.tsv",
+        SETUPDONE=expand("hiv.t32.n40.metaspades.metabat2c/checkM.copied/{sample}.done",
+                        sample=SAMPLES)
+    output:
+        "hiv.t32.n40.metaspades.metabat2.checkmc/checkM.stats.tsv"
+    resources:
+        partition="short",
+        mem_mb=int(350*1000), # MB, or 350 GB
+        runtime=int(23*60) # min, or 23 hours
+    threads: 40
+    conda: "conda_envs/checkM.yaml"
+    shell:
+        """
+        # Make sure it has our correct DB
+        checkm data setRoot checkM_db
+        mkdir -p hiv.t32.n40.metaspades.metabat2.checkmc
+        checkm lineage_wf -t 40 -x fa hiv.t32.n40.metaspades.metabat2c/bins_to_derep/ hiv.t32.n40.metaspades.metabat2.checkmc > hiv.t32.n40.metaspades.metabat2.checkmc/checkM.stats.tsv
+        """
 
 # CheckV for viral MAGs
 rule pull_checkV_db:
