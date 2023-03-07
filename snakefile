@@ -76,7 +76,7 @@ rule all:
                sample=SAMPLES),
 
         # CheckM done
-        "hiv.t32.n40.metaspades.metabat2.checkm/checkM.done",
+#        "hiv.t32.n40.metaspades.metabat2.checkm/checkM.done",
 
         # CheckV quality summary
         expand(f"hiv.t32.n40.metaspades.checkV/{{sample}}/quality_summary.tsv",
@@ -507,11 +507,12 @@ rule checkV:
     resources:
         partition="short",
         mem_mb=int(16*1000), # MB, or 16 GB
-        runtime=int(10*60) # min, or 10 hours
+        runtime=int(20*60) # min, or 20 hours
     threads: 16
     conda: "conda_envs/checkV.yaml"
     shell:
         """
+        export CHECKVDB=checkv-db-v1.5
         mkdir -p hiv.t32.n40.metaspades.checkV/
         checkv end_to_end {input.CONTIGS} hiv.t32.n40.metaspades.checkV/{wildcards.sample}/ -t 16
         """
