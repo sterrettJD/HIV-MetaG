@@ -468,13 +468,15 @@ rule checkM:
         "hiv.t32.n40.metaspades.metabat2.checkm/checkM.done"
     resources:
         partition="short",
-        mem_mb=int(70*1000), # MB, or 70 GB
+        mem_mb=int(350*1000), # MB, or 350 GB
         runtime=int(23*60) # min, or 23 hours
     threads: 40
     conda: "conda_envs/checkM.yaml"
     shell:
         """
+        # Make sure it has our correct DB
         checkm data setRoot checkM_db
+
         checkm lineage_wf -t 40 -x fa hiv.t32.n40.metaspades.metabat2/bins_to_derep/ hiv.t32.n40.metaspades.metabat2.checkm
         touch hiv.t32.n40.metaspades.metabat2.checkm/checkM.done
         """
