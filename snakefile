@@ -474,6 +474,7 @@ rule checkM:
     conda: "conda_envs/checkM.yaml"
     shell:
         """
+        checkm data setRoot checkM_db
         checkm lineage_wf -t 40 -x fa hiv.t32.n40.metaspades.metabat2/bins_to_derep/ hiv.t32.n40.metaspades.metabat2.checkm
         touch hiv.t32.n40.metaspades.metabat2.checkm/checkM.done
         """
@@ -481,7 +482,7 @@ rule checkM:
 
 # CheckV for viral MAGs
 
-rule pull_checkM_db:
+rule pull_checkV_db:
     output:
         "checkv-db-v1.5/genome_db/checkv_reps.faa" # just one of the files
     resources:
