@@ -83,6 +83,7 @@ rule all:
                 sample=SAMPLES)
 
 
+############# PROCESS #############
 
 rule nix_shortreads:
     input:
@@ -133,6 +134,8 @@ rule concat_nixed_files:
         shell(f"bash slurm/concat_files.sh -f {{input.FORWARD}} -r {{input.REVERSE}} -o {{output}}")
 
 
+############# ASSESS COVERAGE #############
+
 rule run_nonpareil:
     input:
         "hiv.t32.concat.n40/{sample}.concat.fq.gz"
@@ -151,6 +154,8 @@ rule run_nonpareil:
         mkdir -p hiv.t32.concat.n40.nonpareil
         bash slurm/run_nonpareil.sh -i {input} -o hiv.t32.concat.n40.nonpareil/{wildcards.sample}
         """
+
+############# RUN BIOBAKERY HUMANN PIPELINE #############
 
 rule get_biobakery_dbs:
     output:
@@ -237,6 +242,7 @@ rule aggregate_humann_outs:
         python utils/convert_mphlan_v4_to_v3.py -i hiv.t32.concat.humann
         """
 
+############# ASSEMBLE MAGS #############
 
 rule assemble_metaspades:
     input:
@@ -281,6 +287,8 @@ rule MetaQUAST_scaffolds:
         """
         metaquast.py -o hiv.t32.n40.metaspades.metaQUAST/ hiv.t32.n40.metaspades/*/scaffolds.fasta -t 8 --no-icarus
         """
+
+############# ASSESS MAGS #############
 
 # QUAST
 rule MetaQUAST_contigs:
@@ -345,7 +353,6 @@ rule map_fastq_to_scaffolds:
         """
 
 
-
 rule build_contigs_index:
     input:
         CONTIGS=f"hiv.t32.n40.metaspades/{{sample}}/contigs.fasta"
@@ -363,6 +370,7 @@ rule build_contigs_index:
         """
         bowtie2-build --threads 8 {input.CONTIGS} hiv.t32.n40.metaspades/{wildcards.sample}/contigs.index
         """
+
 
 rule map_fastq_to_contigs:
     input:
@@ -387,7 +395,6 @@ rule map_fastq_to_contigs:
         samtools sort -@ 8 {output.BAM} -o {output.SORTED_BAM}
         samtools index -@ 8 {output.SORTED_BAM}
         """
-
 
 
 # MetaBAT2 for binning
