@@ -85,52 +85,52 @@ rule all:
 
 
 rule nix_shortreads:
-  input:
-      FORWARD=f"hiv.trim_trimmomaticT32/{{sample}}.R1.fq.gz",
-      REVERSE=f"hiv.trim_trimmomaticT32/{{sample}}.R2.fq.gz"
-  output:
-      FORWARD=f"hiv.t32.nix40/{{sample}}.R1.{nixing_len}.fq.gz",
-      REVERSE=f"hiv.t32.nix40/{{sample}}.R2.{nixing_len}.fq.gz"
-  resources:
+    input:
+        FORWARD=f"hiv.trim_trimmomaticT32/{{sample}}.R1.fq.gz",
+        REVERSE=f"hiv.trim_trimmomaticT32/{{sample}}.R2.fq.gz"
+    output:
+        FORWARD=f"hiv.t32.nix40/{{sample}}.R1.{nixing_len}.fq.gz",
+        REVERSE=f"hiv.t32.nix40/{{sample}}.R2.{nixing_len}.fq.gz"
+    resources:
         partition="short",
         mem_mb=25000, # MB
         runtime=60 # min
-  threads: 8
-  run:
-      shell("mkdir -p %s" % nixing_dir) #in case this directory doesn't exist. if it does, nothing will be done
-      shell(f"bash slurm/nix_shortreads.sh {{input.FORWARD}} {{input.REVERSE}} {nixing_len} {{output.FORWARD}} {{output.REVERSE}}")
+    threads: 8
+    run:
+        shell("mkdir -p %s" % nixing_dir) #in case this directory doesn't exist. if it does, nothing will be done
+        shell(f"bash slurm/nix_shortreads.sh {{input.FORWARD}} {{input.REVERSE}} {nixing_len} {{output.FORWARD}} {{output.REVERSE}}")
 
 
 rule concat_files:
-  input:
-      FORWARD=f"hiv.trim_trimmomaticT32/{{sample}}.R1.fq.gz",
-      REVERSE=f"hiv.trim_trimmomaticT32/{{sample}}.R2.fq.gz"
-  output:
-      f"hiv.t32.concat/{{sample}}.concat.fq.gz"
-  resources:
+    input:
+        FORWARD=f"hiv.trim_trimmomaticT32/{{sample}}.R1.fq.gz",
+        REVERSE=f"hiv.trim_trimmomaticT32/{{sample}}.R2.fq.gz"
+    output:
+        f"hiv.t32.concat/{{sample}}.concat.fq.gz"
+    resources:
         partition="short",
         mem_mb=30000, # MB
         runtime=int(60*2.5) # min
-  threads: 1
-  run:
-      shell("mkdir -p hiv.t32.concat") #in case this directory doesn't exist. if it does, nothing will be done
-      shell(f"bash slurm/concat_files.sh -f {{input.FORWARD}} -r {{input.REVERSE}} -o {{output}}")
+    threads: 1
+    run:
+        shell("mkdir -p hiv.t32.concat") #in case this directory doesn't exist. if it does, nothing will be done
+        shell(f"bash slurm/concat_files.sh -f {{input.FORWARD}} -r {{input.REVERSE}} -o {{output}}")
 
 
 rule concat_nixed_files:
-  input:
-      FORWARD=f"hiv.t32.nix40/{{sample}}.R1.{nixing_len}.fq.gz",
-      REVERSE=f"hiv.t32.nix40/{{sample}}.R2.{nixing_len}.fq.gz"
-  output:
-      f"hiv.t32.concat.n40/{{sample}}.concat.fq.gz"
-  resources:
+    input:
+        FORWARD=f"hiv.t32.nix40/{{sample}}.R1.{nixing_len}.fq.gz",
+        REVERSE=f"hiv.t32.nix40/{{sample}}.R2.{nixing_len}.fq.gz"
+    output:
+        f"hiv.t32.concat.n40/{{sample}}.concat.fq.gz"
+    resources:
         partition="short",
         mem_mb=30000, # MB
         runtime=int(60*2.5) # min
-  threads: 1
-  run:
-      shell("mkdir -p hiv.t32.concat.n40") #in case this directory doesn't exist. if it does, nothing will be done
-      shell(f"bash slurm/concat_files.sh -f {{input.FORWARD}} -r {{input.REVERSE}} -o {{output}}")
+    threads: 1
+    run:
+        shell("mkdir -p hiv.t32.concat.n40") #in case this directory doesn't exist. if it does, nothing will be done
+        shell(f"bash slurm/concat_files.sh -f {{input.FORWARD}} -r {{input.REVERSE}} -o {{output}}")
 
 
 rule run_nonpareil:
@@ -170,30 +170,30 @@ rule get_biobakery_dbs:
         """
 
 rule run_humann:
-  input:
-      CHOCO_DB="/Users/jost9358/humann_dbs/chocophlan/",
-      UNIREF_DB="/Users/jost9358/humann_dbs/uniref/",
-      CONCAT_FILES=f"hiv.t32.concat/{{sample}}.concat.fq.gz"
-  output:
-      PATHABUND=expand("hiv.t32.concat.humann/{sample}/pathabundance.tsv",
-                sample=SAMPLES),
-      PATHCOV=expand("hiv.t32.concat.humann/{sample}/pathcoverage.tsv",
-                sample=SAMPLES),
-      GENEFAMS=expand("hiv.t32.concat.humann/{sample}/genefamilies.tsv",
-                sample=SAMPLES),
-      BUGSLIST=expand("hiv.t32.concat.humann/{sample}/{sample}.concat_humann_temp/{sample}.concat_metaphlan_bugs_list.tsv",
-                sample=SAMPLES)
-  resources:
-      partition="long",
-      mem_mb=int(150*1000), # MB, or 150 GB
-      runtime=int(48*60) # min, or 48 hours
-  threads: 16
-  conda: "conda_envs/humann.yaml"
-  shell:
-      """
-      mkdir -p hiv.t32.concat.humann
-      humann -i {input.CONCAT_FILES} -o hiv.t32.concat.humann/{wildcards.sample} --threads 16 --search-mode uniref90
-      """
+    input:
+        CHOCO_DB="/Users/jost9358/humann_dbs/chocophlan/",
+        UNIREF_DB="/Users/jost9358/humann_dbs/uniref/",
+        CONCAT_FILES=f"hiv.t32.concat/{{sample}}.concat.fq.gz"
+    output:
+        PATHABUND=expand("hiv.t32.concat.humann/{sample}/pathabundance.tsv",
+                        sample=SAMPLES),
+        PATHCOV=expand("hiv.t32.concat.humann/{sample}/pathcoverage.tsv",
+                        sample=SAMPLES),
+        GENEFAMS=expand("hiv.t32.concat.humann/{sample}/genefamilies.tsv",
+                        sample=SAMPLES),
+        BUGSLIST=expand("hiv.t32.concat.humann/{sample}/{sample}.concat_humann_temp/{sample}.concat_metaphlan_bugs_list.tsv",
+                        sample=SAMPLES)
+    resources:
+        partition="long",
+        mem_mb=int(150*1000), # MB, or 150 GB
+        runtime=int(48*60) # min, or 48 hours
+    threads: 16
+    conda: "conda_envs/humann.yaml"
+    shell:
+        """
+        mkdir -p hiv.t32.concat.humann
+        humann -i {input.CONCAT_FILES} -o hiv.t32.concat.humann/{wildcards.sample} --threads 16 --search-mode uniref90
+        """
 
 
 rule aggregate_humann_outs:
@@ -253,9 +253,9 @@ rule assemble_metaspades:
         GRAPH=f"hiv.t32.n40.metaspades/{{sample}}/assembly_graph.fastg",
         GRAPH_SCAFFOLDS=f"hiv.t32.n40.metaspades/{{sample}}/assembly_graph_with_scaffolds.gfa"
     resources:
-      partition="short",
-      mem_mb=int(100*1000), # MB, or 100 GB
-      runtime=int(23*60) # min, or 23 hours
+        partition="short",
+        mem_mb=int(100*1000), # MB, or 100 GB
+        runtime=int(23*60) # min, or 23 hours
     threads: 32
     conda: "conda_envs/metaspades.yaml"
     shell:
@@ -272,9 +272,9 @@ rule MetaQUAST_scaffolds:
         REP_HTML=f"hiv.t32.n40.metaspades.metaQUAST/report.html" # HTML version of the report with interactive plots inside
         #https://github.com/ablab/quast/discussions/166
     resources:
-      partition="short",
-      mem_mb=int(300*1000), # MB, needs a lot apparently
-      runtime=int(23.9*60) # min, or just under 24 hours. Icarus takes a long time.
+        partition="short",
+        mem_mb=int(300*1000), # MB, needs a lot apparently
+        runtime=int(23.9*60) # min, or just under 24 hours. Icarus takes a long time.
     threads: 8
     conda: "conda_envs/QUAST.yaml"
     shell:
@@ -310,9 +310,9 @@ rule build_scaffolds_index:
                        ".1.bt2", ".2.bt2", ".3.bt2", ".4.bt2",
                        ".rev.1.bt2", ".rev.2.bt2")
     resources:
-      partition="short",
-      mem_mb=int(20*1000), # MB, or 20 GB
-      runtime=int(1.5*60) # min, or 8 hours
+        partition="short",
+        mem_mb=int(20*1000), # MB, or 20 GB
+        runtime=int(1.5*60) # min, or 8 hours
     threads: 8
     conda: "conda_envs/bowtie2.yaml"
     shell:
@@ -398,9 +398,9 @@ rule run_metabat2_scaffolds:
     output:
         DONE=f"hiv.t32.n40.metaspades.metabat2/{{sample}}.metabat2done"
     resources:
-      partition="short",
-      mem_mb=int(10*1000), # MB, or 10 GB
-      runtime=int(2*60) # min, or 2 hours
+        partition="short",
+        mem_mb=int(10*1000), # MB, or 10 GB
+        runtime=int(2*60) # min, or 2 hours
     threads: 1
     conda: "conda_envs/metabat2.yaml"
     shell:
@@ -418,9 +418,9 @@ rule pull_checkM_db:
     output:
         "checkM_db/taxon_marker_sets.tsv"
     resources:
-      partition="short",
-      mem_mb=int(10*1000), # MB, or 10 GB
-      runtime=int(2*60) # min, or 2 hours
+        partition="short",
+        mem_mb=int(10*1000), # MB, or 10 GB
+        runtime=int(2*60) # min, or 2 hours
     threads: 1
     conda: "conda_envs/checkM.yaml"
     shell:
@@ -482,7 +482,6 @@ rule checkM:
 
 
 # CheckV for viral MAGs
-
 rule pull_checkV_db:
     output:
         "checkv-db-v1.5/genome_db/checkv_reps.faa" # just one of the files
