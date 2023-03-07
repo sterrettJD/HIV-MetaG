@@ -75,8 +75,8 @@ rule all:
         expand("hiv.t32.n40.metaspades.metabat2/checkM.copied/{sample}.done",
                sample=SAMPLES),
 
-        # CheckM done
-#        "hiv.t32.n40.metaspades.metabat2.checkm/checkM.done",
+        # CheckM output
+        "hiv.t32.n40.metaspades.metabat2.checkm/checkM.stats.tsv",
 
         # CheckV quality summary
         expand(f"hiv.t32.n40.metaspades.checkV/{{sample}}/quality_summary.tsv",
@@ -465,7 +465,7 @@ rule checkM:
         SETUPDONE=expand("hiv.t32.n40.metaspades.metabat2/checkM.copied/{sample}.done",
                         sample=SAMPLES)
     output:
-        "hiv.t32.n40.metaspades.metabat2.checkm/checkM.done"
+        "hiv.t32.n40.metaspades.metabat2.checkm/checkM.stats.tsv"
     resources:
         partition="short",
         mem_mb=int(350*1000), # MB, or 350 GB
@@ -477,8 +477,7 @@ rule checkM:
         # Make sure it has our correct DB
         checkm data setRoot checkM_db
 
-        checkm lineage_wf -t 40 -x fa hiv.t32.n40.metaspades.metabat2/bins_to_derep/ hiv.t32.n40.metaspades.metabat2.checkm
-        touch hiv.t32.n40.metaspades.metabat2.checkm/checkM.done
+        checkm lineage_wf -t 40 -x fa hiv.t32.n40.metaspades.metabat2/bins_to_derep/ hiv.t32.n40.metaspades.metabat2.checkm > hiv.t32.n40.metaspades.metabat2.checkm/checkM.stats.tsv
         """
 
 
