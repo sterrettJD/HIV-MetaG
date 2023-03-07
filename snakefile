@@ -484,7 +484,7 @@ rule checkM:
 
 # CheckV for viral MAGs
 
-rule pull_checkM_db:
+rule pull_checkV_db:
     output:
         "checkv-db-v1.5/genome_db/checkv_reps.faa" # just one of the files
     resources:
