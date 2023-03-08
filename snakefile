@@ -76,7 +76,8 @@ rule all:
                sample=SAMPLES),
 
         # CheckM output
-        "hiv.t32.n40.metaspades.metabat2.checkm/checkM.stats.tsv",
+        "hiv.t32.n40.metaspades.metabat2.checkm/checkM.stats.tsv", #scaffolds
+        "hiv.t32.n40.metaspades.metabat2.checkmc/checkM.stats.tsv", # contigs
 
         # CheckV quality summary
         expand(f"hiv.t32.n40.metaspades.checkV/{{sample}}/quality_summary.tsv",
