@@ -582,7 +582,7 @@ rule checkV:
     resources:
         partition="short",
         mem_mb=int(16*1000), # MB, or 16 GB
-        runtime=int(20*60) # min, or 20 hours
+        runtime=int(23*60) # min, or 23 hours
     threads: 16
     conda: "conda_envs/checkV.yaml"
     shell:
