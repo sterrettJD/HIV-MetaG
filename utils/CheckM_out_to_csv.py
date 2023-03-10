@@ -23,10 +23,10 @@ def get_args():
 def main():
     args = get_args()
     # weird delimiter of at least 2 spaces seems to be working. It's not a tab, and some entries contain spaces
-    df = pd.read_csv(args.infile, skip_footer=2, delimiter=r"\s\s+")
+    df = pd.read_csv(args.infile, skipfooter=2, delimiter=r"\s\s+", engine="python")
 
     df.drop(0, inplace=True)
-    df.to_csv(args.outfile)
+    df.to_csv(args.outfile, index=False)
 
 if __name__=="__main__":
     main()
