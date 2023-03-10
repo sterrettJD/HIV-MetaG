@@ -1,0 +1,19 @@
+name: derep
+channels:
+  - biobakery
+  - conda-forge
+  - bioconda
+  - defaults
+dependencies:
+  - python=3.9
+  - pip=23.*
+  - drep=3.4.2
+  - pysam
+  - matplotlib
+  - numpy
+  - prodigal
+  - hmmer
+  - pplacer
+  - pip:
+    - checkm-genome
+prefix: /Users/jost9358/miniconda3/envs/derep
