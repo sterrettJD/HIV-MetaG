@@ -11,9 +11,9 @@ def get_args():
         prog="CheckM Output Converter",
         description="Parses CheckM lineage_wf output and converts it to a usable csv"
     )
-    parser.add_argument("-i", "--in",
+    parser.add_argument("-i", "--infile",
                         required=True)
-    parser.add_argument("-o", "--out",
+    parser.add_argument("-o", "--outfile",
                         required=True)
 
     parsed_args = parser.parse_args()
@@ -23,10 +23,10 @@ def get_args():
 def main():
     args = get_args()
     # weird delimiter of at least 2 spaces seems to be working. It's not a tab, and some entries contain spaces
-    df = pd.read_csv(args.in, skip_footer=2, delimiter=r"\s\s+")
+    df = pd.read_csv(args.infile, skip_footer=2, delimiter=r"\s\s+")
 
     df.drop(0, inplace=True)
-    df.to_csv(args.out)
+    df.to_csv(args.outfile)
 
 if __name__=="__main__":
     main()
