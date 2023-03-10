@@ -6,6 +6,7 @@ channels:
   - defaults
 dependencies:
   - python=3.9
+  - pip=23.*
   - drep=3.4.2
   - pysam
   - matplotlib
