@@ -532,7 +532,9 @@ rule checkM_scaffolds:
         # Make sure it has our correct DB
         checkm data setRoot checkM_db
         mkdir -p hiv.t32.n40.metaspades.metabat2.checkm
-        checkm lineage_wf -t 40 -x fa hiv.t32.n40.metaspades.metabat2/bins_to_derep/ hiv.t32.n40.metaspades.metabat2.checkm > hiv.t32.n40.metaspades.metabat2.checkm/checkM.stats.tsv
+        checkm lineage_wf -t 40 -x fa hiv.t32.n40.metaspades.metabat2/bins_to_derep/ hiv.t32.n40.metaspades.metabat2.checkm > hiv.t32.n40.metaspades.metabat2.checkm/checkM.stats.out
+        # Move just the stats to a tsv
+        sed -n -e '/---------/,$p' hiv.t32.n40.metaspades.metabat2.checkm/checkM.stats.tsv | tail -n +2 > hiv.t32.n40.metaspades.metabat2.checkm/checkM.stats.tsv
         """
 
 rule checkM_contigs:
@@ -553,7 +555,9 @@ rule checkM_contigs:
         # Make sure it has our correct DB
         checkm data setRoot checkM_db
         mkdir -p hiv.t32.n40.metaspades.metabat2.checkmc
-        checkm lineage_wf -t 40 -x fa hiv.t32.n40.metaspades.metabat2c/bins_to_derep/ hiv.t32.n40.metaspades.metabat2.checkmc > hiv.t32.n40.metaspades.metabat2.checkmc/checkM.stats.tsv
+        checkm lineage_wf -t 40 -x fa hiv.t32.n40.metaspades.metabat2c/bins_to_derep/ hiv.t32.n40.metaspades.metabat2.checkmc > hiv.t32.n40.metaspades.metabat2.checkmc/checkM.stats.out
+        # move just the stats to a tsv
+        sed -n -e '/---------/,$p' hiv.t32.n40.metaspades.metabat2.checkmc/checkM.stats.out | tail -n +2 > hiv.t32.n40.metaspades.metabat2.checkmc/checkM.stats.tsv
         """
 
 # CheckV for viral MAGs
@@ -592,9 +596,8 @@ rule checkV:
         checkv end_to_end {input.CONTIGS} hiv.t32.n40.metaspades.checkV/{wildcards.sample}/ -t 16
         """
 
-# EukRep for eukaryyotic MAGs
 
-# dRep for de-replication
+# EukRep for eukaryyotic MAGs
 
 # inStrain for strain-level diversity
 
