@@ -533,8 +533,11 @@ rule checkM_scaffolds:
         checkm data setRoot checkM_db
         mkdir -p hiv.t32.n40.metaspades.metabat2.checkm
         checkm lineage_wf -t 40 -x fa hiv.t32.n40.metaspades.metabat2/bins_to_derep/ hiv.t32.n40.metaspades.metabat2.checkm > hiv.t32.n40.metaspades.metabat2.checkm/checkM.stats.out
+
         # Move just the stats to a tsv
         sed -n -e '/---------/,$p' hiv.t32.n40.metaspades.metabat2.checkm/checkM.stats.tsv | tail -n +2 > hiv.t32.n40.metaspades.metabat2.checkm/checkM.stats.tsv
+        # convert that tsv to a csv that dRep can use
+        python utils/CheckM_out_to_csv.py -i hiv.t32.n40.metaspades.metabat2.checkm/checkM.stats.tsv -o hiv.t32.n40.metaspades.metabat2.checkm/checkM.stats.csv
         """
 
 rule checkM_contigs:
@@ -556,9 +559,32 @@ rule checkM_contigs:
         checkm data setRoot checkM_db
         mkdir -p hiv.t32.n40.metaspades.metabat2.checkmc
         checkm lineage_wf -t 40 -x fa hiv.t32.n40.metaspades.metabat2c/bins_to_derep/ hiv.t32.n40.metaspades.metabat2.checkmc > hiv.t32.n40.metaspades.metabat2.checkmc/checkM.stats.out
+
         # move just the stats to a tsv
         sed -n -e '/---------/,$p' hiv.t32.n40.metaspades.metabat2.checkmc/checkM.stats.out | tail -n +2 > hiv.t32.n40.metaspades.metabat2.checkmc/checkM.stats.tsv
+        # convert that tsv to a csv that dRep can use
+        python utils/CheckM_out_to_csv.py -i hiv.t32.n40.metaspades.metabat2.checkmc/checkM.stats.tsv -o hiv.t32.n40.metaspades.metabat2.checkmc/checkM.stats.csv
         """
+
+
+# dRep for de-replication
+rule dRep_scaffolds:
+    input:
+
+    output:
+
+    resources:
+        partition="short",
+        mem_mb=int(16*1000), # MB, or 16 GB
+        runtime=int(23*60) # min, or 23 hours
+    threads: 16
+    conda: "conda_envs/dRep.yaml"
+    shell:
+        """
+        dRep dereplicate \
+        --genomeInfo hiv.t32.n40.metaspades.metabat2.checkmc/checkM.stats.tsv # NEED TO MAKE THIS RIGHT FORMAT CSV
+        """
+
 
 # CheckV for viral MAGs
 rule pull_checkV_db:
