@@ -81,7 +81,10 @@ rule all:
 
         # CheckV quality summary
         expand(f"hiv.t32.n40.metaspades.checkV/{{sample}}/quality_summary.tsv",
-                sample=SAMPLES)
+                sample=SAMPLES),
+
+        # Dereplicated genomes from dRep
+        "hiv.t32.n40.metaspades.metabat2.checkm.drep/dereplicated_genomes"
 
 
 ############# PROCESS #############
@@ -572,19 +575,27 @@ rule checkM_contigs:
 # dRep for de-replication
 rule dRep_scaffolds:
     input:
-        CSV="hiv.t32.n40.metaspades.metabat2.checkm/checkM.stats.csv"
+        CSV="hiv.t32.n40.metaspades.metabat2.checkm/checkM.stats.csv",
+        BINS="hiv.t32.n40.metaspades.metabat2.checkm/bins"
     output:
-
+        DREPPED=directory("hiv.t32.n40.metaspades.metabat2.checkm.drep/dereplicated_genomes/") # TODO: add other fields
     resources:
         partition="short",
-        mem_mb=int(50*1000), # MB, or 50 GB
+        mem_mb=int(200*1000), # MB, or 200 GB TODO: see if needs to be scaled up/down
         runtime=int(23*60) # min, or 23 hours
     threads: 16
     conda: "conda_envs/dRep.yaml"
     shell:
         """
-        dRep dereplicate \
-        --genomeInfo hiv.t32.n40.metaspades.metabat2.checkmc/checkM.stats.csv
+        mkdir -p hiv.t32.n40.metaspades.metabat2.checkm.drep/
+        cd hiv.t32.n40.metaspades.metabat2.checkm.drep/
+
+        find ../hiv.t32.n40.metaspades.metabat2.checkm/bins/ > bins_list.txt
+
+        dRep dereplicate --genomes bins_list.txt \
+        -p 16 --debug \
+        --genomeInfo hiv.t32.n40.metaspades.metabat2.checkmc/checkM.stats.csv \
+        ./ # specifies current directory as work directory
         """
 
 
@@ -627,6 +638,6 @@ rule checkV:
 
 # EukRep for eukaryyotic MAGs
 
-# inStrain for strain-level diversity
+# inStrain for strain-level diversity?
 
 # Use https://instrain.readthedocs.io/en/latest/user_manual.html#gene-annotation to look at annotation
