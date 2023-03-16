@@ -553,10 +553,10 @@ rule checkM_contigs:
         TSV="hiv.t32.n40.metaspades.metabat2.checkmc/checkM.stats.tsv",
         CSV="hiv.t32.n40.metaspades.metabat2.checkmc/checkM.stats.csv"
     resources:
-        partition="short",
-        mem_mb=int(350*1000), # MB, or 350 GB
-        runtime=int(23*60) # min, or 23 hours
-    threads: 40
+        partition="long",
+        mem_mb=int(420*1000), # MB, or 420 GB
+        runtime=int(30*60) # min, or 30 hrs
+    threads: 48
     conda: "conda_envs/checkM.yaml"
     shell:
         """
@@ -594,7 +594,7 @@ rule dRep_scaffolds:
 
         dRep dereplicate --genomes bins_list.txt \
         -p 16 --debug \
-        --genomeInfo hiv.t32.n40.metaspades.metabat2.checkmc/checkM.stats.csv \
+        --genomeInfo ../hiv.t32.n40.metaspades.metabat2.checkmc/checkM.stats.csv \
         ./ # specifies current directory as work directory
         """
 
