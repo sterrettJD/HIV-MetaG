@@ -526,10 +526,10 @@ rule checkM_scaffolds:
         TSV="hiv.t32.n40.metaspades.metabat2.checkm/checkM.stats.tsv",
         CSV="hiv.t32.n40.metaspades.metabat2.checkm/checkM.stats.csv"
     resources:
-        partition="short",
-        mem_mb=int(350*1000), # MB, or 350 GB
-        runtime=int(23*60) # min, or 23 hours
-    threads: 40
+        partition="long",
+        mem_mb=int(420*1000), # MB, or 350 GB
+        runtime=int(30*60) # min, or 30 hours
+    threads: 48
     conda: "conda_envs/checkM.yaml"
     shell:
         """
@@ -537,11 +537,6 @@ rule checkM_scaffolds:
         checkm data setRoot checkM_db
         mkdir -p hiv.t32.n40.metaspades.metabat2.checkm
         checkm lineage_wf -t 40 -x fa hiv.t32.n40.metaspades.metabat2/bins_to_derep/ hiv.t32.n40.metaspades.metabat2.checkm > hiv.t32.n40.metaspades.metabat2.checkm/checkM.stats.out
-
-        # Move just the stats to a tsv
-        sed -n -e '/---------/,$p' hiv.t32.n40.metaspades.metabat2.checkm/checkM.stats.out | tail -n +2 > hiv.t32.n40.metaspades.metabat2.checkm/checkM.stats.tsv
-        # convert that tsv to a csv that dRep can use
-        python utils/CheckM_out_to_csv.py -i {output.TSV} -o {output.CSV}
         """
 
 rule checkM_contigs:
@@ -564,11 +559,34 @@ rule checkM_contigs:
         checkm data setRoot checkM_db
         mkdir -p hiv.t32.n40.metaspades.metabat2.checkmc
         checkm lineage_wf -t 40 -x fa hiv.t32.n40.metaspades.metabat2c/bins_to_derep/ hiv.t32.n40.metaspades.metabat2.checkmc > hiv.t32.n40.metaspades.metabat2.checkmc/checkM.stats.out
+        """
 
-        # move just the stats to a tsv
-        sed -n -e '/---------/,$p' hiv.t32.n40.metaspades.metabat2.checkmc/checkM.stats.out | tail -n +2 > {output.TSV}
+rule checkM_clean_out:
+    input:
+        SCAFF="hiv.t32.n40.metaspades.metabat2.checkm/checkM.stats.out",
+        CONT="hiv.t32.n40.metaspades.metabat2.checkmc/checkM.stats.out"
+    output:
+        SCAFFTSV="hiv.t32.n40.metaspades.metabat2.checkm/checkM.stats.tsv",
+        SCAFFCSV="hiv.t32.n40.metaspades.metabat2.checkm/checkM.stats.csv",
+        CONTTSV="hiv.t32.n40.metaspades.metabat2.checkmc/checkM.stats.tsv",
+        CONTCSV="hiv.t32.n40.metaspades.metabat2.checkmc/checkM.stats.csv"
+    resources:
+        partition="short",
+        mem_mb=int(10*1000), # MB, or 10 GB
+        runtime=int(1*60) # min, or 1 hours
+    threads: 1
+    # No conda env - works in just the existing snakemake env
+    shell:
+        """
+        # Move just the stats to a tsv
+        sed -n -e '/---------/,$p' {input.SCAFF} | tail -n +2 > {output.SCAFFTSV}
         # convert that tsv to a csv that dRep can use
-        python utils/CheckM_out_to_csv.py -i {output.TSV} -o {output.CSV}
+        python utils/CheckM_out_to_csv.py -i {output.SCAFFTSV} -o {output.SCAFFCSV}
+
+        # Move just the stats to a tsv (contigs)
+        sed -n -e '/---------/,$p' {input.CONT} | tail -n +2 > {output.CONTTSV}
+        # convert that tsv to a csv that dRep can use
+        python utils/CheckM_out_to_csv.py -i {output.CONTTSV} -o {output.CONTCSV}
         """
 
 
