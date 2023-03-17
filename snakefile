@@ -592,7 +592,7 @@ rule checkM_clean_out:
 rule dRep_scaffolds:
     input:
         CSV="hiv.t32.n40.metaspades.metabat2.checkm/checkM.stats.csv",
-        BINS="hiv.t32.n40.metaspades.metabat2.checkm/bins"
+        BINS="hiv.t32.n40.metaspades.metabat2/bins_to_derep"
     output:
         DREPPED=directory("hiv.t32.n40.metaspades.metabat2.checkm.drep/dereplicated_genomes/") # TODO: add other fields
     resources:
