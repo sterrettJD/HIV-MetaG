@@ -523,8 +523,7 @@ rule checkM_scaffolds:
         SETUPDONE=expand("hiv.t32.n40.metaspades.metabat2/checkM.copied/{sample}.done",
                         sample=SAMPLES)
     output:
-        TSV="hiv.t32.n40.metaspades.metabat2.checkm/checkM.stats.tsv",
-        CSV="hiv.t32.n40.metaspades.metabat2.checkm/checkM.stats.csv"
+        "hiv.t32.n40.metaspades.metabat2.checkm/checkM.stats.out"
     resources:
         partition="long",
         mem_mb=int(420*1000), # MB, or 350 GB
@@ -536,7 +535,7 @@ rule checkM_scaffolds:
         # Make sure it has our correct DB
         checkm data setRoot checkM_db
         mkdir -p hiv.t32.n40.metaspades.metabat2.checkm
-        checkm lineage_wf -t 40 -x fa hiv.t32.n40.metaspades.metabat2/bins_to_derep/ hiv.t32.n40.metaspades.metabat2.checkm > hiv.t32.n40.metaspades.metabat2.checkm/checkM.stats.out
+        checkm lineage_wf -t 40 -x fa hiv.t32.n40.metaspades.metabat2/bins_to_derep/ hiv.t32.n40.metaspades.metabat2.checkm > {output}
         """
 
 rule checkM_contigs:
@@ -545,8 +544,7 @@ rule checkM_contigs:
         SETUPDONE=expand("hiv.t32.n40.metaspades.metabat2c/checkM.copied/{sample}.done",
                         sample=SAMPLES)
     output:
-        TSV="hiv.t32.n40.metaspades.metabat2.checkmc/checkM.stats.tsv",
-        CSV="hiv.t32.n40.metaspades.metabat2.checkmc/checkM.stats.csv"
+        "hiv.t32.n40.metaspades.metabat2.checkmc/checkM.stats.out"
     resources:
         partition="long",
         mem_mb=int(420*1000), # MB, or 420 GB
@@ -558,7 +556,7 @@ rule checkM_contigs:
         # Make sure it has our correct DB
         checkm data setRoot checkM_db
         mkdir -p hiv.t32.n40.metaspades.metabat2.checkmc
-        checkm lineage_wf -t 40 -x fa hiv.t32.n40.metaspades.metabat2c/bins_to_derep/ hiv.t32.n40.metaspades.metabat2.checkmc > hiv.t32.n40.metaspades.metabat2.checkmc/checkM.stats.out
+        checkm lineage_wf -t 40 -x fa hiv.t32.n40.metaspades.metabat2c/bins_to_derep/ hiv.t32.n40.metaspades.metabat2.checkmc > {output}
         """
 
 rule checkM_clean_out:
