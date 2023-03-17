@@ -606,7 +606,7 @@ rule dRep_scaffolds:
         mkdir -p hiv.t32.n40.metaspades.metabat2.checkm.drep/
         cd hiv.t32.n40.metaspades.metabat2.checkm.drep/
 
-        find ../hiv.t32.n40.metaspades.metabat2.checkm/bins/ > bins_list.txt
+        find ../hiv.t32.n40.metaspades.metabat2/bins_to_derep/ > bins_list.txt
 
         dRep dereplicate --genomes bins_list.txt \
         -p 16 --debug \
