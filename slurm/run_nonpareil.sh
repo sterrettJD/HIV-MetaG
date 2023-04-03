@@ -18,7 +18,7 @@ if [ -d $outpath ]
 then
     echo "Directory exists."
 else
-    echo "Directory does not exist. Making Outpath now."
+    echo "Directory $outpath does not exist. Making $outpath now."
     mkdir $outpath
 fi
 
