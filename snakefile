@@ -608,7 +608,7 @@ rule dRep_scaffolds:
 
         find ../hiv.t32.n40.metaspades.metabat2/bins_to_derep/ > bins_list.txt
 
-        dRep dereplicate --genomes bins_list.txt \
+        dRep dereplicate --genomes ../hiv.t32.n40.metaspades.metabat2/bins_to_derep/*.fa \
         -p 16 --debug \
         --genomeInfo ../hiv.t32.n40.metaspades.metabat2.checkmc/checkM.stats.csv \
         ./ # specifies current directory as work directory
