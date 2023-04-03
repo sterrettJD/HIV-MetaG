@@ -580,11 +580,19 @@ rule checkM_clean_out:
         sed -n -e '/---------/,$p' {input.SCAFF} | tail -n +2 > {output.SCAFFTSV}
         # convert that tsv to a csv that dRep can use
         python utils/CheckM_out_to_csv.py -i {output.SCAFFTSV} -o {output.SCAFFCSV}
+        # rename the columns for dRep
+        sed -i 's/Completeness/completeness/g' hiv.t32.n40.metaspades.metabat2.checkm/checkM.stats.csv
+        sed -i 's/Contamination/contamination/g' hiv.t32.n40.metaspades.metabat2.checkm/checkM.stats.csv
+        sed -i 's/Bin Id/genome/g' hiv.t32.n40.metaspades.metabat2.checkm/checkM.stats.csv
 
         # Move just the stats to a tsv (contigs)
         sed -n -e '/---------/,$p' {input.CONT} | tail -n +2 > {output.CONTTSV}
         # convert that tsv to a csv that dRep can use
         python utils/CheckM_out_to_csv.py -i {output.CONTTSV} -o {output.CONTCSV}
+        # rename the columns for dRep
+        sed -i 's/Completeness/completeness/g' hiv.t32.n40.metaspades.metabat2.checkmc/checkM.stats.csv
+        sed -i 's/Contamination/contamination/g' hiv.t32.n40.metaspades.metabat2.checkmc/checkM.stats.csv
+        sed -i 's/Bin Id/genome/g' hiv.t32.n40.metaspades.metabat2.checkmc/checkM.stats.csv
         """
 
 
@@ -610,7 +618,7 @@ rule dRep_scaffolds:
 
         dRep dereplicate --genomes ../hiv.t32.n40.metaspades.metabat2/bins_to_derep/*.fa \
         -p 16 --debug \
-        --genomeInfo ../hiv.t32.n40.metaspades.metabat2.checkmc/checkM.stats.csv \
+        --genomeInfo ../hiv.t32.n40.metaspades.metabat2.checkm/checkM.stats.csv \
         ./ # specifies current directory as work directory
         """
 
