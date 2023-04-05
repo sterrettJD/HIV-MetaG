@@ -18,13 +18,13 @@ if [ -d $outpath ]
 then
     echo "Directory exists."
 else
-    echo "Directory does not exist. Making Outpath now."
+    echo "Directory $outpath does not exist. Making $outpath now."
     mkdir $outpath
 fi
 
 
 # Unzip fastq
-zcat $inpath > ${outpath}/temp_unzipped_input.fq
+pigz -dc -p 16 $inpath > ${outpath}/temp_unzipped_input.fq
 
 # fastq is recommended for kmer algorithm, so defaulting to those
 nonpareil -s ${outpath}/temp_unzipped_input.fq -T kmer -f fastq -b ${outpath} -t 16 #16 threads
