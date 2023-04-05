@@ -22,10 +22,10 @@ def get_args():
 def replace_bin_id_with_filepath(df):
     new_df = df.copy()
     new_df["Bin Id"] = new_df["Bin Id"].apply(lambda x: "../hiv.t32.n40.metaspades.metabat2/bins_to_derep/" + x + ".fa")
-    return df
+    return new_df
 
 def rename_columns(df):
-    return df.rename(columns={"Bin id": "genome",
+    return df.rename(columns={"Bin Id": "genome",
                               "Completeness": "completeness",
                               "Contamination": "contamination",
                               "Strain heterogeneity": "heterogeneity"})
