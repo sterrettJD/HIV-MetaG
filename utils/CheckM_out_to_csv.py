@@ -28,7 +28,7 @@ def rename_columns(df):
     return df.rename(columns={"Bin Id": "genome",
                               "Completeness": "completeness",
                               "Contamination": "contamination",
-                              "Strain heterogeneity": "heterogeneity"})
+                              "Strain heterogeneity": "strain_heterogeneity"})
 
 def main():
     args = get_args()
