@@ -617,7 +617,27 @@ rule dRep_scaffolds:
         ./ # specifies current directory as work directory
         """
 
-
+rule classify_MAGS_phylophlan:
+    input:
+        SGB="hiv.t32.n40.metaspades.metabat2.checkm.drep/dereplicated_genomes/"
+    output:
+        directory("hiv.t32.n40.metaspades.metabat2.checkm.drep.phylophlan/")
+    resources:
+        partition="short",
+        mem_mb=int(150*1000), # MB, or 150 GB TODO: see if needs to be scaled up/down
+        runtime=int(23*60) # min, or 23 hours TODO: see if needs to be scaled up/down
+    threads: 64
+    conda: "conda_envs/phylophlan.yaml"
+    shell:
+        """
+        phylophlan_metagenomic \
+            -i {inmput.SGB} \ # species level dereplicated genome bins
+            -o {output} \
+            --nproc 64 \
+            -n "all" \
+            -d SGB.Jul20 \ # will pull the July 2020 database from Pasoli et al. 2019 https://doi.org/10.1016/j.cell.2019.01.001
+            --verbose
+        """
 
 # CheckV for viral MAGs
 rule pull_checkV_db:
