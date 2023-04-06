@@ -84,7 +84,10 @@ rule all:
                 sample=SAMPLES),
 
         # Dereplicated genomes from dRep
-        "hiv.t32.n40.metaspades.metabat2.checkm.drep/dereplicated_genomes"
+        "hiv.t32.n40.metaspades.metabat2.checkm.drep/dereplicated_genomes",
+
+        # Classified MAGs from PhyloPhlAn
+        "hiv.t32.n40.metaspades.metabat2.checkm.drep.phylophlan/"
 
 
 ############# PROCESS #############
