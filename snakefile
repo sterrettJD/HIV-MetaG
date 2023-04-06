@@ -597,11 +597,11 @@ rule dRep_scaffolds:
         CSV="hiv.t32.n40.metaspades.metabat2.checkm/checkM.stats.csv",
         BINS="hiv.t32.n40.metaspades.metabat2/bins_to_derep"
     output:
-        DREPPED=directory("hiv.t32.n40.metaspades.metabat2.checkm.drep/dereplicated_genomes/") # TODO: add other fields
+        DREPPED=directory("hiv.t32.n40.metaspades.metabat2.checkm.drep/dereplicated_genomes/")
     resources:
         partition="short",
-        mem_mb=int(200*1000), # MB, or 200 GB TODO: see if needs to be scaled up/down
-        runtime=int(23*60) # min, or 23 hours
+        mem_mb=int(8*1000), # MB, or 8 GB
+        runtime=int(2*60) # min, or 2 hours
     threads: 16
     conda: "conda_envs/dRep.yaml"
     shell:
@@ -616,6 +616,7 @@ rule dRep_scaffolds:
         --genomeInfo ../hiv.t32.n40.metaspades.metabat2.checkm/checkM.stats.csv \
         ./ # specifies current directory as work directory
         """
+
 
 
 # CheckV for viral MAGs
