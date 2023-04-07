@@ -90,7 +90,9 @@ rule all:
         "hiv.t32.n40.metaspades.metabat2.checkm.drep/dereplicated_genomes",
 
         # Classified MAGs from PhyloPhlAn
-        "hiv.t32.n40.metaspades.metabat2.checkm.drep.phylophlan/"
+        directory("hiv.t32.n40.metaspades.metabat2.checkm.drep.phylophlan_dists"),
+        directory("hiv.t32.n40.metaspades.metabat2.checkm.drep.phylophlan_sketches"),
+        "hiv.t32.n40.metaspades.metabat2.checkm.drep.phylophlan.tsv"
 
 
 ############# PROCESS #############
@@ -645,11 +647,13 @@ rule classify_MAGS_phylophlan:
     input:
         SGB="hiv.t32.n40.metaspades.metabat2.checkm.drep/dereplicated_genomes/"
     output:
-        directory("hiv.t32.n40.metaspades.metabat2.checkm.drep.phylophlan/") # TODO: update with real dirs
+        directory("hiv.t32.n40.metaspades.metabat2.checkm.drep.phylophlan_dists"),
+        directory("hiv.t32.n40.metaspades.metabat2.checkm.drep.phylophlan_sketches"),
+        "hiv.t32.n40.metaspades.metabat2.checkm.drep.phylophlan.tsv"
     resources:
         partition="short",
-        mem_mb=int(150*1000), # MB, or 150 GB TODO: see if needs to be scaled up/down
-        runtime=int(23*60) # min, or 23 hours TODO: see if needs to be scaled up/down
+        mem_mb=int(23*1000), # MB, or 24 GB
+        runtime=int(12*60) # min, or 23 hours TODO: see if needs to be scaled up/down
     threads: 1
     conda: "conda_envs/phylophlan.yaml"
     retries: 3
