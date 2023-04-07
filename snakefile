@@ -36,6 +36,9 @@ rule all:
         expand("hiv.t32.concat.humann/{sample}/{sample}.concat_humann_temp/{sample}.concat_metaphlan_bugs_list_v3.tsv",
                sample=SAMPLES),
 
+        # made by panphlan (download genomes)
+        "prevotella_genomes/Prevotella_copri/",
+
         # Made by metaspades
         expand(f"hiv.t32.n40.metaspades/{{sample}}/corrected/{{sample}}.R1.{nixing_len}.fq.00.0_0.cor.fastq.gz", sample=SAMPLES),
         expand(f"hiv.t32.n40.metaspades/{{sample}}/corrected/{{sample}}.R2.{nixing_len}.fq.00.0_0.cor.fastq.gz", sample=SAMPLES),
@@ -249,6 +252,22 @@ rule aggregate_humann_outs:
         python utils/convert_mphlan_v4_to_v3.py -i hiv.t32.concat.humann
         """
 
+############# CREATE PANGENOME #############
+rule download_prevotella_genomes:
+    output:
+        directory("prevotella_genomes/Prevotella_copri/")
+    resources:
+        partition="short",
+        mem_mb=int(4*1000), # MB, or 4 GB
+        runtime=int(0.5*60) # min, or 0.5 hours
+    threads: 1
+    conda:
+        "conda_envs/panphlan.yaml"
+    shell:
+        """
+        panphlan_download_pangenome.py -i Prevotella_copri -o prevotella_genomes
+        """
+
 ############# ASSEMBLE MAGS #############
 
 rule assemble_metaspades:
@@ -317,7 +336,7 @@ rule MetaQUAST_contigs:
         metaquast.py -o hiv.t32.n40.metaspades.metaQUASTc/ hiv.t32.n40.metaspades/*/contigs.fasta -t 8 --no-icarus
         """
 
-
+############# BINNING MAGS #############
 rule build_scaffolds_index:
     input:
         SCAFFOLDS=f"hiv.t32.n40.metaspades/{{sample}}/scaffolds.fasta"
@@ -450,6 +469,7 @@ rule run_metabat2_contigs:
         touch ../{wildcards.sample}.metabat2done
         """
 
+############# ASSESS MAGS WITH CHECKM #############
 # CheckM for assessing MAGs
 rule pull_checkM_db:
     output:
@@ -593,7 +613,7 @@ rule checkM_clean_out:
         python utils/CheckM_out_to_csv.py -i {output.CONTTSV} -o {output.CONTCSV}
         """
 
-
+############# DEREPLICATE MAGS #############
 # dRep for de-replication
 rule dRep_scaffolds:
     input:
@@ -620,6 +640,7 @@ rule dRep_scaffolds:
         ./ # specifies current directory as work directory
         """
 
+############# CLASSIFY DEREPLICATED MAGS #############
 rule classify_MAGS_phylophlan:
     input:
         SGB="hiv.t32.n40.metaspades.metabat2.checkm.drep/dereplicated_genomes/"
@@ -642,6 +663,7 @@ rule classify_MAGS_phylophlan:
             --verbose
         """
 
+############# ASSESS VIRAL MAGS #############
 # CheckV for viral MAGs
 rule pull_checkV_db:
     output:
