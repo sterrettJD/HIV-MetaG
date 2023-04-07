@@ -1,0 +1,9 @@
+name: panphlan
+channels:
+  - biobakery
+  - conda-forge
+  - bioconda
+  - defaults
+dependencies:
+  - panphlan
+prefix: /Users/jost9358/miniconda3/envs/panphlan
