@@ -5,6 +5,5 @@ channels:
   - bioconda
   - defaults
 dependencies:
-  - pip:
-    - panphlan
+  - panphlan==3.1
 prefix: /Users/jost9358/miniconda3/envs/panphlan
