@@ -1,0 +1,21 @@
+---
+title: "Pangenome analysis"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+pacman::p_load(data.table,
+               tidyverse,
+               ggplot2)
+```
+
+# Load
+```{r}
+genes <- fread("../hiv.t32.p_copri_panphlan_prof/gene_presence_absence_0.tsv") %>%
+  as.data.frame()
+
+metadata <- fread("../metadata.txt") %>% as.data.frame()
+rownames(metadata) <- metadata$PID
+```
