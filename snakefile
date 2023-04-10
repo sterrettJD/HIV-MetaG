@@ -91,8 +91,8 @@ rule all:
         "hiv.t32.n40.metaspades.metabat2.checkm.drep/dereplicated_genomes",
 
         # Classified MAGs from PhyloPhlAn
-        directory("hiv.t32.n40.metaspades.metabat2.checkm.drep.phylophlan_dists"),
-        directory("hiv.t32.n40.metaspades.metabat2.checkm.drep.phylophlan_sketches"),
+        "hiv.t32.n40.metaspades.metabat2.checkm.drep.phylophlan_dists",
+        "hiv.t32.n40.metaspades.metabat2.checkm.drep.phylophlan_sketches",
         "hiv.t32.n40.metaspades.metabat2.checkm.drep.phylophlan.tsv"
 
 
