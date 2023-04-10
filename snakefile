@@ -337,6 +337,33 @@ rule map_panphlan_p_copri:
         """
 
 # Panphlan profiling
+rule profile_panphlan_p_copri:
+    input:
+        MAPPED_CSV=expand("hiv.t32.p_copri_panphlan/{sample}_p_copri.csv", sample=SAMPLES),
+        REF_TSV="prevotella_genomes/Prevotella_copri/Prevotella_copri_pangenome.tsv",
+        REF_ANNOT="prevotella_genomes/Prevotella_copri/panphlan_Prevotella_copri_annot.tsv"
+    output:
+        "hiv.t32.p_copri_panphlan/gene_presence_absence.tsv",
+        "hiv.t32.p_copri_panphlan/gene_coverage.tsv",
+        "hiv.t32.p_copri_panphlan/gene_coverage.png"
+    resources:
+        partition="short",
+        mem_mb=int(32*1000), # MB, or 32 GB TODO: scale down as needed
+        runtime=int(10*60) # min, or 10 hours TODO: scale down as needed
+    threads: 1
+    conda:
+        "conda_envs/panphlan.yaml"
+    shell:
+        """
+        panphlan_profiling.py -i hiv.t32.p_copri_panphlan/ \
+        --o_matrix hiv.t32.p_copri_panphlan/gene_presence_absence.tsv \
+        --o_covmat hiv.t32.p_copri_panphlan/gene_coverage.tsv \
+        --o_covplot_normed hiv.t32.p_copri_panphlan/gene_coverage.png \
+        -p {input.REF_TSV} \
+        --func_annot {input.REF_ANNOT} --field eggNOG \
+        --add_ref \
+        --verbose
+        """
 
 ############# ASSEMBLE MAGS #############
 
