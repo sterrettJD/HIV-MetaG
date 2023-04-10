@@ -46,8 +46,8 @@ rule all:
         # made by panphlan (map)
         expand("hiv.t32.p_copri_panphlan/{sample}_p_copri.csv", sample=SAMPLES),
         # made by panphlan (profiling)
-        expand("hiv.t32.p_copri_panphlan_prof/gene_presence_absence_{ANNOT_FIELD}.tsv", ANNOT_FIELD=[i for i in range(8)]),
-        expand("hiv.t32.p_copri_panphlan_prof/gene_coverage_{ANNOT_FIELD}.tsv", ANNOT_FIELD=[i for i in range(8)]),
+        expand("hiv.t32.p_copri_panphlan_prof/gene_presence_absence_{ANNOT_FIELD}.tsv", ANNOT_FIELD=[i for i in range(1,9)]),
+        expand("hiv.t32.p_copri_panphlan_prof/gene_coverage_{ANNOT_FIELD}.tsv", ANNOT_FIELD=[i for i in range(1,9)]),
 
         # Made by metaspades
         expand(f"hiv.t32.n40.metaspades/{{sample}}/corrected/{{sample}}.R1.{nixing_len}.fq.00.0_0.cor.fastq.gz", sample=SAMPLES),
