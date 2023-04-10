@@ -45,6 +45,10 @@ rule all:
                  ".rev.1.bt2", ".rev.2.bt2"),
         # made by panphlan (map)
         expand("hiv.t32.p_copri_panphlan/{sample}_p_copri.csv", sample=SAMPLES),
+        # made by panphlan (profiling)
+        "hiv.t32.p_copri_panphlan/gene_presence_absence.tsv",
+        "hiv.t32.p_copri_panphlan/gene_coverage.tsv",
+        "hiv.t32.p_copri_panphlan/gene_coverage.png",
 
         # Made by metaspades
         expand(f"hiv.t32.n40.metaspades/{{sample}}/corrected/{{sample}}.R1.{nixing_len}.fq.00.0_0.cor.fastq.gz", sample=SAMPLES),
