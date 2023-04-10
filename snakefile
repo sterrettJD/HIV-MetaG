@@ -38,6 +38,7 @@ rule all:
 
         # made by panphlan (download genomes)
         "prevotella_genomes/Prevotella_copri/",
+        expand("hiv.t32.p_copri_panphlan/{sample}_p_copri.csv", sample=SAMPLES),
 
         # Made by metaspades
         expand(f"hiv.t32.n40.metaspades/{{sample}}/corrected/{{sample}}.R1.{nixing_len}.fq.00.0_0.cor.fastq.gz", sample=SAMPLES),
@@ -254,7 +255,7 @@ rule aggregate_humann_outs:
         python utils/convert_mphlan_v4_to_v3.py -i hiv.t32.concat.humann
         """
 
-############# CREATE PANGENOME #############
+############# MAP TO PREVOTELLA COPRI PANGENOME #############
 rule download_prevotella_genomes:
     output:
         directory("prevotella_genomes/Prevotella_copri/")
@@ -268,6 +269,29 @@ rule download_prevotella_genomes:
     shell:
         """
         panphlan_download_pangenome.py -i Prevotella_copri -o prevotella_genomes
+        """
+
+rule map_panphlan_p_copri:
+    input:
+        REF="prevotella_genomes/Prevotella_copri/",
+        CONCAT_FILES=expand("hiv.t32.concat/{{sample}}.concat.fq.gz", sample=SAMPLES)
+    output:
+        MAPPED_CSV="hiv.t32.p_copri_panphlan/{sample}_p_copri.csv"
+    resources:
+        partition="short",
+        mem_mb=int(64*1000), # MB, or 64 GB   TODO: scale down as needed
+        runtime=int(23*60) # min, or 23 hours TODO: scale down as needed
+    threads: 16
+    conda:
+        "conda_envs/panphlan.yaml"
+    shell:
+        """
+        mkdir -p hiv.t32.p_copri_panphlan/
+        panphlan_map.py -p prevotella_genomes/Prevotella_copri/Prevotella_copri_pangenome.tsv \
+                    --indexes {input.REF} \
+                    -i {input.CONCAT_FILES} \
+                    --nproc 16 \
+                    -o {output.MAPPED_CSV}
         """
 
 ############# ASSEMBLE MAGS #############
