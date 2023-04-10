@@ -37,7 +37,13 @@ rule all:
                sample=SAMPLES),
 
         # made by panphlan (download genomes)
-        "prevotella_genomes/Prevotella_copri/",
+        "prevotella_genomes/Prevotella_copri/Prevotella_copri_pangenome.tsv",
+        "prevotella_genomes/Prevotella_copri/panphlan_Prevotella_copri_annot.tsv",
+        "prevotella_genomes/Prevotella_copri/revotella_copri_pangenome_contigs.fna",
+        multiext("prevotella_genomes/Prevotella_copri/Prevotella_copri",
+                 ".1.bt2", ".2.bt2", ".3.bt2", ".4.bt2",
+                 ".rev.1.bt2", ".rev.2.bt2"),
+        # made by panphlan (map)
         expand("hiv.t32.p_copri_panphlan/{sample}_p_copri.csv", sample=SAMPLES),
 
         # Made by metaspades
@@ -258,7 +264,12 @@ rule aggregate_humann_outs:
 ############# MAP TO PREVOTELLA COPRI PANGENOME #############
 rule download_prevotella_genomes:
     output:
-        directory("prevotella_genomes/Prevotella_copri/")
+        TSV="prevotella_genomes/Prevotella_copri/Prevotella_copri_pangenome.tsv",
+        ANNOT="prevotella_genomes/Prevotella_copri/panphlan_Prevotella_copri_annot.tsv",
+        CONTIGS="prevotella_genomes/Prevotella_copri/revotella_copri_pangenome_contigs.fna",
+        INDEX=multiext(f"prevotella_genomes/Prevotella_copri/Prevotella_copri",
+                       ".1.bt2", ".2.bt2", ".3.bt2", ".4.bt2",
+                       ".rev.1.bt2", ".rev.2.bt2")
     resources:
         partition="short",
         mem_mb=int(4*1000), # MB, or 4 GB
@@ -273,7 +284,10 @@ rule download_prevotella_genomes:
 
 rule map_panphlan_p_copri:
     input:
-        REF="prevotella_genomes/Prevotella_copri/",
+        TSV="prevotella_genomes/Prevotella_copri/Prevotella_copri_pangenome.tsv",
+        INDEX=multiext(f"prevotella_genomes/Prevotella_copri/Prevotella_copri",
+                       ".1.bt2", ".2.bt2", ".3.bt2", ".4.bt2",
+                       ".rev.1.bt2", ".rev.2.bt2"),
         CONCAT_FILES=expand("hiv.t32.concat/{{sample}}.concat.fq.gz", sample=SAMPLES)
     output:
         MAPPED_CSV="hiv.t32.p_copri_panphlan/{sample}_p_copri.csv"
@@ -287,10 +301,10 @@ rule map_panphlan_p_copri:
     shell:
         """
         mkdir -p hiv.t32.p_copri_panphlan/
-        panphlan_map.py -p prevotella_genomes/Prevotella_copri/Prevotella_copri_pangenome.tsv \
-                    --indexes {input.REF} \
+        panphlan_map.py -p {input.TSV} \
+                    --indexes prevotella_genomes/Prevotella_copri/Prevotella_copri \
                     -i {input.CONCAT_FILES} \
-                    --nproc 16 \
+                    --nproc 16 --sam_memory 32 \
                     -o {output.MAPPED_CSV}
         """
 
