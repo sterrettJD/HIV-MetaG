@@ -290,11 +290,6 @@ rule clean_p_copri_pangenome:
                        ".1.bt2", ".2.bt2", ".3.bt2", ".4.bt2",
                        ".rev.1.bt2", ".rev.2.bt2")
     output:
-        ANNOT="prevotella_genomes/Prevotella_copri/panphlan_Prevotella_copri_annot.tsv",
-        CONTIGS="prevotella_genomes/Prevotella_copri/Prevotella_copri_pangenome_contigs.fna",
-        INDEX=multiext(f"prevotella_genomes/Prevotella_copri/Prevotella_copri",
-                       ".1.bt2", ".2.bt2", ".3.bt2", ".4.bt2",
-                       ".rev.1.bt2", ".rev.2.bt2")
         DONE="prevotella_genomes/Prevotella_copri/genome_cleaned.done"
     resources:
         partition="short",
@@ -305,8 +300,10 @@ rule clean_p_copri_pangenome:
         "conda_envs/panphlan.yaml"
     shell:
         """
-        panphlan_clean_pangenome.py --species Prevotella_copri \
-        --pangenome prevotella_genomes/Prevotella_copri/
+        echo "STARTING"
+        python utils/panphlan_clean_pangenome.py --species Prevotella_copri \
+        --pangenome prevotella_genomes/Prevotella_copri/ \
+        --verbose
 
         touch {output.DONE}
         """
@@ -314,7 +311,7 @@ rule clean_p_copri_pangenome:
 
 rule map_panphlan_p_copri:
     input:
-        REF_CLEANED="prevotella_genomes/Prevotella_copri/genome_cleaned.done"
+        REF_CLEANED="prevotella_genomes/Prevotella_copri/genome_cleaned.done",
         TSV="prevotella_genomes/Prevotella_copri/Prevotella_copri_pangenome.tsv",
         INDEX=multiext(f"prevotella_genomes/Prevotella_copri/Prevotella_copri",
                        ".1.bt2", ".2.bt2", ".3.bt2", ".4.bt2",
