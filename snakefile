@@ -39,7 +39,7 @@ rule all:
         # made by panphlan (download genomes)
         "prevotella_genomes/Prevotella_copri/Prevotella_copri_pangenome.tsv",
         "prevotella_genomes/Prevotella_copri/panphlan_Prevotella_copri_annot.tsv",
-        "prevotella_genomes/Prevotella_copri/revotella_copri_pangenome_contigs.fna",
+        "prevotella_genomes/Prevotella_copri/prevotella_copri_pangenome_contigs.fna",
         multiext("prevotella_genomes/Prevotella_copri/Prevotella_copri",
                  ".1.bt2", ".2.bt2", ".3.bt2", ".4.bt2",
                  ".rev.1.bt2", ".rev.2.bt2"),
@@ -266,7 +266,7 @@ rule download_prevotella_genomes:
     output:
         TSV="prevotella_genomes/Prevotella_copri/Prevotella_copri_pangenome.tsv",
         ANNOT="prevotella_genomes/Prevotella_copri/panphlan_Prevotella_copri_annot.tsv",
-        CONTIGS="prevotella_genomes/Prevotella_copri/revotella_copri_pangenome_contigs.fna",
+        CONTIGS="prevotella_genomes/Prevotella_copri/prevotella_copri_pangenome_contigs.fna",
         INDEX=multiext(f"prevotella_genomes/Prevotella_copri/Prevotella_copri",
                        ".1.bt2", ".2.bt2", ".3.bt2", ".4.bt2",
                        ".rev.1.bt2", ".rev.2.bt2")
@@ -288,7 +288,7 @@ rule map_panphlan_p_copri:
         INDEX=multiext(f"prevotella_genomes/Prevotella_copri/Prevotella_copri",
                        ".1.bt2", ".2.bt2", ".3.bt2", ".4.bt2",
                        ".rev.1.bt2", ".rev.2.bt2"),
-        CONCAT_FILES=expand("hiv.t32.concat/{{sample}}.concat.fq.gz", sample=SAMPLES)
+        CONCAT_FILES=expand("hiv.t32.concat/{sample}.concat.fq.gz", sample=SAMPLES)
     output:
         MAPPED_CSV="hiv.t32.p_copri_panphlan/{sample}_p_copri.csv"
     resources:
