@@ -46,8 +46,8 @@ rule all:
         # made by panphlan (map)
         expand("hiv.t32.p_copri_panphlan/{sample}_p_copri.csv", sample=SAMPLES),
         # made by panphlan (profiling)
-        "hiv.t32.p_copri_panphlan/gene_presence_absence.tsv",
-        "hiv.t32.p_copri_panphlan/gene_coverage.tsv",
+        expand("hiv.t32.p_copri_panphlan/gene_presence_absence_{annot_field}.tsv", annot_field=[i for i in range(8)]),
+        expand("hiv.t32.p_copri_panphlan/gene_coverage_{annot_field}.tsv", annot_field=[i for i in range(8)]),
 
         # Made by metaspades
         expand(f"hiv.t32.n40.metaspades/{{sample}}/corrected/{{sample}}.R1.{nixing_len}.fq.00.0_0.cor.fastq.gz", sample=SAMPLES),
@@ -346,8 +346,10 @@ rule profile_panphlan_p_copri:
         REF_TSV="prevotella_genomes/Prevotella_copri/Prevotella_copri_pangenome.tsv",
         REF_ANNOT="prevotella_genomes/Prevotella_copri/panphlan_Prevotella_copri_annot.tsv"
     output:
-        "hiv.t32.p_copri_panphlan/gene_presence_absence.tsv",
-        "hiv.t32.p_copri_panphlan/gene_coverage.tsv"
+        "hiv.t32.p_copri_panphlan/gene_presence_absence_{annot_field}.tsv",
+        "hiv.t32.p_copri_panphlan/gene_coverage_{annot_field}.tsv"
+    params:
+        ANNOT_FIELD=[i for i in range(8)]
     resources:
         partition="short",
         mem_mb=int(4*1000), # MB, or 4 GB
@@ -358,11 +360,11 @@ rule profile_panphlan_p_copri:
     shell:
         """
         panphlan_profiling.py -i hiv.t32.p_copri_panphlan/ \
-        --o_matrix hiv.t32.p_copri_panphlan/gene_presence_absence.tsv \
-        --o_covmat hiv.t32.p_copri_panphlan/gene_coverage.tsv \
+        --o_matrix hiv.t32.p_copri_panphlan/gene_presence_absence_{params.ANNOT_FIELD}.tsv \
+        --o_covmat hiv.t32.p_copri_panphlan/gene_coverage_{params.ANNOT_FIELD}.tsv \
         -p {input.REF_TSV} \
         --func_annot {input.REF_ANNOT} \
-#        --field eggNOG \
+        --field {params.ANNOT_FIELD} \
         --add_ref \
         --verbose
         """
