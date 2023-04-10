@@ -293,8 +293,8 @@ rule clean_p_copri_pangenome:
         DONE="prevotella_genomes/Prevotella_copri/genome_cleaned.done"
     resources:
         partition="short",
-        mem_mb=int(32*1000), # MB, or 32 GB
-        runtime=int(12*60) # min, or 12 hours
+        mem_mb=int(8*1000), # MB, or 8 GB
+        runtime=int(1*60) # min, or 1 hour
     threads: 1
     conda:
         "conda_envs/panphlan.yaml"
@@ -321,8 +321,8 @@ rule map_panphlan_p_copri:
         MAPPED_CSV="hiv.t32.p_copri_panphlan/{sample}_p_copri.csv"
     resources:
         partition="short",
-        mem_mb=int(64*1000), # MB, or 64 GB   TODO: scale down as needed
-        runtime=int(23*60) # min, or 23 hours TODO: scale down as needed
+        mem_mb=int(8*1000), # MB, or 8 GB
+        runtime=int(2*60) # min, or 2 hours
     threads: 16
     conda:
         "conda_envs/panphlan.yaml"
