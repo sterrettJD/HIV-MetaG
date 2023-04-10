@@ -282,8 +282,39 @@ rule download_prevotella_genomes:
         panphlan_download_pangenome.py -i Prevotella_copri -o prevotella_genomes
         """
 
+rule clean_p_copri_pangenome:
+    input:
+        ANNOT="prevotella_genomes/Prevotella_copri/panphlan_Prevotella_copri_annot.tsv",
+        CONTIGS="prevotella_genomes/Prevotella_copri/Prevotella_copri_pangenome_contigs.fna",
+        INDEX=multiext(f"prevotella_genomes/Prevotella_copri/Prevotella_copri",
+                       ".1.bt2", ".2.bt2", ".3.bt2", ".4.bt2",
+                       ".rev.1.bt2", ".rev.2.bt2")
+    output:
+        ANNOT="prevotella_genomes/Prevotella_copri/panphlan_Prevotella_copri_annot.tsv",
+        CONTIGS="prevotella_genomes/Prevotella_copri/Prevotella_copri_pangenome_contigs.fna",
+        INDEX=multiext(f"prevotella_genomes/Prevotella_copri/Prevotella_copri",
+                       ".1.bt2", ".2.bt2", ".3.bt2", ".4.bt2",
+                       ".rev.1.bt2", ".rev.2.bt2")
+        DONE="prevotella_genomes/Prevotella_copri/genome_cleaned.done"
+    resources:
+        partition="short",
+        mem_mb=int(32*1000), # MB, or 32 GB
+        runtime=int(12*60) # min, or 12 hours
+    threads: 1
+    conda:
+        "conda_envs/panphlan.yaml"
+    shell:
+        """
+        panphlan_clean_pangenome.py --species Prevotella_copri \
+        --pangenome prevotella_genomes/Prevotella_copri/
+
+        touch {output.DONE}
+        """
+
+
 rule map_panphlan_p_copri:
     input:
+        REF_CLEANED="prevotella_genomes/Prevotella_copri/genome_cleaned.done"
         TSV="prevotella_genomes/Prevotella_copri/Prevotella_copri_pangenome.tsv",
         INDEX=multiext(f"prevotella_genomes/Prevotella_copri/Prevotella_copri",
                        ".1.bt2", ".2.bt2", ".3.bt2", ".4.bt2",
@@ -307,6 +338,8 @@ rule map_panphlan_p_copri:
                     --nproc 16 --sam_memory 32 \
                     -o {output.MAPPED_CSV}
         """
+
+# Panphlan profiling
 
 ############# ASSEMBLE MAGS #############
 
