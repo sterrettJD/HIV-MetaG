@@ -13,9 +13,38 @@ pacman::p_load(data.table,
 
 # Load
 ```{r}
-genes <- fread("../hiv.t32.p_copri_panphlan_prof/gene_presence_absence_0.tsv") %>%
+genes <- read.csv("../hiv.t32.p_copri_panphlan_prof/gene_presence_absence_6.tsv", 
+               sep="\t"
+               ) %>%
   as.data.frame()
 
 metadata <- fread("../metadata.txt") %>% as.data.frame()
 rownames(metadata) <- metadata$PID
+```
+
+```{r}
+#rownames(genes) <- genes$X
+
+# Make this a matrix for the heatmap
+genes.mat <- genes %>% 
+    select(-c(X, annotation)) %>% 
+    as.matrix()
+# Remove a row with many NA values
+genes.mat <- genes.mat[which(rowSums(is.na(genes.mat)) == 0),]
+if(sum(is.na(genes.mat)) != 0){
+    print("This matrix has NA values!")
+}
+colnames(genes.mat) <- colnames(genes.mat) %>% 
+    gsub(pattern="_p_copri.csv", replacement="")
+
+group <- metadata[colnames(genes.mat), "Risk_Status"]
+group.colors <- group
+group.colors[group=="Low"] <- "blue"
+group.colors[group=="High"] <- "yellow"
+group.colors[group=="Positive"] <- "red"
+group.colors[is.na(group)] <- "black"
+
+heatmap(genes.mat, labRow=F, na.rm=T,
+        ColSideColors=group.colors)
+
 ```
