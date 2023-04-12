@@ -794,9 +794,7 @@ rule setup_phylophlan_prevotella_phylogeny:
 
         phylophlan_get_reference \
             -g g__Prevotella \
-            -o {output.BINS} \
-            --list_clades \
-            -n 20 \
+            -o {output.BINS} 
         """
 
 rule download_p_copri_marker_genes:
