@@ -852,9 +852,9 @@ rule build_phylophlan_phylogeny:
         directory("phylophlan_output")
     resources:
         partition="short",
-        mem_mb=int(32*1000), # MB, or 32 GB
+        mem_mb=int(64*1000), # MB, or 32 GB
         runtime=int(12*60) # min, or 12 hrs
-    threads: 8
+    threads: 64
     conda: "conda_envs/phylophlan.yaml"
     shell:
         """
@@ -864,7 +864,7 @@ rule build_phylophlan_phylogeny:
         -d {input.MARKERS} \
         -t a \
         -f {input.CFG} \
-        --nproc 8 \
+        --nproc 64 \
         --diversity medium \
         --fast \
         --verbose
