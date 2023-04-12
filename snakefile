@@ -768,6 +768,37 @@ rule classify_MAGS_phylophlan:
             --verbose
         """
 
+rule build_phylophlan_prevotella_phylogeny:
+    input:
+        PHYLO_CLASS="hiv.t32.n40.metaspades.metabat2.checkm.drep.phylophlan.tsv",
+        GENOMES="hiv.t32.n40.metaspades.metabat2.checkm.drep/dereplicated_genomes/"
+    output:
+        BINS=directory("Prevotella_bins/")
+    resources:
+        partition="short",
+        mem_mb=int(12*1000), # MB, or 12 GB
+        runtime=int(2*60) # min, or 2 hours
+    threads: 1
+    conda: "conda_envs/phylophlan.yaml"
+    shell:
+        """
+        mkdir -p input_bins
+        for i in $(grep Prevotella {input.PHYLO_CLASS} | cut -f1); do
+            cp -a {input.GENOMES}/$i.fa {output.BINS}
+        done
+
+        phylophlan_setup_database \
+            -g s__Prevotella_copri \
+            --db_type a \
+            --verbose
+
+        phylophlan_get_reference \
+            -g g__Prevotella \
+            -o {output.BINS} \
+            --list_clades \
+            -n 200 \
+        """
+
 ############# ASSESS VIRAL MAGS #############
 # CheckV for viral MAGs
 rule pull_checkV_db:
