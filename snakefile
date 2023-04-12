@@ -108,7 +108,8 @@ rule all:
         # PhyloPhlAn download
         "s__Prevotella_copri",
         # PhyloPhlAn config
-        "phylophlan_config.cfg"
+        "phylophlan_config.cfg",
+        "phylophlan_output/"
 
 ############# PROCESS #############
 
@@ -834,6 +835,33 @@ rule make_phylophlan_config:
         --trim trimal \
         --tree1 fasttree \
         --tree2 raxml
+        """
+
+rule build_phylophlan_phylogeny:
+    input:
+        CFG="phylophlan_config.cfg",
+        GENOMES="phylophlan_input_bins/",
+        MARKERS="s__Prevotella_copri/"
+    output:
+        directory("phylophlan_output")
+    resources:
+        partition="short",
+        mem_mb=int(32*1000), # MB, or 32 GB
+        runtime=int(12*60) # min, or 12 hrs
+    threads: 8
+    conda: "conda_envs/phylophlan.yaml"
+    shell:
+        """
+        phylophlan \
+        -i {input.GENOMES} \
+        -o phylophlan_output/ \
+        -d {input.MARKERS} \
+        -t a \
+        -f {input.CFG} \
+        --nproc 8 \
+        --diversity medium \
+        --fast \
+        --verbose
         """
 
 ############# ASSESS VIRAL MAGS #############
