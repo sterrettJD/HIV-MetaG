@@ -801,7 +801,7 @@ rule setup_phylophlan_prevotella_phylogeny:
 
 rule download_p_copri_marker_genes:
     output:
-        BINS=directory("s__Prevotella_copri")
+        directory("s__Prevotella_copri")
     resources:
         partition="short",
         mem_mb=int(8*1000), # MB, or 8 GB
@@ -809,11 +809,11 @@ rule download_p_copri_marker_genes:
     threads: 1
     conda: "conda_envs/phylophlan.yaml"
     shell:
-    """
-    phylophlan_setup_database \
-        -g s__Prevotella_copri \
-        --verbose
-    """
+        """
+        phylophlan_setup_database \
+            -g s__Prevotella_copri \
+            --verbose
+        """
 
 rule make_phylophlan_config:
     output:
