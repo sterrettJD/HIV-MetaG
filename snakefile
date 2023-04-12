@@ -104,7 +104,7 @@ rule all:
         "hiv.t32.n40.metaspades.metabat2.checkm.drep.phylophlan_sketches",
         "hiv.t32.n40.metaspades.metabat2.checkm.drep.phylophlan.tsv",
         # PhyloPhlAn setup
-        "Prevotella_bins/",
+        "phylophlan_input_bins",
         # PhyloPhlAn download
         "s__Prevotella_copri",
         # PhyloPhlAn config
