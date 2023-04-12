@@ -102,7 +102,8 @@ rule all:
         # Classified MAGs from PhyloPhlAn
         "hiv.t32.n40.metaspades.metabat2.checkm.drep.phylophlan_dists",
         "hiv.t32.n40.metaspades.metabat2.checkm.drep.phylophlan_sketches",
-        "hiv.t32.n40.metaspades.metabat2.checkm.drep.phylophlan.tsv"
+        "hiv.t32.n40.metaspades.metabat2.checkm.drep.phylophlan.tsv",
+        "Prevotella_bins/"
 
 
 ############# PROCESS #############
@@ -789,7 +790,8 @@ rule build_phylophlan_prevotella_phylogeny:
 
         phylophlan_setup_database \
             -g s__Prevotella_copri \
-            --db_type a \
+            -x a \
+            -o {output.BINS} \
             --verbose
 
         phylophlan_get_reference \
