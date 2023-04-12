@@ -103,7 +103,11 @@ rule all:
         "hiv.t32.n40.metaspades.metabat2.checkm.drep.phylophlan_dists",
         "hiv.t32.n40.metaspades.metabat2.checkm.drep.phylophlan_sketches",
         "hiv.t32.n40.metaspades.metabat2.checkm.drep.phylophlan.tsv",
+        # PhyloPhlAn setup
         "Prevotella_bins/",
+        # PhyloPhlAn download
+        "s__Prevotella_copri",
+        # PhyloPhlAn config
         "phylophlan_config.cfg"
 
 ############# PROCESS #############
@@ -769,37 +773,47 @@ rule classify_MAGS_phylophlan:
             --verbose
         """
 
-rule build_phylophlan_prevotella_phylogeny:
+rule setup_phylophlan_prevotella_phylogeny:
     input:
         PHYLO_CLASS="hiv.t32.n40.metaspades.metabat2.checkm.drep.phylophlan.tsv",
         GENOMES="hiv.t32.n40.metaspades.metabat2.checkm.drep/dereplicated_genomes/"
     output:
-        BINS=directory("Prevotella_bins/")
+        BINS=directory("phylophlan_input_bins/")
     resources:
         partition="short",
-        mem_mb=int(12*1000), # MB, or 12 GB
+        mem_mb=int(8*1000), # MB, or 12 GB
         runtime=int(2*60) # min, or 2 hours
     threads: 1
     conda: "conda_envs/phylophlan.yaml"
     shell:
         """
-        mkdir -p input_bins
+        mkdir -p {output.BINS}
         for i in $(grep Prevotella {input.PHYLO_CLASS} | cut -f1); do
             cp -a {input.GENOMES}/$i.fa {output.BINS}
         done
-
-        phylophlan_setup_database \
-            -g s__Prevotella_copri \
-            -x a \
-            -o {output.BINS} \
-            --verbose
 
         phylophlan_get_reference \
             -g g__Prevotella \
             -o {output.BINS} \
             --list_clades \
-            -n 200 \
+            -n 20 \
         """
+
+rule download_p_copri_marker_genes:
+    output:
+        BINS=directory("s__Prevotella_copri")
+    resources:
+        partition="short",
+        mem_mb=int(8*1000), # MB, or 8 GB
+        runtime=int(2*60) # min, or 2 hours
+    threads: 1
+    conda: "conda_envs/phylophlan.yaml"
+    shell:
+    """
+    phylophlan_setup_database \
+        -g s__Prevotella_copri \
+        --verbose
+    """
 
 rule make_phylophlan_config:
     output:
@@ -813,7 +827,7 @@ rule make_phylophlan_config:
     shell:
         """
         phylophlan_write_config_file \
-        -o references_config.cfg \
+        -o {output} \
         -d a \
         --db_aa diamond \
         --map_aa diamond \
