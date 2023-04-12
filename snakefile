@@ -789,8 +789,14 @@ rule setup_phylophlan_prevotella_phylogeny:
     shell:
         """
         mkdir -p {output.BINS}
+
+        # this grabs the genome bins assigned to prevotellaceae family
+        # and copies them to a .fna file (consistent with the reference fp)
+        # I chose the full family because there are multiple genomes classified within the family that may be
+        # in the prevotella genus
+
         for i in $(grep Prevotella {input.PHYLO_CLASS} | cut -f1); do
-            cp -a {input.GENOMES}/$i.fa {output.BINS}
+            cp -a {input.GENOMES}/$i.fa {output.BINS}/$i.fna
         done
 
         phylophlan_get_reference \
