@@ -1,9 +1,16 @@
-name: phylophlan
+name: phylophlan2
 channels:
   - biobakery
   - conda-forge
   - bioconda
   - defaults
 dependencies:
-  - phylophlan=3.0
-prefix: /Users/jost9358/miniconda3/envs/phylophlan
+  - requests
+  - trimal
+  - mafft
+  - raxml
+  - diamond
+  - fasttree
+  - pip:
+    - git+https://github.com/biobakery/phylophlan
+prefix: /Users/jost9358/miniconda3/envs/phylophlan2
