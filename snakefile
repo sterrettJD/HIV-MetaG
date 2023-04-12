@@ -102,7 +102,8 @@ rule all:
         # Classified MAGs from PhyloPhlAn
         "hiv.t32.n40.metaspades.metabat2.checkm.drep.phylophlan_dists",
         "hiv.t32.n40.metaspades.metabat2.checkm.drep.phylophlan_sketches",
-        "hiv.t32.n40.metaspades.metabat2.checkm.drep.phylophlan.tsv"
+        "hiv.t32.n40.metaspades.metabat2.checkm.drep.phylophlan.tsv",
+        "phylophlan_config.cfg"
 
 
 ############# PROCESS #############
@@ -797,6 +798,29 @@ rule build_phylophlan_prevotella_phylogeny:
             -o {output.BINS} \
             --list_clades \
             -n 200 \
+        """
+
+rule make_phylophlan_config:
+    output:
+        "phylophlan_config.cfg"
+    resources:
+        partition="short",
+        mem_mb=int(0.5*1000), # MB, or 0.5 GB
+        runtime=int(10) # min
+    threads: 1
+    conda: "conda_envs/phylophlan.yaml"
+    shell:
+        """
+        phylophlan_write_config_file \
+        -o references_config.cfg \
+        -d a \
+        --db_aa diamond \
+        --map_aa diamond \
+        --map_dna diamond \
+        --msa mafft \
+        --trim trimal \
+        --tree1 fasttree \
+        --tree2 raxml
         """
 
 ############# ASSESS VIRAL MAGS #############
