@@ -1,0 +1,49 @@
+---
+title: "Prevotella MAGs Phylogeny"
+author: "John Sterrett"
+date: "2023-04-13"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+pacman::p_load(treeio,
+               ggtree,
+               ggplot2,
+               tidyverse,
+               data.table)
+```
+
+# Load
+```{r}
+tree <- read.tree("../Prevotella_phylogeny_phylophlan_04_13/RAxML_bestTree.phylophlan_input_bins_refined.tre")
+bins.info <- fread("../Prevotella_phylogeny_phylophlan_04_13/hiv.t32.n40.metaspades.metabat2.checkm.drep.phylophlan.tsv") %>% 
+    as.data.frame()
+
+
+extract_genome_info <- function(bin.info, field){
+    # will split this format -- [u|k]_[S|G|F]GBid:taxa_level:taxonomy:avg_dist
+    splitted <- str_split(bin.info, pattern=":")
+    splitted <- unlist(splitted)
+    return (splitted[field])  
+}
+
+bins.info$PhyloPhlanID <- sapply(bins.info[,2], FUN=function(x) extract_genome_info(x, 1))
+bins.info$Known <- sapply(bins.info$PhyloPhlanID, FUN=function(x) str_starts(x, "k"))
+bins.info$ClassDepth <- sapply(bins.info[,2], FUN=function(x) extract_genome_info(x, 2))
+bins.info$Taxonomy <- sapply(bins.info[,2], FUN=function(x) extract_genome_info(x, 3))
+bins.info$AvgDist <- sapply(bins.info[,2], FUN=function(x) extract_genome_info(x, 4))
+bins.info$tip <- bins.info$`#input_bin`
+bins.info$found <- T
+bins.info$PlotName <- sapply(bins.info$Taxonomy, FUN=function(x) str_split(x, pattern="\\|")[[1]][7])
+bins.info[bins.info$Known==F, "PlotName"] <- NA
+
+p <- ggtree(tree, layout = "daylight") + 
+    theme_tree()
+
+p %<+% bins.info + 
+    geom_label(aes(label = PlotName), nudge_y=0.1) + 
+    geom_point(aes(shape=found, color=Known),
+               size=5)
+```
