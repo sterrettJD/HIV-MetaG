@@ -49,6 +49,9 @@ rule all:
         expand("hiv.t32.p_copri_panphlan_prof/gene_presence_absence_{ANNOT_FIELD}.tsv", ANNOT_FIELD=[i for i in range(1,9)]),
         expand("hiv.t32.p_copri_panphlan_prof/gene_coverage_{ANNOT_FIELD}.tsv", ANNOT_FIELD=[i for i in range(1,9)]),
 
+        expand("hiv.t32.p_copri_panphlan_prof_sensitive/gene_presence_absence_{ANNOT_FIELD}.tsv", ANNOT_FIELD=[i for i in range(1,9)]),
+        expand("hiv.t32.p_copri_panphlan_prof_sensitive/gene_coverage_{ANNOT_FIELD}.tsv", ANNOT_FIELD=[i for i in range(1,9)]),
+
         # Made by metaspades
         expand(f"hiv.t32.n40.metaspades/{{sample}}/corrected/{{sample}}.R1.{nixing_len}.fq.00.0_0.cor.fastq.gz", sample=SAMPLES),
         expand(f"hiv.t32.n40.metaspades/{{sample}}/corrected/{{sample}}.R2.{nixing_len}.fq.00.0_0.cor.fastq.gz", sample=SAMPLES),
@@ -309,7 +312,6 @@ rule clean_p_copri_pangenome:
         "conda_envs/panphlan.yaml"
     shell:
         """
-        echo "STARTING"
         python utils/panphlan_clean_pangenome.py --species Prevotella_copri \
         --pangenome prevotella_genomes/Prevotella_copri/ \
         --verbose
@@ -372,6 +374,38 @@ rule profile_panphlan_p_copri:
         --func_annot {input.REF_ANNOT} \
         --field {wildcards.ANNOT_FIELD} \
         --add_ref \
+        --verbose
+        """
+
+rule profile_panphlan_p_copri_sensitive:
+    input:
+        MAPPED_CSV=expand("hiv.t32.p_copri_panphlan/{sample}_p_copri.csv", sample=SAMPLES),
+        REF_TSV="prevotella_genomes/Prevotella_copri/Prevotella_copri_pangenome.tsv",
+        REF_ANNOT="prevotella_genomes/Prevotella_copri/panphlan_Prevotella_copri_annot.tsv"
+    output:
+        MATRIX="hiv.t32.p_copri_panphlan_prof_sensitive/gene_presence_absence_{ANNOT_FIELD}.tsv",
+        COV="hiv.t32.p_copri_panphlan_prof_sensitive/gene_coverage_{ANNOT_FIELD}_sensitive.tsv"
+    resources:
+        partition="short",
+        mem_mb=int(4*1000), # MB, or 4 GB
+        runtime=int(1*60) # min, or 1 hour
+    threads: 1
+    conda:
+        "conda_envs/panphlan.yaml"
+    shell:
+        """
+        mkdir -p hiv.t32.p_copri_panphlan_prof_sensitive/
+
+        panphlan_profiling.py -i hiv.t32.p_copri_panphlan/ \
+        --o_matrix {output.MATRIX} \
+        --o_covmat {output.COV} \
+        -p {input.REF_TSV} \
+        --func_annot {input.REF_ANNOT} \
+        --field {wildcards.ANNOT_FIELD} \
+        --add_ref \
+        --min_coverage 1 \
+        --left_max 1.70 \
+        --right_min 0.30 \
         --verbose
         """
 
