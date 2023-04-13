@@ -384,7 +384,7 @@ rule profile_panphlan_p_copri_sensitive:
         REF_ANNOT="prevotella_genomes/Prevotella_copri/panphlan_Prevotella_copri_annot.tsv"
     output:
         MATRIX="hiv.t32.p_copri_panphlan_prof_sensitive/gene_presence_absence_{ANNOT_FIELD}.tsv",
-        COV="hiv.t32.p_copri_panphlan_prof_sensitive/gene_coverage_{ANNOT_FIELD}_sensitive.tsv"
+        COV="hiv.t32.p_copri_panphlan_prof_sensitive/gene_coverage_{ANNOT_FIELD}.tsv"
     resources:
         partition="short",
         mem_mb=int(4*1000), # MB, or 4 GB
