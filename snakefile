@@ -904,6 +904,43 @@ rule build_phylophlan_phylogeny:
         --verbose
         """
 
+rule build_prevotella_MAGs_index:
+    input:
+        MAGS_PATH="phylophlan_input_bins/"
+    output:
+        MAGS_CONCAT="prevotella_mags_bowtie/prevotella_mags.fna",
+        INDEX=multiext(f"prevotella_mags_bowtie/prevotella_mags",
+                       ".1.bt2", ".2.bt2", ".3.bt2", ".4.bt2",
+                       ".rev.1.bt2", ".rev.2.bt2")
+    resources:
+        partition="short",
+        mem_mb=int(20*1000), # MB, or 20 GB
+        runtime=int(1.5*60) # min, or 1.5 hours
+    threads: 8
+    conda: "conda_envs/bowtie2.yaml"
+    shell:
+        """
+        mkdir -p prevotella_mags_bowtie/
+        cp {input.MAGS_PATH}/*.fna prevotella_mags_bowtie/
+
+        cd prevotella_mags_bowtie
+
+        # concatenate the genomes to one file, and replace the header with the bin name
+        for file in *.fna
+        do
+           echo ">${file::-4}" >> prevotella_mags.fna
+           tail -n +2 $file >> prevotella_mags.fna
+           echo >> prevotella_mags.fna
+        done
+        cd ..
+
+        bowtie2-build --threads 8 prevotella_mags_bowtie/prevotella_mags.fna prevotella_mags_bowtie/prevotella_mags
+        """
+
+
+#rule map_metagenomes_to_prevotella_MAGs:
+
+
 ############# ASSESS VIRAL MAGS #############
 # CheckV for viral MAGs
 rule pull_checkV_db:
