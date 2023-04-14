@@ -112,7 +112,12 @@ rule all:
         "s__Prevotella_copri",
         # PhyloPhlAn config
         "phylophlan_config.cfg",
-        "phylophlan_output/"
+        "phylophlan_output/",
+        # Mapping to prevotella MAGs to get coverage
+        "prevotella_mags_bowtie/prevotella_mags.fna",
+        multiext(f"prevotella_mags_bowtie/prevotella_mags",
+                       ".1.bt2", ".2.bt2", ".3.bt2", ".4.bt2",
+                       ".rev.1.bt2", ".rev.2.bt2")
 
 ############# PROCESS #############
 
@@ -938,7 +943,9 @@ rule build_prevotella_MAGs_index:
         """
 
 
-#rule map_metagenomes_to_prevotella_MAGs:
+# rule map_metagenomes_to_prevotella_MAGs:
+
+# rule get_coverage_of_prevotella_MAGs:
 
 
 ############# ASSESS VIRAL MAGS #############
