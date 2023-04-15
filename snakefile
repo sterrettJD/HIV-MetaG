@@ -117,7 +117,9 @@ rule all:
         "prevotella_mags_bowtie/prevotella_mags.fna",
         multiext(f"prevotella_mags_bowtie/prevotella_mags",
                        ".1.bt2", ".2.bt2", ".3.bt2", ".4.bt2",
-                       ".rev.1.bt2", ".rev.2.bt2")
+                       ".rev.1.bt2", ".rev.2.bt2"),
+        expand(f"prevotella_mags_bowtie/{{sample}}_unsorted.bam", sample=SAMPLES),
+        expand(f"prevotella_mags_bowtie/{{sample}}.bam", sample=SAMPLES)
 
 ############# PROCESS #############
 
@@ -944,6 +946,28 @@ rule build_prevotella_MAGs_index:
 
 
 # rule map_metagenomes_to_prevotella_MAGs:
+    input:
+        INDEX=multiext(f"prevotella_mags_bowtie/prevotella_mags",
+                       ".1.bt2", ".2.bt2", ".3.bt2", ".4.bt2",
+                       ".rev.1.bt2", ".rev.2.bt2"),
+        FORWARD=f"hiv.t32.nix40/{{sample}}.R1.{nixing_len}.fq.gz",
+        REVERSE=f"hiv.t32.nix40/{{sample}}.R2.{nixing_len}.fq.gz"
+    output:
+        BAM=f"prevotella_mags_bowtie/{{sample}}_unsorted.bam",
+        SORTED_BAM=f"prevotella_mags_bowtie/{{sample}}.bam"
+    resources:
+        partition="short",
+        mem_mb=int(20*1000), # MB, or 20 GB
+        runtime=int(8*60) # min, or 8 hours
+    threads: 8
+    conda: "conda_envs/bowtie2.yaml"
+    shell:
+        """
+        bowtie2 -x prevotella_mags_bowtie/prevotella_mags -1 {input.FORWARD} -2 {input.REVERSE} -p 8 | \
+            samtools view -bS -o {output.BAM}
+        samtools sort -@ 8 {output.BAM} -o {output.SORTED_BAM}
+        samtools index -@ 8 {output.SORTED_BAM}
+        """
 
 # rule get_coverage_of_prevotella_MAGs:
 
