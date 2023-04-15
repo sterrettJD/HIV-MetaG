@@ -933,7 +933,7 @@ rule build_prevotella_MAGs_index:
         # concatenate the genomes to one file, and replace the header with the bin name
         for file in *.fna
         do
-           echo ">${file::-4}" >> prevotella_mags.fna
+           echo ">${{file::-4}}" >> prevotella_mags.fna
            tail -n +2 $file >> prevotella_mags.fna
            echo >> prevotella_mags.fna
         done
