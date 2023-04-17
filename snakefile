@@ -119,7 +119,8 @@ rule all:
                        ".1.bt2", ".2.bt2", ".3.bt2", ".4.bt2",
                        ".rev.1.bt2", ".rev.2.bt2"),
         expand(f"prevotella_mags_bowtie/{{sample}}_unsorted.bam", sample=SAMPLES),
-        expand(f"prevotella_mags_bowtie/{{sample}}.bam", sample=SAMPLES)
+        expand(f"prevotella_mags_bowtie/{{sample}}.bam", sample=SAMPLES),
+        "prevotella_mags_bowtie/coverage.txt"
 
 ############# PROCESS #############
 
@@ -972,7 +973,7 @@ rule map_metagenomes_to_prevotella_MAGs:
 
 rule get_coverage_of_prevotella_MAGs:
     input:
-        SORTED_BAM=f"prevotella_mags_bowtie/{{sample}}.bam"
+        SORTED_BAM=expand(f"prevotella_mags_bowtie/{{sample}}.bam", sample=SAMPLES)
     output:
         COVERAGE=f"prevotella_mags_bowtie/coverage.txt"
     resources:
