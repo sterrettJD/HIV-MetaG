@@ -935,9 +935,10 @@ rule build_prevotella_MAGs_index:
         # concatenate the genomes to one file, and replace the header with the bin name
         for file in *.fna
         do
-           echo ">${{file::-4}}" >> prevotella_mags.fna
-           tail -n +2 $file >> prevotella_mags.fna
-           echo >> prevotella_mags.fna
+            # This adds the bin name to each header within the fastq
+            awk -i inplace -v file="${{file::-4}}" 'gsub(">", ">"file"_")' $file
+
+            cat $file >> prevotella_mags.fna
         done
         cd ..
 
@@ -959,17 +960,20 @@ rule build_prevotella_MAGs_index:
         partition="short",
         mem_mb=int(20*1000), # MB, or 20 GB
         runtime=int(8*60) # min, or 8 hours
-    threads: 8
+    threads: 16
     conda: "conda_envs/bowtie2.yaml"
     shell:
         """
-        bowtie2 -x prevotella_mags_bowtie/prevotella_mags -1 {input.FORWARD} -2 {input.REVERSE} -p 8 | \
+        bowtie2 -x prevotella_mags_bowtie/prevotella_mags -1 {input.FORWARD} -2 {input.REVERSE} -p 16 | \
             samtools view -bS -o {output.BAM}
-        samtools sort -@ 8 {output.BAM} -o {output.SORTED_BAM}
-        samtools index -@ 8 {output.SORTED_BAM}
+        samtools sort -@ 16 {output.BAM} -o {output.SORTED_BAM}
+        samtools index -@ 16 {output.SORTED_BAM}
         """
 
 # rule get_coverage_of_prevotella_MAGs:
+# samtools-coverage might do the trick http://www.htslib.org/doc/samtools-coverage.html
+# coverm
+# Mosdepth https://github.com/brentp/mosdepth might be best to aggregate by "chromosome"
 
 
 ############# ASSESS VIRAL MAGS #############
