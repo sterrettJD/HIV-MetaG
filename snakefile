@@ -936,7 +936,7 @@ rule build_prevotella_MAGs_index:
         for file in *.fna
         do
             # This adds the bin name to each header within the fastq
-            awk -i inplace -v file="${{file::-4}}" 'gsub(">", ">"file"_")' $file
+            sed "s/>/>${{file::-4}}_/g" $file > tmp && mv tmp $file
 
             cat $file >> prevotella_mags.fna
         done
@@ -946,7 +946,7 @@ rule build_prevotella_MAGs_index:
         """
 
 
-# rule map_metagenomes_to_prevotella_MAGs:
+rule map_metagenomes_to_prevotella_MAGs:
     input:
         INDEX=multiext(f"prevotella_mags_bowtie/prevotella_mags",
                        ".1.bt2", ".2.bt2", ".3.bt2", ".4.bt2",
