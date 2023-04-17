@@ -945,7 +945,7 @@ rule build_prevotella_MAGs_index:
         """
 
 
-# rule map_metagenomes_to_prevotella_MAGs:
+rule map_metagenomes_to_prevotella_MAGs:
     input:
         INDEX=multiext(f"prevotella_mags_bowtie/prevotella_mags",
                        ".1.bt2", ".2.bt2", ".3.bt2", ".4.bt2",
