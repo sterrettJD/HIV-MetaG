@@ -970,7 +970,21 @@ rule build_prevotella_MAGs_index:
         samtools index -@ 16 {output.SORTED_BAM}
         """
 
-# rule get_coverage_of_prevotella_MAGs:
+rule get_coverage_of_prevotella_MAGs:
+    input:
+        SORTED_BAM=f"prevotella_mags_bowtie/{{sample}}.bam"
+    output:
+        COVERAGE=f"prevotella_mags_bowtie/coverage.txt"
+    resources:
+        partition="short",
+        mem_mb=int(20*1000), # MB, or 20 GB
+        runtime=int(2*60) # min, or 2 hours
+    threads: 1
+    conda: "conda_envs/bowtie2.yaml"
+    shell:
+        """
+        samtools coverage prevotella_mags_bowtie/*.bam > {output.COVERAGE}
+        """
 # samtools-coverage might do the trick http://www.htslib.org/doc/samtools-coverage.html
 # coverm
 # Mosdepth https://github.com/brentp/mosdepth might be best to aggregate by "chromosome"
