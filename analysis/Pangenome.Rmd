@@ -29,7 +29,10 @@ genes <- read.csv("../hiv.t32.p_copri_panphlan_prof/gene_presence_absence_6.tsv"
 
 ## Add sexual behavior to metadata
 ```{r}
-sex.behav.q <- c("In the past 6 months, what is the frequency at which you have had receptive anal intercourse?")
+sex.behav.q <- c("In the past 6 months, what is the frequency at which you have had receptive anal intercourse?",
+                 "What gender do you identify with?",
+                 "What is your sexual orientation?"
+                 )
 
 metadata <- merge(
     metadata,
@@ -43,6 +46,9 @@ metadata$RAI_freq <- metadata$`In the past 6 months, what is the frequency at wh
 metadata$`In the past 6 months, what is the frequency at which you have had receptive anal intercourse?` <- NULL
 metadata$RAI <- metadata$RAI_freq!="Never"
 
+metadata$Gender <- metadata$`What gender do you identify with?`
+metadata$Orientation <- metadata$`What is your sexual orientation?`
+metadata$MSM <- metadata$Gender=="Men" & (metadata$Orientation=="Gay" | metadata$Orientation=="Bisexual")
 ```
 
 # Heatmap {.tabset}
@@ -110,6 +116,24 @@ RAI.freq.colors[is.na(RAI.freq)] <- "black"
 # Based on risk status
 heatmap(genes.mat, labRow=F, na.rm=T,
         ColSideColors=RAI.freq.colors,
+        scale="none", col=pals::coolwarm(n = 2))
+
+```
+
+## MSM status
+```{r}
+metadata[is.na(metadata$MSM), "MSM"] <- "No.Info"
+MSM <- metadata[colnames(genes.mat), "MSM"]
+
+MSM.colors <- MSM
+MSM.colors[MSM=="TRUE"] <- "purple"
+MSM.colors[MSM=="FALSE"] <- "yellow"
+MSM.colors[MSM=="No.Info"] <- "white"
+MSM.colors[is.na(MSM)] <- "black"
+
+# Based on risk status
+heatmap(genes.mat, labRow=F, na.rm=T,
+        ColSideColors=MSM.colors,
         scale="none", col=pals::coolwarm(n = 2))
 
 ```
