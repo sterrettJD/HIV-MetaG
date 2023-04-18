@@ -120,7 +120,7 @@ rule all:
                        ".rev.1.bt2", ".rev.2.bt2"),
         expand(f"prevotella_mags_bowtie/{{sample}}_unsorted.bam", sample=SAMPLES),
         expand(f"prevotella_mags_bowtie/{{sample}}.bam", sample=SAMPLES),
-        "prevotella_mags_bowtie/coverage.txt"
+        expand(f"prevotella_mags_bowtie/{{sample}}_coverage.txt", sample=SAMPLES)
 
 ############# PROCESS #############
 
@@ -978,8 +978,8 @@ rule get_coverage_of_prevotella_MAGs:
         COVERAGE=f"prevotella_mags_bowtie/{{sample}}_coverage.txt"
     resources:
         partition="short",
-        mem_mb=int(20*1000), # MB, or 20 GB
-        runtime=int(2*60) # min, or 2 hours
+        mem_mb=int(4*1000), # MB, or 4 GB
+        runtime=int(1*60) # min, or 1 hours
     threads: 1
     conda: "conda_envs/bowtie2.yaml"
     shell:
