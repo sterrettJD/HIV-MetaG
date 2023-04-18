@@ -984,7 +984,7 @@ rule get_coverage_of_prevotella_MAGs:
     conda: "conda_envs/bowtie2.yaml"
     shell:
         """
-        samtools coverage prevotella_mags_bowtie/*.bam > {output.COVERAGE}
+        samtools coverage {input.SORTED_BAM} > {output.COVERAGE}
         """
 # samtools-coverage might do the trick http://www.htslib.org/doc/samtools-coverage.html
 # coverm
