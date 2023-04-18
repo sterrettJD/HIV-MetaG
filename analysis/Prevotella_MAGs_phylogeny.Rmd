@@ -59,14 +59,45 @@ coverage.files.short <- list.files("../prevotella_mags_bowtie") %>%
 insert_fname_to_colnames <- function(df, prefix){
     temp.df <- df
     colnames(temp.df) <- paste0(prefix, "_", colnames(df))
+    colnames(temp.df)[1] <- colnames(df)[1] # keep the chr name the same
     return(temp.df)
 }
 
+split_bin <- function(rname){
+    rname %>% 
+        sapply(function(x) str_split(x, "_")[[1]][1])
+}
+
 coverage.df <- fread(coverage.files[1])
+
+
+coverage.df$bin_name <- split_bin(coverage.df$`#rname`)
+
+# Group the coverage info by genome bin
+coverage.df <- coverage.df %>% 
+    group_by(bin_name) %>%
+    summarise(percent_covered_bases=sum((coverage*endpos))/sum(endpos),
+              per_base_depth=sum(meandepth*endpos)/sum(endpos))
+# rename
 coverage.df <- insert_fname_to_colnames(coverage.df, coverage.files.short[1])
 
-for(file in coverage.files){
-    # clean names and merge with coverage.df
+
+for(i in 2:length(coverage.files)){
+    file <- coverage.files[i]
+    new <- fread(file)
+    
+    new$bin_name <- split_bin(new$`#rname`)
+
+    # Group the coverage info by genome bin
+    new <- new %>% 
+        group_by(bin_name) %>%
+        summarise(percent_covered_bases=sum((coverage*endpos))/sum(endpos),
+                  per_base_depth=sum(meandepth*endpos)/sum(endpos))
+    
+    new <- insert_fname_to_colnames(new, coverage.files.short[i])
+    
+    coverage.df <- merge(coverage.df, new, by="bin_name")
 }
 
 ```
+
