@@ -17,8 +17,8 @@ pacman::p_load(treeio,
 
 # Load
 ```{r}
-tree <- read.tree("../Prevotella_phylogeny_phylophlan_04_13/RAxML_bestTree.phylophlan_input_bins_refined.tre")
-bins.info <- fread("../Prevotella_phylogeny_phylophlan_04_13/hiv.t32.n40.metaspades.metabat2.checkm.drep.phylophlan.tsv") %>% 
+tree <- read.tree("../Prevotella_phylogeny_04_1/RAxML_bestTree.phylophlan_input_bins_refined.tre")
+bins.info <- fread("../Prevotella_phylogeny_04_17/hiv.t32.n40.metaspades.metabat2.checkm.drep.phylophlan.tsv") %>% 
     as.data.frame()
 
 
@@ -46,4 +46,27 @@ p %<+% bins.info +
     geom_label(aes(label = PlotName), nudge_y=0.1) + 
     geom_point(aes(shape=found, color=Known),
                size=5)
+```
+
+# Read in coverage data
+Coverage threshold 25% used here: https://www.researchgate.net/publication/316735131_Tracking_microbial_colonization_in_fecal_microbiota_transplantation_experiments_via_genome-resolved_metagenomics/figures?lo=1 
+
+```{r}
+coverage.files <- list.files("../prevotella_mags_bowtie", full.names=T)
+coverage.files.short <- list.files("../prevotella_mags_bowtie") %>% 
+    sapply(function(x) str_split(x,"_")[[1]][1])
+
+insert_fname_to_colnames <- function(df, prefix){
+    temp.df <- df
+    colnames(temp.df) <- paste0(prefix, "_", colnames(df))
+    return(temp.df)
+}
+
+coverage.df <- fread(coverage.files[1])
+coverage.df <- insert_fname_to_colnames(coverage.df, coverage.files.short[1])
+
+for(file in coverage.files){
+    # clean names and merge with coverage.df
+}
+
 ```
