@@ -973,9 +973,9 @@ rule map_metagenomes_to_prevotella_MAGs:
 
 rule get_coverage_of_prevotella_MAGs:
     input:
-        SORTED_BAM=expand(f"prevotella_mags_bowtie/{{sample}}.bam", sample=SAMPLES)
+        SORTED_BAM=f"prevotella_mags_bowtie/{{sample}}.bam"
     output:
-        COVERAGE=f"prevotella_mags_bowtie/coverage.txt"
+        COVERAGE=f"prevotella_mags_bowtie/{{sample}}_coverage.txt"
     resources:
         partition="short",
         mem_mb=int(20*1000), # MB, or 20 GB
