@@ -13,14 +13,39 @@ pacman::p_load(data.table,
 
 # Load
 ```{r}
+redcap.DM <- readxl::read_xlsx("../High_Prev_Metadata_redcap.xlsx",sheet=1) %>% as.data.frame()
+redcap.LG <- readxl::read_xlsx("../High_Prev_Metadata_redcap.xlsx",sheet=2) %>% as.data.frame()
+
+metadata <- fread("../metadata.txt") %>% as.data.frame()
+rownames(metadata) <- metadata$PID
+
 genes <- read.csv("../hiv.t32.p_copri_panphlan_prof/gene_presence_absence_6.tsv", 
                sep="\t"
                ) %>%
   as.data.frame()
 
-metadata <- fread("../metadata.txt") %>% as.data.frame()
-rownames(metadata) <- metadata$PID
+
 ```
+
+## Add sexual behavior to metadata
+```{r}
+sex.behav.q <- c("In the past 6 months, what is the frequency at which you have had receptive anal intercourse?")
+
+metadata <- merge(
+    metadata,
+    rbind(redcap.DM[,c("Record ID", sex.behav.q)],
+          redcap.LG[,c("Record ID", sex.behav.q)]),
+    by.x="PID",
+    by.y="Record ID")
+rownames(metadata) <- metadata$PID
+
+metadata$RAI_freq <- metadata$`In the past 6 months, what is the frequency at which you have had receptive anal intercourse?`
+metadata$`In the past 6 months, what is the frequency at which you have had receptive anal intercourse?` <- NULL
+metadata$RAI <- metadata$RAI_freq!="Never"
+
+```
+
+# Heatmap {.tabset}
 
 ```{r}
 #rownames(genes) <- genes$X
@@ -36,7 +61,10 @@ if(sum(is.na(genes.mat)) != 0){
 }
 colnames(genes.mat) <- colnames(genes.mat) %>% 
     gsub(pattern="_p_copri.csv", replacement="")
+```
 
+## Risk status
+```{r}
 group <- metadata[colnames(genes.mat), "Risk_Status"]
 group.colors <- group
 group.colors[group=="Low"] <- "blue"
@@ -44,7 +72,44 @@ group.colors[group=="High"] <- "yellow"
 group.colors[group=="Positive"] <- "red"
 group.colors[is.na(group)] <- "black"
 
+# Based on risk status
 heatmap(genes.mat, labRow=F, na.rm=T,
-        ColSideColors=group.colors)
+        ColSideColors=group.colors,
+        scale="none", col=pals::coolwarm(n = 2))
+
+```
+
+## RAI
+```{r}
+metadata[is.na(metadata$RAI), "RAI"] <- "No.Info"
+RAI <- metadata[colnames(genes.mat), "RAI"]
+RAI.colors <- RAI
+RAI.colors[RAI=="TRUE"] <- "purple"
+RAI.colors[RAI=="FALSE"] <- "yellow"
+RAI.colors[RAI=="No.Info"] <- "gray"
+RAI.colors[is.na(RAI)] <- "black"
+
+# Based on risk status
+heatmap(genes.mat, labRow=F, na.rm=T,
+        ColSideColors=RAI.colors,
+        scale="none", col=pals::coolwarm(n = 2))
+
+```
+
+## RAI frequency
+```{r}
+metadata[is.na(metadata$RAI_freq), "RAI_freq"] <- "No.Info"
+RAI.freq <- metadata[colnames(genes.mat), "RAI_freq"]
+RAI.freq.colors <- RAI.freq
+RAI.freq.colors[RAI.freq==">1 time per week"] <- "purple"
+RAI.freq.colors[RAI.freq=="< 1 time per week"] <- "gray"
+RAI.freq.colors[RAI.freq=="Never"] <- "yellow"
+RAI.freq.colors[RAI.freq=="No.Info"] <- "white"
+RAI.freq.colors[is.na(RAI.freq)] <- "black"
+
+# Based on risk status
+heatmap(genes.mat, labRow=F, na.rm=T,
+        ColSideColors=RAI.freq.colors,
+        scale="none", col=pals::coolwarm(n = 2))
 
 ```
