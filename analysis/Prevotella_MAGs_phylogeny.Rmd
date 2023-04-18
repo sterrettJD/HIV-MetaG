@@ -17,6 +17,8 @@ pacman::p_load(treeio,
 
 # Load
 ```{r}
+metadata <- fread("../metadata.txt") %>% as.data.frame()
+rownames(metadata) <- metadata$PID
 tree <- read.tree("../Prevotella_phylogeny_04_1/RAxML_bestTree.phylophlan_input_bins_refined.tre")
 bins.info <- fread("../Prevotella_phylogeny_04_17/hiv.t32.n40.metaspades.metabat2.checkm.drep.phylophlan.tsv") %>% 
     as.data.frame()
@@ -40,6 +42,14 @@ bins.info$PlotName <- sapply(bins.info$Taxonomy, FUN=function(x) str_split(x, pa
 bins.info[bins.info$Known==F, "PlotName"] <- NA
 
 p <- ggtree(tree, layout = "daylight") + 
+    theme_tree()
+
+p %<+% bins.info + 
+    geom_label(aes(label = PlotName), nudge_y=0.1) + 
+    geom_point(aes(shape=found, color=Known),
+               size=5)
+
+p <- ggtree(tree) + 
     theme_tree()
 
 p %<+% bins.info + 
@@ -76,8 +86,8 @@ coverage.df$bin_name <- split_bin(coverage.df$`#rname`)
 # Group the coverage info by genome bin
 coverage.df <- coverage.df %>% 
     group_by(bin_name) %>%
-    summarise(percent_covered_bases=sum((coverage*endpos))/sum(endpos),
-              per_base_depth=sum(meandepth*endpos)/sum(endpos))
+    summarise(percentcoveredbases=sum((coverage*endpos))/sum(endpos),
+              perbasedepth=sum(meandepth*endpos)/sum(endpos))
 # rename
 coverage.df <- insert_fname_to_colnames(coverage.df, coverage.files.short[1])
 
@@ -91,13 +101,102 @@ for(i in 2:length(coverage.files)){
     # Group the coverage info by genome bin
     new <- new %>% 
         group_by(bin_name) %>%
-        summarise(percent_covered_bases=sum((coverage*endpos))/sum(endpos),
-                  per_base_depth=sum(meandepth*endpos)/sum(endpos))
+        summarise(percentcoveredbases=sum((coverage*endpos))/sum(endpos),
+                  perbasedepth=sum(meandepth*endpos)/sum(endpos))
     
     new <- insert_fname_to_colnames(new, coverage.files.short[i])
     
     coverage.df <- merge(coverage.df, new, by="bin_name")
 }
 
+coverage.df$tip <- coverage.df$bin_name
+
+coverage.df.melted <- coverage.df %>% 
+    pivot_longer(cols=c(-tip,-bin_name),
+                 names_sep="_",
+                 names_to=c("sample","metric"))
+
+covered.bases.columns <- grep("percentcoveredbases", colnames(coverage.df))
+coverage.df.covered <- coverage.df[,covered.bases.columns]
+
+coverage.df.matrix <- as.matrix(coverage.df.covered)
+colnames(coverage.df.matrix) <- colnames(coverage.df.matrix) %>%
+    sapply(function(x) str_split(x, "_")[[1]][1])
+rownames(coverage.df.matrix) <- coverage.df$tip
+
+coverage.df.matrix.sorted
+
+low.risk.samples <- colnames(coverage.df.matrix) %>% 
+    sapply(function(x) metadata[x, "Risk_Status"]=="Low")
+high.risk.samples <- colnames(coverage.df.matrix) %>% 
+    sapply(function(x) metadata[x, "Risk_Status"]=="High")
+positive.samples <- colnames(coverage.df.matrix) %>% 
+    sapply(function(x) metadata[x, "Risk_Status"]=="Positive")
+spacer.cols <- cbind(rep(NA, nrow(coverage.df.matrix)),
+                       rep(NA, nrow(coverage.df.matrix)))
+colnames(spacer.cols) <- c("Spacer 1", "Spacer 2")
+
+coverage.df.matrix.sorted <- cbind(
+      coverage.df.matrix[,low.risk.samples],
+      #spacer.cols["Spacer 1"],
+      coverage.df.matrix[,high.risk.samples],
+      #spacer.cols["Spacer 2"],
+      coverage.df.matrix[,positive.samples])
 ```
 
+# Draw phylogeny with heatmap
+```{r}
+
+group <- metadata[colnames(coverage.df.matrix), "Risk_Status"]
+group.colors <- group
+group.colors[group=="Low"] <- "blue"
+group.colors[group=="High"] <- "yellow"
+group.colors[group=="Positive"] <- "red"
+group.colors[is.na(group)] <- "black"
+
+group <- factor(group, levels=c("Low", "High", "Positive"))
+
+bin.names <- rownames(coverage.df.matrix) %>% 
+    sapply(function(x) ifelse(is.na(bins.info[bins.info$tip==x, "PlotName"]),
+                              yes=x, 
+                              no=bins.info[bins.info$tip==x, "PlotName"]))
+
+heatmap(coverage.df.matrix, ColSideColors=group.colors,
+        scale="none", col=pals::coolwarm(),
+        labRow=bin.names)
+
+p <- ggtree(tree) + 
+    theme_tree()
+p <- p %<+% bins.info + 
+    geom_label(aes(label = PlotName), nudge_x=0.2) + 
+    geom_point(aes(shape=found, color=Known),
+               size=5)
+gheatmap(p,
+         coverage.df.matrix,
+         offset=0, width=0.5, font.size=3,
+         colnames_angle=-45, hjust=0) +
+    scale_fill_continuous()
+
+
+subset.tree <- drop.tip(tree, 
+              tip=tree$tip.label[(tree$tip.label %in% rownames(coverage.df.matrix))==F])
+p <- ggtree(subset.tree) + 
+    theme_tree()
+p <- p %<+% bins.info + 
+    geom_label(aes(label = PlotName), nudge_x=0.15) + 
+    geom_point(aes(shape=found, color=Known),
+               size=5)
+gheatmap(p,
+         coverage.df.matrix.sorted,
+         offset=0, width=0.5, font.size=3,
+         colnames_angle=-45, hjust=0, 
+         custom_column_labels=c(rep("Low", sum(low.risk.samples)),
+                                #"Spacer 1",
+                                rep("High", sum(high.risk.samples)),
+                                #"Spacer 2",
+                                rep("Positive", sum(positive.samples)))
+         ) +
+    scale_fill_continuous(type="viridis")
+
+
+```
