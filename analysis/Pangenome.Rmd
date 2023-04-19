@@ -8,7 +8,8 @@ knitr::opts_chunk$set(echo = TRUE)
 
 pacman::p_load(data.table,
                tidyverse,
-               ggplot2)
+               ggplot2,
+               PFAM.db)
 ```
 
 # Load
@@ -60,7 +61,7 @@ metadata$MSM <- metadata$Gender=="Men" & (metadata$Orientation=="Gay" | metadata
 genes.mat <- genes %>% 
     select(-c(X, annotation)) %>% 
     as.matrix()
-# Remove a row with many NA values
+# Remove the rows with NA values - these rows are the unannotated rows
 genes.mat <- genes.mat[which(rowSums(is.na(genes.mat)) == 0),]
 if(sum(is.na(genes.mat)) != 0){
     print("This matrix has NA values!")
@@ -92,11 +93,11 @@ RAI <- metadata[colnames(genes.mat), "RAI"]
 RAI.colors <- RAI
 RAI.colors[RAI=="TRUE"] <- "purple"
 RAI.colors[RAI=="FALSE"] <- "yellow"
-RAI.colors[RAI=="No.Info"] <- "gray"
+RAI.colors[RAI=="No.Info"] <- "white"
 RAI.colors[is.na(RAI)] <- "black"
 
 # Based on risk status
-heatmap(genes.mat, labRow=F, na.rm=T,
+p <- heatmap(genes.mat, labRow=F, na.rm=T,
         ColSideColors=RAI.colors,
         scale="none", col=pals::coolwarm(n = 2))
 
@@ -135,5 +136,83 @@ MSM.colors[is.na(MSM)] <- "black"
 heatmap(genes.mat, labRow=F, na.rm=T,
         ColSideColors=MSM.colors,
         scale="none", col=pals::coolwarm(n = 2))
+
+```
+
+## HIV status
+```{r}
+metadata[is.na(metadata$HIV_Status), "HIV_Status"] <- "No.Info"
+HIV <- metadata[colnames(genes.mat), "HIV_Status"]
+
+HIV.colors <- HIV
+HIV.colors[HIV=="Positive"] <- "purple"
+HIV.colors[HIV=="Negative"] <- "yellow"
+HIV.colors[HIV=="No.Info"] <- "white"
+HIV.colors[is.na(HIV)] <- "black"
+
+# Based on risk status
+heatmap(genes.mat, labRow=F, na.rm=T,
+        ColSideColors=HIV.colors,
+        scale="none", col=pals::coolwarm(n = 2))
+
+```
+
+# Differential abundance (PFams) {.tabset}
+```{r}
+# remove rows with NA - these are unannotated or messed up from unannotated values
+genes.nona <- genes[which(rowSums(is.na(genes)) == 0),]
+
+DA.gene.data <- 
+    genes.nona %>% 
+    group_by(annotation) %>%
+    summarise_at(vars(-c(group_cols(), X)), 
+                 mean)
+colnames(DA.gene.data) <- colnames(DA.gene.data) %>% 
+    gsub(pattern="_p_copri.csv", replacement="")
+
+
+# heatmap using pfams
+heatmap(DA.gene.data %>% select(-annotation) %>% as.matrix(), 
+        labRow=F, na.rm=T,
+        ColSideColors=RAI.colors,
+        scale="none", col=pals::coolwarm(n = 2))
+run_t_tests <- function(df, ){
+    
+}
+```
+
+## RAI
+```{r}
+RAI.DA <- data.frame(matrix(nrow=nrow(DA.gene.data), ncol=3))
+colnames(RAI.DA) <- c("Feature", "statistic", "p")
+
+
+
+for (i in 1:nrow(DA.gene.data)){
+    RAI.DA[i, "Feature"] <- DA.gene.data[i, "annotation"]
+    
+    curr.feature <- DA.gene.data[i,] %>% select(-annotation)
+    curr.feature <- t(curr.feature)
+    RAI <- metadata[rownames(curr.feature), "RAI"]
+    
+    t.test.res <- try(
+        t.test(x=curr.feature[RAI=="TRUE"],
+               y=curr.feature[RAI=="FALSE"]),
+        silent=TRUE
+                    )
+    if (is(t.test.res, "try-error")){
+        RAI.DA[i, "statistic"] <- 0
+        RAI.DA[i, "p"] <- 1
+    } else {
+        RAI.DA[i, "statistic"] <- t.test.res$statistic
+        RAI.DA[i, "p"] <- t.test.res$p.value
+    }
+}
+
+RAI.DA <- RAI.DA[order(RAI.DA$p),]
+RAI.DA$adjusted.p <- p.adjust(RAI.DA$p, method="fdr")
+RAI.DA$Domain <- as.list(PFAMDE)[RAI.DA$Feature]
+RAI.DA[is.null(RAI.DA$Domain),]
+
 
 ```
