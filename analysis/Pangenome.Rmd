@@ -13,8 +13,8 @@ pacman::p_load(data.table,
 ```
 
 # Load
-```{r}
-redcap.DM <- readxl::read_xlsx("../High_Prev_Metadata_redcap.xlsx",sheet=1) %>% as.data.frame()
+```{r, results=F, message=F}
+redcap.DM <- readxl::read_xlsx("../High_Prev_Metadata_redcap.xlsx",sheet=1,) %>% as.data.frame()
 redcap.LG <- readxl::read_xlsx("../High_Prev_Metadata_redcap.xlsx",sheet=2) %>% as.data.frame()
 
 metadata <- fread("../metadata.txt") %>% as.data.frame()
@@ -24,7 +24,6 @@ genes <- read.csv("../hiv.t32.p_copri_panphlan_prof/gene_presence_absence_6.tsv"
                sep="\t"
                ) %>%
   as.data.frame()
-
 
 ```
 
@@ -59,7 +58,7 @@ metadata$MSM <- metadata$Gender=="Men" & (metadata$Orientation=="Gay" | metadata
 
 # Make this a matrix for the heatmap
 genes.mat <- genes %>% 
-    select(-c(X, annotation)) %>% 
+    dplyr::select(-c(X, annotation)) %>% 
     as.matrix()
 # Remove the rows with NA values - these rows are the unannotated rows
 genes.mat <- genes.mat[which(rowSums(is.na(genes.mat)) == 0),]
@@ -158,6 +157,8 @@ heatmap(genes.mat, labRow=F, na.rm=T,
 ```
 
 # Differential abundance (PFams) {.tabset}
+
+## PFAMS {.tabset}
 ```{r}
 # remove rows with NA - these are unannotated or messed up from unannotated values
 genes.nona <- genes[which(rowSums(is.na(genes)) == 0),]
@@ -172,47 +173,115 @@ colnames(DA.gene.data) <- colnames(DA.gene.data) %>%
 
 
 # heatmap using pfams
-heatmap(DA.gene.data %>% select(-annotation) %>% as.matrix(), 
+heatmap(DA.gene.data %>% dplyr::select(-annotation) %>% as.matrix(), 
         labRow=F, na.rm=T,
         ColSideColors=RAI.colors,
         scale="none", col=pals::coolwarm(n = 2))
-run_t_tests <- function(df, ){
+
+
+run_t_tests <- function(df, 
+                        metadata, metadata_column_name, 
+                        condition_1, condition_2){
+    return.df <- data.frame(matrix(nrow=nrow(df), ncol=3))
+    colnames(return.df) <- c("Feature", "statistic", "p")
     
+    for (i in 1:nrow(df)){
+        return.df[i, "Feature"] <- df[i, "annotation"]
+        
+        curr.feature <- df[i,] %>% dplyr::select(-annotation)
+        curr.feature <- t(curr.feature)
+        sample.info <- metadata[rownames(curr.feature), metadata_column_name]
+        
+        t.test.res <- try(
+            t.test(x=curr.feature[sample.info==condition_1],
+                   y=curr.feature[sample.info==condition_2]),
+            silent=TRUE
+                        )
+        if (is(t.test.res, "try-error")){
+            return.df[i, "statistic"] <- 0
+            return.df[i, "p"] <- 1
+        } else {
+            return.df[i, "statistic"] <- t.test.res$statistic
+            return.df[i, "p"] <- t.test.res$p.value
+        }
+    }
+    
+    return.df <- return.df[order(return.df$p),]
+    return.df$adjusted.p <- p.adjust(return.df$p, method="fdr")
+    
+    return(return.df)
+}
+
+map_pfs_to_domain <- function(x, PFDB){
+    splitted <- strsplit(x, ",") %>% unlist()
+    domains <- as.list(PFDB)[splitted] %>% as.character() %>% as.vector()
+    return(paste(domains, collapse="; "))
 }
 ```
 
-## RAI
+### RAI
 ```{r}
-RAI.DA <- data.frame(matrix(nrow=nrow(DA.gene.data), ncol=3))
-colnames(RAI.DA) <- c("Feature", "statistic", "p")
-
-
-
-for (i in 1:nrow(DA.gene.data)){
-    RAI.DA[i, "Feature"] <- DA.gene.data[i, "annotation"]
-    
-    curr.feature <- DA.gene.data[i,] %>% select(-annotation)
-    curr.feature <- t(curr.feature)
-    RAI <- metadata[rownames(curr.feature), "RAI"]
-    
-    t.test.res <- try(
-        t.test(x=curr.feature[RAI=="TRUE"],
-               y=curr.feature[RAI=="FALSE"]),
-        silent=TRUE
-                    )
-    if (is(t.test.res, "try-error")){
-        RAI.DA[i, "statistic"] <- 0
-        RAI.DA[i, "p"] <- 1
-    } else {
-        RAI.DA[i, "statistic"] <- t.test.res$statistic
-        RAI.DA[i, "p"] <- t.test.res$p.value
-    }
-}
+RAI.DA <- run_t_tests(DA.gene.data %>% as.data.frame(), 
+                      metadata, "RAI",
+                      "TRUE", "FALSE")
 
 RAI.DA <- RAI.DA[order(RAI.DA$p),]
-RAI.DA$adjusted.p <- p.adjust(RAI.DA$p, method="fdr")
-RAI.DA$Domain <- as.list(PFAMDE)[RAI.DA$Feature]
-RAI.DA[is.null(RAI.DA$Domain),]
+RAI.DA$adjusted.p <- p.adjust(RAI.DA$p, method="BH")
+    
+RAI.DA[1:100, "Domain"] <- sapply(RAI.DA[1:100, "Feature"], 
+                                                     function(x) map_pfs_to_domain(x, PFAMDE), USE.NAMES=F)
 
 
+RAI.DA %>% head(100) %>% knitr::kable()
+```
+
+### MSM
+```{r}
+MSM.DA <- run_t_tests(DA.gene.data %>% as.data.frame(), 
+                      metadata, "MSM",
+                      "TRUE", "FALSE")
+
+MSM.DA <- MSM.DA[order(MSM.DA$p),]
+MSM.DA$adjusted.p <- p.adjust(MSM.DA$p, method="BH")
+    
+MSM.DA[1:100, "Domain"] <- sapply(MSM.DA[1:100, "Feature"], 
+                                                     function(x) map_pfs_to_domain(x, PFAMDE), USE.NAMES=F)
+
+
+MSM.DA %>% head(100) %>% knitr::kable()
+```
+
+### HIV
+```{r}
+HIV.DA <- run_t_tests(DA.gene.data %>% as.data.frame(), 
+                      metadata, "HIV_Status",
+                      "Positive", "Negative")
+
+HIV.DA <- HIV.DA[order(HIV.DA$p),]
+HIV.DA$adjusted.p <- p.adjust(HIV.DA$p, method="BH")
+    
+HIV.DA[1:100, "Domain"] <- sapply(HIV.DA[1:100, "Feature"], 
+                                                     function(x) map_pfs_to_domain(x, PFAMDE), USE.NAMES=F)
+
+
+HIV.DA %>% head(100) %>% knitr::kable()
+```
+
+# Reference Strains
+```{r}
+phylophlan.db <- fread("../phylophlan_databases/SGB.Jul20.txt.bz2") %>% as.data.frame()
+REF.ids <- colnames(genes)[grep("REF",colnames(genes))]
+REF.ids <- gsub(x=REF.ids, pattern="REF_", replacement="")
+
+ref.1 <- phylophlan.db[grep(x=phylophlan.db$`List of reference genomes`,pattern=REF.ids[1]),]
+print(REF.ids[1]); print(ref.1$`Assigned taxonomy`)
+
+ref.2 <- phylophlan.db[grep(x=phylophlan.db$`List of reference genomes`,pattern=REF.ids[2]),]
+print(REF.ids[2]); print(ref.2$`Assigned taxonomy`)
+
+ref.3 <- phylophlan.db[grep(x=phylophlan.db$`List of reference genomes`,pattern=REF.ids[3]),]
+print(REF.ids[3]); print(ref.3$`Assigned taxonomy`)
+
+ref.4 <- phylophlan.db[grep(x=phylophlan.db$`List of reference genomes`,pattern=REF.ids[4]),]
+print(REF.ids[4]); print(ref.4$`Assigned taxonomy`)
 ```
