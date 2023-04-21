@@ -19,7 +19,7 @@ pacman::p_load(treeio,
 ```{r}
 metadata <- fread("../metadata.txt") %>% as.data.frame()
 rownames(metadata) <- metadata$PID
-tree <- read.tree("../Prevotella_phylogeny_04_1/RAxML_bestTree.phylophlan_input_bins_refined.tre")
+tree <- read.tree("../Prevotella_phylogeny_04_17/RAxML_bestTree.phylophlan_input_bins_refined.tre")
 bins.info <- fread("../Prevotella_phylogeny_04_17/hiv.t32.n40.metaspades.metabat2.checkm.drep.phylophlan.tsv") %>% 
     as.data.frame()
 
@@ -41,6 +41,71 @@ bins.info$found <- T
 bins.info$PlotName <- sapply(bins.info$Taxonomy, FUN=function(x) str_split(x, pattern="\\|")[[1]][7])
 bins.info[bins.info$Known==F, "PlotName"] <- NA
 
+
+ref.bins.info <- phylophlan.db <- fread("../phylophlan_databases/SGB.Jul20.txt.bz2") %>% as.data.frame()
+```
+
+```{r}
+tip.labels <- tree$tip.label
+tree.bins.info <- bins.info[bins.info$tip %in% tip.labels,] %>%
+    dplyr::select(c(tip, Taxonomy, PlotName))
+
+extract_refgenome_info <- function(ref.id, ref.bins.info){
+    # First, look for this genome as an SGB centroid
+    genome.info <- ref.bins.info[grep(pattern=ref.id,
+                                      x=ref.bins.info$`SGB Centroid`),]
+    if (nrow(genome.info)>0){
+        return(genome.info)
+    }
+    # If not found, look for it as a member of the reference genomes
+    genome.info <- ref.bins.info[grep(pattern=ref.id,
+                                      x=ref.bins.info$`List of reference genomes`),]
+    if (nrow(genome.info)>0){
+        return(genome.info)
+    }
+    # If not there, look for it in reconstructed genomes
+    genome.info <- ref.bins.info[grep(pattern=ref.id,
+                                      x=ref.bins.info$`List of reconstructed genomes`),]
+    return(genome.info)
+}
+
+for(i in 1:length(tip.labels)){
+    tip.name <- tip.labels[i]
+    if(str_starts(tip.name, "GCA")){
+        
+        ref.info <- extract_refgenome_info(tip.name, ref.bins.info)
+        tip.taxonomy <- ref.info$`Assigned taxonomy`
+        tip.plotname <- str_split(tip.taxonomy, pattern="\\|")[[1]][7]
+        new.row <- c(tip.name, tip.taxonomy, tip.plotname)
+        names(new.row) <- c("tip", "Taxonomy", "PlotName")
+        tree.bins.info <- rbind(tree.bins.info,
+                                new.row)
+    }
+}
+
+tree.bins.info[str_starts(tree.bins.info$tip, "GCA")==F, "Found"] <- TRUE
+tree.bins.info[str_starts(tree.bins.info$tip, "GCA"), "Found"] <- NA
+
+species.list <- c()
+for (i in 1:nrow(tree.bins.info)){
+    curr.species <- tree.bins.info[i, "PlotName"]
+    # if it's the first occurrence of its species
+    if (curr.species %in% species.list == F){
+        species.list <- c(species.list, curr.species)
+        tree.bins.info[i, "Subset.Name"] <- curr.species
+    }
+}
+
+tree.bins.info[grepl(x=tree.bins.info$Subset.Name, pattern="GGB"), 
+               "Subset.Name"] <- NA
+tree.bins.info[grepl(x=tree.bins.info$Subset.Name, pattern="_sp"), 
+               "Subset.Name"] <- NA
+
+```
+
+# Plot phylogeny {.tabset}
+## Daylight layout
+```{r}
 p <- ggtree(tree, layout = "daylight") + 
     theme_tree()
 
@@ -57,6 +122,26 @@ p %<+% bins.info +
     geom_point(aes(shape=found, color=Known),
                size=5)
 ```
+
+## Vertical layout
+```{r}
+p <- ggtree(tree, layout="dendrogram") + 
+    theme_tree()
+
+p %<+% tree.bins.info + 
+    geom_label(aes(label = Subset.Name), nudge_x=0.1)
+
+p <- ggtree(tree, layout="ellipse") + 
+    theme_tree()
+
+p %<+% tree.bins.info + 
+    geom_label(aes(label = Subset.Name), nudge_y=-0.2) + 
+    geom_point(aes(shape=Found, color=Found#, color=Known
+                   ),
+               size=5, na.rm=T)
+```
+
+
 
 # Read in coverage data
 Coverage threshold 25% used here: https://www.researchgate.net/publication/316735131_Tracking_microbial_colonization_in_fecal_microbiota_transplantation_experiments_via_genome-resolved_metagenomics/figures?lo=1 
@@ -123,8 +208,6 @@ coverage.df.matrix <- as.matrix(coverage.df.covered)
 colnames(coverage.df.matrix) <- colnames(coverage.df.matrix) %>%
     sapply(function(x) str_split(x, "_")[[1]][1])
 rownames(coverage.df.matrix) <- coverage.df$tip
-
-coverage.df.matrix.sorted
 
 low.risk.samples <- colnames(coverage.df.matrix) %>% 
     sapply(function(x) metadata[x, "Risk_Status"]=="Low")
