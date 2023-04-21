@@ -17,9 +17,45 @@ pacman::p_load(treeio,
 ```
 
 # Load
-```{r}
+## Metadata
+```{r, message=F}
 metadata <- fread("../metadata.txt") %>% as.data.frame()
 rownames(metadata) <- metadata$PID
+
+redcap.DM <- readxl::read_xlsx("../High_Prev_Metadata_redcap.xlsx",sheet=1) %>% as.data.frame()
+redcap.LG <- readxl::read_xlsx("../High_Prev_Metadata_redcap.xlsx",sheet=2) %>% as.data.frame()
+
+sex.behav.q <- c("In the past 6 months, what is the frequency at which you have had receptive anal intercourse?",
+                 "What gender do you identify with?",
+                 "What is your sexual orientation?"
+                 )
+
+metadata <- merge(
+    metadata,
+    rbind(redcap.DM[,c("Record ID", sex.behav.q)],
+          redcap.LG[,c("Record ID", sex.behav.q)]),
+    by.x="PID",
+    by.y="Record ID")
+rownames(metadata) <- metadata$PID
+
+metadata$RAI_freq <- metadata$`In the past 6 months, what is the frequency at which you have had receptive anal intercourse?`
+metadata$`In the past 6 months, what is the frequency at which you have had receptive anal intercourse?` <- NULL
+metadata$RAI <- metadata$RAI_freq!="Never"
+
+metadata$Gender <- metadata$`What gender do you identify with?`
+metadata$Orientation <- metadata$`What is your sexual orientation?`
+metadata$MSM <- metadata$Gender=="Men" & (metadata$Orientation=="Gay" | metadata$Orientation=="Bisexual")
+
+# address missing data with follow-up from Mallory
+metadata[metadata$PID=="DM001", "MSM"] <- TRUE
+metadata[metadata$PID=="DM002", "MSM"] <- TRUE
+metadata[metadata$PID=="DM007", "MSM"] <- TRUE
+
+metadata[metadata$PID=="DM093", "MSM"] <- FALSE
+```
+
+## Tree and bins/MAGS/reference data
+```{r}
 tree <- read.tree("../Prevotella_phylogeny_04_17/RAxML_bestTree.phylophlan_input_bins_refined.tre")
 bins.info <- fread("../Prevotella_phylogeny_04_17/hiv.t32.n40.metaspades.metabat2.checkm.drep.phylophlan.tsv") %>% 
     as.data.frame()
@@ -46,6 +82,7 @@ bins.info[bins.info$Known==F, "PlotName"] <- NA
 ref.bins.info <- phylophlan.db <- fread("../phylophlan_databases/SGB.Jul20.txt.bz2") %>% as.data.frame()
 ```
 
+## Clean bin info for phylogeny plotting
 ```{r}
 tip.labels <- tree$tip.label
 tree.bins.info <- bins.info[bins.info$tip %in% tip.labels,] %>%
@@ -133,7 +170,7 @@ node.cladelab.df <- node.cladelab.df %>% filter(Name %in% c("Prevotella_colorans
 # Plot phylogeny {.tabset}
 
 ## Vertical layout
-```{r}
+```{r, fig.height=12, fig.width=12}
 p <- ggtree(tree) + 
     theme_tree()
 
@@ -214,42 +251,19 @@ coverage.df.melted <- coverage.df %>%
 
 covered.bases.columns <- grep("percentcoveredbases", colnames(coverage.df))
 coverage.df.covered <- coverage.df[,covered.bases.columns]
+```
 
+## Make matrix for heatmaps
+```{r}
 coverage.df.matrix <- as.matrix(coverage.df.covered)
 colnames(coverage.df.matrix) <- colnames(coverage.df.matrix) %>%
     sapply(function(x) str_split(x, "_")[[1]][1])
 rownames(coverage.df.matrix) <- coverage.df$tip
-
-low.risk.samples <- colnames(coverage.df.matrix) %>% 
-    sapply(function(x) metadata[x, "Risk_Status"]=="Low")
-high.risk.samples <- colnames(coverage.df.matrix) %>% 
-    sapply(function(x) metadata[x, "Risk_Status"]=="High")
-positive.samples <- colnames(coverage.df.matrix) %>% 
-    sapply(function(x) metadata[x, "Risk_Status"]=="Positive")
-spacer.cols <- cbind(rep(NA, nrow(coverage.df.matrix)),
-                       rep(NA, nrow(coverage.df.matrix)))
-colnames(spacer.cols) <- c("Spacer 1", "Spacer 2")
-
-coverage.df.matrix.sorted <- cbind(
-      coverage.df.matrix[,low.risk.samples],
-      #spacer.cols["Spacer 1"],
-      coverage.df.matrix[,high.risk.samples],
-      #spacer.cols["Spacer 2"],
-      coverage.df.matrix[,positive.samples])
 ```
 
-# Draw phylogeny with heatmap
+# Draw phylogeny with heatmap {.tabset}
+
 ```{r}
-
-group <- metadata[colnames(coverage.df.matrix), "Risk_Status"]
-group.colors <- group
-group.colors[group=="Low"] <- "blue"
-group.colors[group=="High"] <- "yellow"
-group.colors[group=="Positive"] <- "red"
-group.colors[is.na(group)] <- "black"
-
-group <- factor(group, levels=c("Low", "High", "Positive"))
-
 bin.names <- rownames(coverage.df.matrix) %>% 
     sapply(function(x) ifelse(is.na(tree.bins.info[tree.bins.info$tip==x, "PlotName"]),
                               yes=tree.bins.info[tree.bins.info$tip==x, "MAG.num"], 
@@ -259,29 +273,86 @@ bin.names <- rownames(coverage.df.matrix) %>%
                                        sep=": "))
     )
 
-heatmap(coverage.df.matrix, ColSideColors=group.colors,
+```
+
+## Heatmap only {.tabset}
+### RAI
+```{r}
+metadata[is.na(metadata$RAI), "RAI"] <- "No.Info"
+RAI <- metadata[colnames(coverage.df.matrix), "RAI"]
+RAI.colors <- RAI
+RAI.colors[RAI=="TRUE"] <- "purple"
+RAI.colors[RAI=="FALSE"] <- "yellow"
+RAI.colors[RAI=="No.Info"] <- "grey"
+
+RAI <- factor(RAI, levels=c("TRUE", "FALSE", "No.Info"))
+
+heatmap(coverage.df.matrix, ColSideColors=RAI.colors,
         scale="none", col=pals::coolwarm(),
         labRow=bin.names)
 
-p <- ggtree(tree) + 
-    theme_tree()
-p <- p %<+% bins.info + 
-    geom_label(aes(label = PlotName), nudge_x=0.2) + 
-    geom_point(aes(shape=found, color=Known),
-               size=5)
-gheatmap(p,
-         coverage.df.matrix,
-         offset=0, width=0.5, font.size=3,
-         colnames_angle=-45, hjust=0) +
-    scale_fill_continuous()
+```
+
+### MSM
+```{r}
+metadata[is.na(metadata$MSM), "MSM"] <- "No.Info"
+MSM <- metadata[colnames(coverage.df.matrix), "MSM"]
+MSM.colors <- MSM
+MSM.colors[MSM=="TRUE"] <- "purple"
+MSM.colors[MSM=="FALSE"] <- "yellow"
+MSM.colors[MSM=="No.Info"] <- "grey"
+
+MSM <- factor(MSM, levels=c("TRUE", "FALSE", "No.Info"))
+
+heatmap(coverage.df.matrix, ColSideColors=MSM.colors,
+        scale="none", col=pals::coolwarm(),
+        labRow=bin.names)
+
+```
+
+### HIV
+```{r}
+HIV <- metadata[colnames(coverage.df.matrix), "HIV_Status"]
+HIV.colors <- HIV
+HIV.colors[HIV=="Positive"] <- "purple"
+HIV.colors[HIV=="Negative"] <- "yellow"
+HIV.colors[is.na(HIV)] <- "grey"
+
+heatmap(coverage.df.matrix, ColSideColors=HIV.colors,
+        scale="none", col=pals::coolwarm(),
+        labRow=bin.names)
+
+```
+
+## Tree with heatmap {.tabset}
+### RAI
+```{r, fig.height=10, fig.width=12}
+RAI.samples <- colnames(coverage.df.matrix) %>% 
+    sapply(function(x) metadata[x, "RAI"]=="TRUE")
+non.RAI.samples <- colnames(coverage.df.matrix) %>% 
+    sapply(function(x) metadata[x, "RAI"]=="FALSE")
+NA.RAI.samples <- colnames(coverage.df.matrix) %>% 
+    sapply(function(x) metadata[x, "RAI"]=="No.Info")
+spacer.cols <- cbind(rep(NA, nrow(coverage.df.matrix)),
+                       rep(NA, nrow(coverage.df.matrix)))
+colnames(spacer.cols) <- c("Spacer 1", "Spacer 2")
+
+coverage.df.matrix.sorted <- cbind(
+      coverage.df.matrix[,RAI.samples],
+      #spacer.cols["Spacer 1"],
+      coverage.df.matrix[,non.RAI.samples]
+      #spacer.cols["Spacer 2"],
+      #coverage.df.matrix[,NA.RAI.samples]
+      )
 
 
 subset.tree <- drop.tip(tree, 
               tip=tree$tip.label[(tree$tip.label %in% rownames(coverage.df.matrix))==F])
+
 p <- ggtree(subset.tree) + 
     theme_tree()
 p <- p %<+% tree.bins.info + 
-    geom_label(aes(label = PlotName), nudge_x=0.2) + 
+    geom_label(aes(label = PlotName), nudge_x=0.25) + 
     geom_point(aes(shape=Found, color=Found),
 
                               size=5) +
@@ -291,16 +362,121 @@ p <- p %<+% tree.bins.info +
     
 gheatmap(p,
          coverage.df.matrix.sorted,
-         offset=0.05, width=0.5, font.size=3,
-         colnames_angle=-45, hjust=0, 
-         custom_column_labels=c(rep("Low", sum(low.risk.samples)),
+         offset=0.1, width=0.5, font.size=2.8,
+         colnames_angle=-90, hjust=0, 
+         custom_column_labels=c(rep("RAI", sum(RAI.samples)),
                                 #"Spacer 1",
-                                rep("High", sum(high.risk.samples)),
+                                rep("No RAI   ", sum(non.RAI.samples))
                                 #"Spacer 2",
-                                rep("Positive", sum(positive.samples)))
+                                #rep("NA", sum(NA.RAI.samples))
+                                )
          ) +
-    scale_fill_gradientn(colours = c("blue", "grey", "red"), space = "rgb", 
+    scale_fill_gradientn("% Bases Covered", 
+                         colours = c("blue", "white", "red"), space = "rgb", 
                          limits = c(0,100))
+ggsave("../figures/phylogeny_coverage_heatmap_RAI.pdf", height=10, width=12)
+```
+
+### MSM
+```{r, fig.height=10, fig.width=12}
+MSM.samples <- colnames(coverage.df.matrix) %>% 
+    sapply(function(x) metadata[x, "MSM"]=="TRUE")
+non.MSM.samples <- colnames(coverage.df.matrix) %>% 
+    sapply(function(x) metadata[x, "MSM"]=="FALSE")
+NA.MSM.samples <- colnames(coverage.df.matrix) %>% 
+    sapply(function(x) metadata[x, "MSM"]=="No.Info")
+spacer.cols <- cbind(rep(NA, nrow(coverage.df.matrix)),
+                       rep(NA, nrow(coverage.df.matrix)))
+colnames(spacer.cols) <- c("Spacer 1", "Spacer 2")
+
+coverage.df.matrix.sorted <- cbind(
+      coverage.df.matrix[,MSM.samples],
+      #spacer.cols["Spacer 1"],
+      coverage.df.matrix[,non.MSM.samples]
+      #spacer.cols["Spacer 2"],
+      #coverage.df.matrix[,NA.MSM.samples]
+      )
 
 
+subset.tree <- drop.tip(tree, 
+              tip=tree$tip.label[(tree$tip.label %in% rownames(coverage.df.matrix))==F])
+
+p <- ggtree(subset.tree) + 
+    theme_tree()
+p <- p %<+% tree.bins.info + 
+    geom_label(aes(label = PlotName), nudge_x=0.25) + 
+    geom_point(aes(shape=Found, color=Found),
+
+                              size=5) +
+    geom_text(aes(label=MAG.num)) +
+    scale_colour_discrete(na.translate=F) +
+    guides(shape=FALSE, color=FALSE)
+    
+gheatmap(p,
+         coverage.df.matrix.sorted,
+         offset=0.1, width=0.5, font.size=2.8,
+         colnames_angle=-90, hjust=0, 
+         custom_column_labels=c(rep("MSM", sum(MSM.samples)),
+                                #"Spacer 1",
+                                rep("MSW   ", sum(non.MSM.samples))
+                                #"Spacer 2",
+                                #rep("NA", sum(NA.RAI.samples))
+                                )
+         ) +
+    scale_fill_gradientn("% Bases Covered", 
+                         colours = c("blue", "white", "red"), space = "rgb", 
+                         limits = c(0,100))
+ggsave("../figures/phylogeny_coverage_heatmap_MSM.pdf", height=10, width=12)
+```
+
+### HIV
+```{r, fig.height=10, fig.width=12}
+HIV.samples <- colnames(coverage.df.matrix) %>% 
+    sapply(function(x) metadata[x, "HIV_Status"]=="Positive")
+non.HIV.samples <- colnames(coverage.df.matrix) %>% 
+    sapply(function(x) metadata[x, "HIV_Status"]=="Negative")
+NA.HIV.samples <- colnames(coverage.df.matrix) %>% 
+    sapply(function(x) is.na(metadata[x, "HIV_Status"]))
+spacer.cols <- cbind(rep(NA, nrow(coverage.df.matrix)),
+                       rep(NA, nrow(coverage.df.matrix)))
+colnames(spacer.cols) <- c("Spacer 1", "Spacer 2")
+
+coverage.df.matrix.sorted <- cbind(
+      coverage.df.matrix[,HIV.samples],
+      #spacer.cols["Spacer 1"],
+      coverage.df.matrix[,non.HIV.samples]
+      #spacer.cols["Spacer 2"],
+      #coverage.df.matrix[,NA.HIV.samples]
+      )
+
+
+subset.tree <- drop.tip(tree, 
+              tip=tree$tip.label[(tree$tip.label %in% rownames(coverage.df.matrix))==F])
+
+p <- ggtree(subset.tree) + 
+    theme_tree()
+p <- p %<+% tree.bins.info + 
+    geom_label(aes(label = PlotName), nudge_x=0.25) + 
+    geom_point(aes(shape=Found, color=Found),
+
+                              size=5) +
+    geom_text(aes(label=MAG.num)) +
+    scale_colour_discrete(na.translate=F) +
+    guides(shape=FALSE, color=FALSE)
+    
+gheatmap(p,
+         coverage.df.matrix.sorted,
+         offset=0.1, width=0.5, font.size=2.8,
+         colnames_angle=0, hjust=0, 
+         custom_column_labels=c(rep("+", sum(HIV.samples)),
+                                #"Spacer 1",
+                                rep("-", sum(non.HIV.samples))
+                                #"Spacer 2",
+                                #rep("NA", sum(NA.RAI.samples))
+                                )
+         ) +
+    scale_fill_gradientn("% Bases Covered", 
+                         colours = c("blue", "white", "red"), space = "rgb", 
+                         limits = c(0,100))
+ggsave("../figures/phylogeny_coverage_heatmap_HIV.pdf", height=10, width=12)
 ```
