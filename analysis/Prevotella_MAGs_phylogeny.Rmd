@@ -8,6 +8,7 @@ output: html_document
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 
+
 pacman::p_load(treeio,
                ggtree,
                ggplot2,
@@ -96,10 +97,31 @@ for (i in 1:nrow(tree.bins.info)){
     }
 }
 
-tree.bins.info[grepl(x=tree.bins.info$Subset.Name, pattern="GGB"), 
+tree.bins.info[grepl(x=tree.bins.info$Subset.Name, pattern="SGB"), 
                "Subset.Name"] <- NA
 tree.bins.info[grepl(x=tree.bins.info$Subset.Name, pattern="_sp"), 
                "Subset.Name"] <- NA
+
+node.cladelab.df <- data.frame(matrix(nrow=length(unique(tree.bins.info$Subset.Name, ncol=2))))
+node.cladelab.df$"Name" <- unique(tree.bins.info$Subset.Name)
+
+for (i in 1:nrow(node.cladelab.df)){
+    curr.species <- node.cladelab.df[i, "Name"]
+    node.cladelab.df[i, "Name"] <- gsub(curr.species, pattern="s__", replacement="")
+    node <- castor::get_mrca_of_set(tree, 
+                                    tree.bins.info[tree.bins.info$PlotName==curr.species,
+                                                  "tip"])
+    node.cladelab.df[i, "node"] <- node
+}
+
+node.cladelab.df <- node.cladelab.df %>% filter(Name %in% c("Prevotella_colorans",
+                                                            "Prevotella_saccharolytica",
+                                                            "Prevotella_pleuritidis",
+                                                            "Prevotella_micans",
+                                                            "Prevotella_bergensis",
+                                                            "Prevotella_loescheii",
+                                                            "Prevotella_oulorum",
+                                                            "Prevotella_marshii")==F)
 
 ```
 
@@ -125,20 +147,18 @@ p %<+% bins.info +
 
 ## Vertical layout
 ```{r}
-p <- ggtree(tree, layout="dendrogram") + 
+p <- ggtree(tree) + 
     theme_tree()
 
-p %<+% tree.bins.info + 
-    geom_label(aes(label = Subset.Name), nudge_x=0.1)
 
-p <- ggtree(tree, layout="ellipse") + 
-    theme_tree()
-
-p %<+% tree.bins.info + 
-    geom_label(aes(label = Subset.Name), nudge_y=-0.2) + 
-    geom_point(aes(shape=Found, color=Found#, color=Known
+p  %<+% tree.bins.info + 
+    geom_point(aes(shape=Found, color=Found
                    ),
-               size=5, na.rm=T)
+               size=5, na.rm=T) +
+    geom_cladelab(node=node.cladelab.df$node,
+                  label=node.cladelab.df$Name, geom="text",
+                  offset=0.1, vjust=0, color="black")
+    
 ```
 
 
