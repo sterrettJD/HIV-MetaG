@@ -101,7 +101,10 @@ tree.bins.info[grepl(x=tree.bins.info$Subset.Name, pattern="SGB"),
                "Subset.Name"] <- NA
 tree.bins.info[grepl(x=tree.bins.info$Subset.Name, pattern="_sp"), 
                "Subset.Name"] <- NA
+# Give each of our MAGs a number
+tree.bins.info[grepl(tree.bins.info$tip, pattern="GCA")==F, "MAG.num"] <- 1:sum(grepl(tree.bins.info$tip, pattern="GCA")==F)
 
+# Make a node df for clade labeling
 node.cladelab.df <- data.frame(matrix(nrow=length(unique(tree.bins.info$Subset.Name, ncol=2))))
 node.cladelab.df$"Name" <- unique(tree.bins.info$Subset.Name)
 
@@ -114,6 +117,7 @@ for (i in 1:nrow(node.cladelab.df)){
     node.cladelab.df[i, "node"] <- node
 }
 
+# removing these to make it a little easier to read when plotted (no overlapping names)
 node.cladelab.df <- node.cladelab.df %>% filter(Name %in% c("Prevotella_colorans",
                                                             "Prevotella_saccharolytica",
                                                             "Prevotella_pleuritidis",
@@ -123,27 +127,10 @@ node.cladelab.df <- node.cladelab.df %>% filter(Name %in% c("Prevotella_colorans
                                                             "Prevotella_oulorum",
                                                             "Prevotella_marshii")==F)
 
+
 ```
 
 # Plot phylogeny {.tabset}
-## Daylight layout
-```{r}
-p <- ggtree(tree, layout = "daylight") + 
-    theme_tree()
-
-p %<+% bins.info + 
-    geom_label(aes(label = PlotName), nudge_y=0.1) + 
-    geom_point(aes(shape=found, color=Known),
-               size=5)
-
-p <- ggtree(tree) + 
-    theme_tree()
-
-p %<+% bins.info + 
-    geom_label(aes(label = PlotName), nudge_y=0.1) + 
-    geom_point(aes(shape=found, color=Known),
-               size=5)
-```
 
 ## Vertical layout
 ```{r}
@@ -155,10 +142,11 @@ p  %<+% tree.bins.info +
     geom_point(aes(shape=Found, color=Found
                    ),
                size=5, na.rm=T) +
+    geom_text(aes(label=MAG.num)) +
     geom_cladelab(node=node.cladelab.df$node,
                   label=node.cladelab.df$Name, geom="text",
                   offset=0.05, vjust=0, color="black") +
-    scale_colour_discrete(na.translate = F, ) +
+    scale_colour_discrete(na.translate = F) +
     guides(shape = FALSE)
 ggsave("../figures/phylogeny_prevotella_MAGS_w_reference.pdf", width=12, height=12)
     
@@ -263,9 +251,13 @@ group.colors[is.na(group)] <- "black"
 group <- factor(group, levels=c("Low", "High", "Positive"))
 
 bin.names <- rownames(coverage.df.matrix) %>% 
-    sapply(function(x) ifelse(is.na(bins.info[bins.info$tip==x, "PlotName"]),
-                              yes=x, 
-                              no=bins.info[bins.info$tip==x, "PlotName"]))
+    sapply(function(x) ifelse(is.na(tree.bins.info[tree.bins.info$tip==x, "PlotName"]),
+                              yes=tree.bins.info[tree.bins.info$tip==x, "MAG.num"], 
+                              no=paste(tree.bins.info[tree.bins.info$tip==x, "MAG.num"], 
+                                       gsub(x=tree.bins.info[tree.bins.info$tip==x, "PlotName"],
+                                            pattern="s__", replacement=""),
+                                       sep=": "))
+    )
 
 heatmap(coverage.df.matrix, ColSideColors=group.colors,
         scale="none", col=pals::coolwarm(),
@@ -288,13 +280,18 @@ subset.tree <- drop.tip(tree,
               tip=tree$tip.label[(tree$tip.label %in% rownames(coverage.df.matrix))==F])
 p <- ggtree(subset.tree) + 
     theme_tree()
-p <- p %<+% bins.info + 
-    geom_label(aes(label = PlotName), nudge_x=0.15) + 
-    geom_point(aes(shape=found, color=Known),
-               size=5)
+p <- p %<+% tree.bins.info + 
+    geom_label(aes(label = PlotName), nudge_x=0.2) + 
+    geom_point(aes(shape=Found, color=Found),
+
+                              size=5) +
+    geom_text(aes(label=MAG.num)) +
+    scale_colour_discrete(na.translate=F) +
+    guides(shape=FALSE, color=FALSE)
+    
 gheatmap(p,
          coverage.df.matrix.sorted,
-         offset=0, width=0.5, font.size=3,
+         offset=0.05, width=0.5, font.size=3,
          colnames_angle=-45, hjust=0, 
          custom_column_labels=c(rep("Low", sum(low.risk.samples)),
                                 #"Spacer 1",
@@ -302,7 +299,8 @@ gheatmap(p,
                                 #"Spacer 2",
                                 rep("Positive", sum(positive.samples)))
          ) +
-    scale_fill_continuous(type="viridis")
+    scale_fill_gradientn(colours = c("blue", "grey", "red"), space = "rgb", 
+                         limits = c(0,100))
 
 
 ```
