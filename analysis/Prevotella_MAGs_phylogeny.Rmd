@@ -157,7 +157,10 @@ p  %<+% tree.bins.info +
                size=5, na.rm=T) +
     geom_cladelab(node=node.cladelab.df$node,
                   label=node.cladelab.df$Name, geom="text",
-                  offset=0.1, vjust=0, color="black")
+                  offset=0.05, vjust=0, color="black") +
+    scale_colour_discrete(na.translate = F, ) +
+    guides(shape = FALSE)
+ggsave("../figures/phylogeny_prevotella_MAGS_w_reference.pdf", width=12, height=12)
     
 ```
 
