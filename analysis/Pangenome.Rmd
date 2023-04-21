@@ -14,7 +14,7 @@ pacman::p_load(data.table,
 
 # Load
 ```{r, results=F, message=F}
-redcap.DM <- readxl::read_xlsx("../High_Prev_Metadata_redcap.xlsx",sheet=1,) %>% as.data.frame()
+redcap.DM <- readxl::read_xlsx("../High_Prev_Metadata_redcap.xlsx",sheet=1) %>% as.data.frame()
 redcap.LG <- readxl::read_xlsx("../High_Prev_Metadata_redcap.xlsx",sheet=2) %>% as.data.frame()
 
 metadata <- fread("../metadata.txt") %>% as.data.frame()
@@ -49,6 +49,13 @@ metadata$RAI <- metadata$RAI_freq!="Never"
 metadata$Gender <- metadata$`What gender do you identify with?`
 metadata$Orientation <- metadata$`What is your sexual orientation?`
 metadata$MSM <- metadata$Gender=="Men" & (metadata$Orientation=="Gay" | metadata$Orientation=="Bisexual")
+
+# address missing data with follow-up from Mallory
+metadata[metadata$PID=="DM001", "MSM"] <- TRUE
+metadata[metadata$PID=="DM002", "MSM"] <- TRUE
+metadata[metadata$PID=="DM007", "MSM"] <- TRUE
+
+metadata[metadata$PID=="DM093", "MSM"] <- FALSE
 ```
 
 # Heatmap {.tabset}
