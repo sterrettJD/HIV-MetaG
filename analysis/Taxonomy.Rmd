@@ -27,7 +27,7 @@ kable.mod.cols <- c("Estimate", "Std. Error", "deg. freedom", "t value", "p")
 ```
 
 # Load data
-```{r}
+```{r, message=F}
 setwd("~/Research-Projects/Lozupone/HIV-MetaG/analysis/")
 source("metaphlan_to_phyloseq_helper.R")
 bugslist <- fread("../hiv.t32.concat.humann.long/all_bugs_list.tsv") %>% as.data.frame()
@@ -63,6 +63,41 @@ rownames(taxonomy.table) <- bugs
 metadata <- fread("../metadata.txt") %>% as.data.frame()
 rownames(metadata) <- metadata$PID
 
+redcap.DM <- readxl::read_xlsx("../High_Prev_Metadata_redcap.xlsx",sheet=1) %>% as.data.frame()
+redcap.LG <- readxl::read_xlsx("../High_Prev_Metadata_redcap.xlsx",sheet=2) %>% as.data.frame()
+
+sex.behav.q <- c("In the past 6 months, what is the frequency at which you have had receptive anal intercourse?",
+                 "What gender do you identify with?",
+                 "What is your sexual orientation?"
+                 )
+
+metadata <- merge(
+    metadata,
+    rbind(redcap.DM[,c("Record ID", sex.behav.q)],
+          redcap.LG[,c("Record ID", sex.behav.q)]),
+    by.x="PID",
+    by.y="Record ID")
+rownames(metadata) <- metadata$PID
+
+metadata$RAI_freq <- metadata$`In the past 6 months, what is the frequency at which you have had receptive anal intercourse?`
+metadata$`In the past 6 months, what is the frequency at which you have had receptive anal intercourse?` <- NULL
+metadata$RAI <- metadata$RAI_freq!="Never"
+
+metadata$Gender <- metadata$`What gender do you identify with?`
+metadata$Orientation <- metadata$`What is your sexual orientation?`
+metadata$MSM <- metadata$Gender=="Men" & (metadata$Orientation=="Gay" | metadata$Orientation=="Bisexual")
+
+# address missing data with follow-up from Mallory
+metadata[metadata$PID=="DM001", "MSM"] <- TRUE
+metadata[metadata$PID=="DM002", "MSM"] <- TRUE
+metadata[metadata$PID=="DM007", "MSM"] <- TRUE
+
+metadata[metadata$PID=="DM093", "MSM"] <- FALSE
+
+metadata$MSM.Label <- ifelse(metadata$MSM,
+                             yes="MSM",
+                             no="MSW")
+
 # create phyloseq object
 pseq <- phyloseq(otu_table=otu_table(bugslist, taxa_are_rows=T),
                  tax_table=tax_table(taxonomy.table),
@@ -84,6 +119,43 @@ rowSums(bugslist[eu_un,])/ncol(bugslist)
 
 # Taxa barplot {.tabset}
 ## All taxa { .tabset}
+### By MSM
+```{r, warning=T, fig.height=8}
+# prep the microshades colors
+mdf_prep <- prep_mdf(pseq, subgroup_level="Genus")
+# sort the phylum names
+phylum_table <- tax_glom(pseq, taxrank="Phylum", ) %>% otu_table()
+phyla.otunames <- rownames(phylum_table)
+
+phylums <- taxonomy.table[phyla.otunames,"Phylum"]
+
+sorted_phylums <- phylums[order(rowSums(phylum_table), decreasing=T)]
+# create the colors object
+color_objs_GP <- create_color_dfs(mdf_prep, selected_groups = sorted_phylums[5:1], 
+                                  cvd = TRUE)
+# Extract
+mdf_GP <- color_objs_GP$mdf
+cdf_GP <- color_objs_GP$cdf
+# create a custom legend
+GP_legend <-custom_legend(mdf_GP, cdf_GP, 
+                          legend_key_size=unit(0.4, "cm"),
+                          legend_text_size=10)
+
+# plot
+plot <- plot_microshades(mdf_GP, cdf_GP)
+plot_1 <- plot + scale_y_continuous(labels = scales::percent, expand = expansion(0)) +
+  theme(legend.position = "none")  +
+  theme(axis.text.x = element_text(size= 7)) +
+  facet_grid(~MSM.Label, scales="free_x", space="free_x",
+             )
+
+multi <- plot_grid(plot_1, GP_legend,  rel_widths = c(1, .25))
+multi
+ggsave("../figures/taxa-bar-phyum-genus-MSM-microshades.pdf",plot=multi,height=10,width=10)
+
+```
+
+
 ### By HIV
 ```{r, warning=T, fig.height=8}
 # prep the microshades colors
@@ -160,6 +232,44 @@ ggsave("../figures/taxa-bar-Risk-phyum-genus-microshades.pdf",plot=multi,height=
 
 
 ## All taxa - Phylum (species microshades) with expanded prevotella {.tabset}
+### by MSM
+```{r,  warning=T, fig.height=9, fig.width=8}
+# prep the microshades colors
+mdf_prep <- prep_mdf(pseq, subgroup_level="Species")
+
+# create the colors object
+# was going to force prevotella in, but it's already the top
+color_objs_GP <- create_color_dfs(mdf_prep, selected_groups = sorted_phylums[5:1], group_level="Phylum", subgroup_level="Species",
+                                  cvd = TRUE,)
+color_objs_GP <- extend_group(color_objs_GP$mdf, color_objs_GP$cdf,
+                              "Phylum", "Species", "Bacteroidetes",
+                              existing_palette="micro_cvd_purple", new_palette = "micro_purple",
+                              n_add=2)
+
+# Extract
+mdf_GP <- color_objs_GP$mdf
+cdf_GP <- color_objs_GP$cdf
+# create a custom legend
+GP_legend <-custom_legend(mdf_GP, cdf_GP, 
+                          legend_key_size=unit(0.4, "cm"),
+                          legend_text_size=10,
+                          group_level="Phylum",
+                          subgroup_level="Species")
+
+# plot
+plot <- plot_microshades(mdf_GP, cdf_GP)
+plot_1 <- plot + scale_y_continuous(labels = scales::percent, expand = expansion(0)) +
+  theme(legend.position = "none")  +
+  theme(axis.text.x = element_text(size= 7)) +
+  facet_grid(~MSM.Label, scales = "free_x", space="free_x"
+             )
+
+multi <- plot_grid(plot_1, GP_legend,  rel_widths = c(1, .25))
+multi
+ggsave("../figures/taxa-bar-phyum-species-expanded-prev-MSM-microshades.pdf",plot=multi,height=6,width=10)
+```
+
+
 ### by HIV
 ```{r,  warning=T, fig.height=9, fig.width=8}
 # prep the microshades colors
