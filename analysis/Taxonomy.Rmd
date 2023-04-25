@@ -33,7 +33,7 @@ source("metaphlan_to_phyloseq_helper.R")
 bugslist <- fread("../hiv.t32.concat.humann.long/all_bugs_list.tsv") %>% as.data.frame()
 rownames(bugslist) <- bugslist$`#clade_name`
 bugslist <- bugslist %>% 
-    select(-c(`#clade_name`,
+    dplyr::select(-c(`#clade_name`,
                NCBI_tax_id,
                additional_species))
 
@@ -339,12 +339,18 @@ plot <- plot_microshades(mdf_GP, cdf_GP)
 plot_1 <- plot + scale_y_continuous(labels = scales::percent, expand = expansion(0)) +
   theme(legend.position = "none")  +
   theme(axis.text.x = element_text(size= 7)) +
+  theme(axis.text.x = element_text(size= 7),
+        panel.background = element_rect(fill='transparent'), #transparent panel bg
+        plot.background = element_rect(fill='transparent', color=NA), #transparent plot bg
+        panel.grid.major = element_blank(), #remove major gridlines
+        panel.grid.minor = element_blank() #remove minor gridlines
+        ) +
   facet_grid(~MSM.Label, scales = "free_x", space="free_x"
              )
 
 multi <- plot_grid(plot_1, GP_legend,  rel_widths = c(1, .25))
 multi
-ggsave("../figures/taxa-bar-phyum-species-expanded-prev-MSM-microshades.pdf",plot=multi,height=6,width=10)
+ggsave("../figures/taxa-bar-phyum-species-expanded-prev-MSM-microshades.pdf",plot=multi,height=10,width=10, bg="transparent")
 ```
 
 
