@@ -184,7 +184,16 @@ p  %<+% tree.bins.info +
                   label=node.cladelab.df$Name, geom="text",
                   offset=0.05, vjust=0, color="black") +
     scale_colour_discrete(na.translate = F) +
-    guides(shape = FALSE)
+    guides(shape = FALSE, color=F) +
+     theme(axis.text.x = element_text(size= 7),
+        panel.background = element_rect(fill='transparent'), #transparent panel bg
+        plot.background = element_rect(fill='transparent', color=NA), #transparent plot bg
+        panel.grid.major = element_blank(), #remove major gridlines
+        panel.grid.minor = element_blank(), #remove minor gridlines
+        #legend.background = element_rect(fill='transparent'),
+        #legend.box.background = element_rect(fill='transparent')
+        )
+
 ggsave("../figures/phylogeny_prevotella_MAGS_w_reference.pdf", width=12, height=12)
     
 ```
@@ -425,7 +434,15 @@ gheatmap(p,
          ) +
     scale_fill_gradientn("% Bases Covered", 
                          colours = c("blue", "white", "red"), space = "rgb", 
-                         limits = c(0,100))
+                         limits = c(0,100)) +
+    theme(axis.text.x = element_text(size= 7),
+        panel.background = element_rect(fill='transparent'), #transparent panel bg
+        plot.background = element_rect(fill='transparent', color=NA), #transparent plot bg
+        panel.grid.major = element_blank(), #remove major gridlines
+        panel.grid.minor = element_blank(), #remove minor gridlines
+        legend.background = element_rect(fill='transparent'),
+        #legend.box.background = element_rect(fill='transparent')
+        )
 ggsave("../figures/phylogeny_coverage_heatmap_MSM.pdf", height=10, width=12)
 ```
 
@@ -479,4 +496,80 @@ gheatmap(p,
                          colours = c("blue", "white", "red"), space = "rgb", 
                          limits = c(0,100))
 ggsave("../figures/phylogeny_coverage_heatmap_HIV.pdf", height=10, width=12)
+```
+
+# Prevotella MAG statistics
+```{r}
+genome.info <- fread("../hiv.t32.n40.metaspades.metabat2.checkm.drep/data_tables/genomeInformation.csv") %>%
+    as.data.frame()
+genome.info$genome <- genome.info$genome %>% 
+    sapply(function(x) gsub(x=x, pattern=".fa", replacement=""))
+rownames(genome.info) <- genome.info$genome
+
+p.bins.names <- tree.bins.info[tree.bins.info$Found==T, "tip"]
+p.bins.names <- p.bins.names[is.na(p.bins.names)==F]
+
+genome.info <- merge(genome.info[p.bins.names,], tree.bins.info[,c("tip", "MAG.num")],
+      by.x="genome", by.y="tip")
+
+genome.info %>% dplyr::select(c(MAG.num,
+                                N50,
+                                completeness,
+                                contamination,
+                                strain_heterogeneity)) %>%
+    summary() %>% 
+    knitr::kable()
+
+genome.info %>% dplyr::select(c(MAG.num,
+                                N50,
+                                completeness,
+                                contamination,
+                                strain_heterogeneity)) %>%
+    knitr::kable()
+```
+
+# Differences in Prevotella MAGs across samples
+```{r}
+run_t_tests <- function(df, 
+                        metadata, metadata_column_name, 
+                        condition_1, condition_2){
+    return.df <- data.frame(matrix(nrow=nrow(df), ncol=3))
+    colnames(return.df) <- c("Feature", "statistic", "p")
+    
+    return.df$Feature <- rownames(df)
+    
+    for (i in 1:nrow(df)){
+        
+        curr.feature <- df[i,]
+        curr.feature <- t(curr.feature)
+        sample.info <- metadata[colnames(curr.feature), metadata_column_name]
+        
+        t.test.res <- try(
+            t.test(x=curr.feature[sample.info==condition_1],
+                   y=curr.feature[sample.info==condition_2]),
+            silent=TRUE
+                        )
+        if (is(t.test.res, "try-error")){
+            return.df[i, "statistic"] <- 0
+            return.df[i, "p"] <- 1
+        } else {
+            return.df[i, "statistic"] <- t.test.res$statistic
+            return.df[i, "p"] <- t.test.res$p.value
+        }
+    }
+    
+    return.df <- return.df[order(return.df$p),]
+    return.df$adjusted.p <- p.adjust(return.df$p, method="fdr")
+    
+    return(return.df)
+}
+
+```
+
+## MSM
+```{r}
+run_t_tests(coverage.df.matrix,
+            metadata, "MSM",
+            TRUE, FALSE)
+
 ```
