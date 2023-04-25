@@ -9,7 +9,8 @@ knitr::opts_chunk$set(echo = TRUE)
 pacman::p_load(data.table,
                tidyverse,
                ggplot2,
-               PFAM.db)
+               PFAM.db,
+               ComplexHeatmap)
 ```
 
 # Load
@@ -125,6 +126,7 @@ heatmap(genes.mat, labRow=F, na.rm=T,
         ColSideColors=RAI.freq.colors,
         scale="none", col=pals::coolwarm(n = 2))
 
+
 ```
 
 ## MSM status
@@ -138,10 +140,34 @@ MSM.colors[MSM=="FALSE"] <- "yellow"
 MSM.colors[MSM=="No.Info"] <- "white"
 MSM.colors[is.na(MSM)] <- "black"
 
+MSM[is.na(MSM)] <- "Reference"
+MSM[MSM=="TRUE"] <- "MSM"
+MSM[MSM=="FALSE"] <- "MSW"
+
 # Based on risk status
+#pdf("../figures/p_copri_pangenome_heatmap_MSM.pdf")
 heatmap(genes.mat, labRow=F, na.rm=T,
         ColSideColors=MSM.colors,
-        scale="none", col=pals::coolwarm(n = 2))
+        scale="none", col=pals::coolwarm(n = 2)) 
+#dev.off()
+
+genes.mat.heatmap <- genes.mat
+samp.names <- colnames(genes.mat)
+samp.names[str_starts(samp.names, "REF")] <- paste("Strain", 1:4)
+colnames(genes.mat.heatmap) <- samp.names
+
+annotation_col <- as.data.frame(MSM, row.names=colnames(genes.mat.heatmap))
+annotation_col[annotation_col$MSM=="No.Info", "MSM"] <- NA
+annotation_colors <- c("MSW"="yellow", "MSM"="purple", "Reference"="black")
+
+
+pheatmap::pheatmap(genes.mat.heatmap, annotation_col=annotation_col, 
+                   annotation_colors=list(MSM=annotation_colors),
+                   color=c("blue", "red"), legend_breaks=c(0,1), legend_labels=c("Absent", "Present"),
+                   alpha=1,
+                   file="../figures/p_copri_pangenome_heatmap_MSM.pdf",
+                   width=10, height=10
+                   )
 
 ```
 
