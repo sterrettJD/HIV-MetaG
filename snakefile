@@ -198,7 +198,7 @@ rule run_nonpareil:
 
 rule get_biobakery_dbs:
     output:
-        "/Users/jost9358/humann_dbs/chocophlan/"
+        "/Users/jost9358/humann_dbs/chocophlan/",
         "/Users/jost9358/humann_dbs/uniref/"
     resources:
         partition="short",
