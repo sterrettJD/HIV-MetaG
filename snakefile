@@ -278,7 +278,7 @@ rule aggregate_humann_outs:
 
         python utils/aggregate_metaphlan_bugslists.py -i hiv.t32.concat.humann -p .concat -o {output.BUGSLIST}
 
-        python utils/convert_mphlan_v4_to_v3.py -i hiv.t32.concat.humann
+        python utils/convert_mphlan_v4_to_v3.py -i hiv.t32.concat.humann -p .concat
         """
 
 ############# MAP TO PREVOTELLA COPRI PANGENOME #############
