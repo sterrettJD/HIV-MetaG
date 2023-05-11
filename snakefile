@@ -276,7 +276,7 @@ rule aggregate_humann_outs:
         humann_regroup_table -i {output.GENEFAMS} -g uniref90_rxn -o {output.GENEFAMS_GROUPED}
         humann_rename_table -i {output.GENEFAMS_GROUPED} -n metacyc-rxn -o {output.GENEFAMS_GROUPED_NAMED}
 
-        python utils/aggregate_metaphlan_bugslists.py -i hiv.t32.concat.humann -o {output.BUGSLIST}
+        python utils/aggregate_metaphlan_bugslists.py -i hiv.t32.concat.humann -p .concat -o {output.BUGSLIST}
 
         python utils/convert_mphlan_v4_to_v3.py -i hiv.t32.concat.humann
         """
