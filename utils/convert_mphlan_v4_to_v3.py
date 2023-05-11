@@ -13,9 +13,14 @@ def get_args():
         description="Convert MetaPhlan v4 reports to v3-like format, or at least close enough to trick Pavian. It really just modifies the first line"
     )
 
+    # input directory
     parser.add_argument("-i", "--indir",
+                        help="Input directory that contains all of the sample directories",
                         required=True)
-
+    # a "padder" string that exists between the sample id and the metaphlan output name type
+    parser.add_argument("-p", "--padder",
+                        help="a 'padder' string that exists between the sample id and the humann output name type",
+                        default="")
     parsed_args = parser.parse_args()
     return parsed_args
 
@@ -43,5 +48,5 @@ def fix_files(filepaths):
 
 if __name__ == "__main__":
     args = get_args()
-    filepaths, subdirs = get_filepaths(args.indir)
+    filepaths, subdirs = get_filepaths(args.indir, args.padder)
     fix_files(filepaths)
