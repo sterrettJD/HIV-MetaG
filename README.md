@@ -5,17 +5,27 @@ Sequencing performed end of November 2022
 Main sections:
 1. Processing/QC with YMP
 2. Processing in Snakemake
-    - Removing short reads (for NonPareil) TODO: add to readme
-    - Concatenating paired reads
-    - Running HUMANN pipeline
+    - Pulling in other datasets to assess strain-level differences in *Prevotella* (TODO)
+    - Removing short reads (NonPareil uses k=25 for kmer sequence diversity estimation, so we remove reads < 40 bp) 
+    - Concatenating paired reads (HUMANN uses [concatenated reads](https://forum.biobakery.org/t/humann3-paired-end-reads/862))
+    - Running HUMANN pipeline (including MetaPhlan)
     - Aggregating HUMANN results
-    - Pull in other datasets to assess strain-level differences in Prevotella
+    - Assessing *Prevotella copri* pangenome
     - Assessing metagenome coverage (NonPareil) 
     - Assembling genomes (MetaSPAdes)
-    - Assessing strain-level variation (inStrain, other tools too?) TODO: all
-    - Assess SNPs in Prevotella genomes (MIDAS) TODO: all
+    - MAG quality checking (MetaQUAST)
+    - MAG binning (within samples, MetaBAT2)
+    - MAG dereplication (across samples, dRep)
+    - MAG phylogeny and taxonomy (PhyloPhlAn - done. TODO: GTDB-tk)
+    - MAG coverage (Bowtie2, samtools)
+    - Assessment of viral contigs (CheckV)
+    - Assess SNPs in *Prevotella* genomes (MIDAS) TODO: all
 3. Analysis of taxonomic/functional data
-4. Analysis of strain-level differences (TODO: all)
+  - `analysis/Taxonomy.Rmd` contains overview of taxonomic results of MetaPhlAn.
+  - `analysis/Functional-analysis.Rmd` contains overview of funcitonal results of HUMANN.
+  - `analysis/Nonpareil_curves.Rmd` contains information on sample sequence coverage and sequence diversity.
+  - `analysis/Pangenome.Rmd` contains pangenome plots using PanPhlAn output.
+  - `Prevotella_MAGs_phylogeny.Rmd` contains data on the phylogeny, taxonomy, and coverage of our dereplicated *Prevotella* MAGs.
 
 ## Data processing with YMP
 ### Creation of YMP metadata
@@ -116,8 +126,7 @@ Main sections:
 
 ## Assembling metagenome-assembled genomes (MAGs)
 - Using MetaSPAdes, with the rule `assemble_metaspades`
-- 
-
+- Assess quality using metaQUAST, with the rule `MetaQUAST`
 ### Prodigal
 
 ## Pangenome
