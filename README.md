@@ -27,6 +27,8 @@ Main sections:
   - `analysis/Pangenome.Rmd` contains pangenome plots using PanPhlAn output.
   - `Prevotella_MAGs_phylogeny.Rmd` contains data on the phylogeny, taxonomy, and coverage of our dereplicated *Prevotella* MAGs.
 
+Our data: 50M 2 x 150 bp reads per sample.
+
 ## Data processing with YMP
 ### Creation of YMP metadata
  - `utils/demux_to_ymp_metadata.py` was used to convert the genomics core formatted demux csv to YMP metadata with filepaths
