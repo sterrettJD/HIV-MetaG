@@ -1,0 +1,9 @@
+name: Prokka
+channels:
+  - biobakery
+  - conda-forge
+  - bioconda
+  - defaults
+dependencies:
+  - prodigal
+  - prokka
