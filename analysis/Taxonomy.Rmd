@@ -30,7 +30,7 @@ kable.mod.cols <- c("Estimate", "Std. Error", "deg. freedom", "t value", "p")
 ```{r, message=F}
 setwd("~/Research-Projects/Lozupone/HIV-MetaG/analysis/")
 source("metaphlan_to_phyloseq_helper.R")
-bugslist <- fread("../hiv.t32.concat.humann.long/all_bugs_list.tsv") %>% as.data.frame()
+bugslist <- fread("../hiv.t32.concat.humann/all_bugs_list.tsv") %>% as.data.frame()
 rownames(bugslist) <- bugslist$`#clade_name`
 bugslist <- bugslist %>% 
     dplyr::select(-c(`#clade_name`,
