@@ -24,7 +24,7 @@ metadata <- fread("../metadata.txt") %>% as.data.frame()
 rownames(metadata) <- metadata$PID
 
 source("HUMAnN_to_phyloseq_helper.R")
-gn <- fread("../hiv.t32.concat.humann.long/all_genefamilies_grouped_named.tsv")
+gn <- fread("../hiv.t32.concat.humann/all_genefamilies_grouped_named.tsv")
 rownames(gn) <- gn$`# Gene Family`
 gn$`# Gene Family` <- NULL
 # sanitize the sample IDs
